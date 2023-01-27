@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'package:otpauth_migration/otpauth_migration.dart';
 import 'dart:developer' as developer;
 
 class KeyStruct {
@@ -35,16 +36,26 @@ class KeyManagement {
     return keyList;
   }
 
-  Future<bool> addKeyQR(String key) async {
+  Future<bool> migrateData(String key) async {
+    developer.log("Migrating!");
+    // Example string: otpauth-migration://offline?data=ChwKCkhlbGxvId6tvu8SCFRlc3Qga2V5IAEoATACCh4KCgSGCQwSGAAAAAASClRlc3Qga2V5IDIgASgBMAIQARgBIAAoz8zItwM%3D
+    // The data part is base64 encoded
+    final otp_auth_parser = OtpAuthMigration();
+    final data = otp_auth_parser.decode(key);
+    print(key);
+    for (String url in data) {
+      print(url);
+      await addURL(url);
+    }
+
+    return true;
+  }
+
+  Future<bool> addURL(String key) async {
     var keys = await getSavedKeys();
-
-    // OTP link format: otpauth://totp/ServiceName:DescriptionText?secret=SECRET
-    // Or: otpauth://totp/ServiceName?secret=SECRET
-    // Description is optional
-
     // Read OTP link null-safely using Uri
     var uri = Uri.parse(key);
-    var serviceName = uri.pathSegments[0];
+    var serviceName = Uri.decodeFull(uri.pathSegments[0]);
     // The part after the colon is the description, if it exists
     var serviceNameSplitted = serviceName.split(":");
     serviceName = serviceNameSplitted[0];
@@ -71,6 +82,19 @@ class KeyManagement {
     keys.add(KeyStruct(iconBase64: icon, key: secret, service: serviceName, description: description, color: color));
 
     return await saveKeys(keys);
+  }
+
+  Future<bool> addKeyQR(String key) async {
+    // OTP link format: otpauth://totp/ServiceName:DescriptionText?secret=SECRET
+    // Or: otpauth://totp/ServiceName?secret=SECRET
+    // Description is optional
+
+    // Check if migration QR code is used
+    if (key.startsWith("otpauth-migration://offline?")) {
+      return await migrateData(key);
+    }
+
+    return addURL(key);
   }
 
   Future<bool> deleteKey(KeyStruct keyStruct) async {

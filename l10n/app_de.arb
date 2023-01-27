@@ -1,0 +1,49 @@
+{
+    "app_name": "Sekurity",
+
+    "home_clear": "Alle Schlüssel löschen",
+    "home_settings": "Einstellungen",
+    "home_about": "Über",
+
+    "home_about_description": "Sekurity\nGemacht von ptgms und SphericalKat",
+
+    "home_no_keys": "Keine Keys gespeichert, füge welche mit dem + Button hinzu!",
+    "copied_to_clipboard": "In Zwischenablage kopiert!",
+
+    "home_delete_confirm": "Lösche deinen {keyName} Schlüssel?",
+    "@home_delete_confirm": {
+        "placeholders": {
+            "keyName": {
+                "type": "string",
+                "example": "Website.com"
+            }
+        }
+    },
+    "home_delete_confirm_description": "Bist du dir sicher das du deinen {keyName} Schlüssel löschen möchtest? Dies kannst du nicht rückgängig machen und du kannst dich eventuell nicht mehr einloggen.",
+    "@home_delete_confirm_description": {
+        "placeholders": {
+            "keyName": {
+                "type": "string",
+                "example": "Website.com"
+            }
+        }
+    },
+
+    "home_delete_confirm_yes": "Löschen",
+    "home_delete_confirm_no": "Abbrechen",
+
+    "add_service_name": "Service hinzufügen",
+    "service_manual": "Manuell Service hinzufügen",
+
+    "service_icon": "Service Icon",
+    "service_color": "Service Farbe",
+    "service_color_dialog": "Farbe auswählen",
+
+    "service_name": "Service Name",
+    "service_description": "Beschreibung",
+    "service_key": "Geheimer Schlüssel",
+
+    "dialog_close": "Schließen",
+
+    "service_qr": "QR Code scannen"
+  }

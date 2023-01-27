@@ -1,16 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:otp/otp.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:sekurity/main.dart';
 import 'package:sekurity/tools/structtools.dart';
 import 'package:sekurity/tools/keymanagement.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import 'homescreen.dart';
 
 class AddService extends StatefulWidget {
   const AddService({super.key});
@@ -23,26 +27,50 @@ class _AddServiceState extends State<AddService> {
   ValueNotifier<KeyStruct> keyStruct = ValueNotifier(KeyStruct(iconBase64: "", key: "", service: "", color: Colors.blue, description: ""));
 
   var isManual = false;
+  var isEscaped = false;
   @override
   Widget build(BuildContext context) {
+    var locale = AppLocalizations.of(context);
+
     RawKeyboard.instance.addListener((RawKeyEvent event) {
       // Escape = Cancel
-      if (event.logicalKey.keyId == 0x1000000) {
+      if (isEscaped) return;
+      if (event.logicalKey == LogicalKeyboardKey.escape) {
+        isEscaped = true;
+        currentScreen = 0;
         Navigator.of(context).pop();
       }
     });
+
+    var appBar = PlatformAppBar(
+      leading: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          (Platform.isMacOS) ? const SizedBox(width: 40) : Container(),
+          (Platform.isWindows || Platform.isLinux) ? const WindowButtons() : Container(),
+          PlatformIconButton(
+            icon: Icon(PlatformIcons(context).back),
+            onPressed: () {
+              Navigator.of(context).pop();
+              currentScreen = 0;
+            },
+          ),
+        ],
+      ),
+      title: Text(context.loc.add_service_name),
+    );
+
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(50),
-        child: PlatformAppBar(
-          title: Text("Add Service"),
-        ),
+        preferredSize: const Size.fromHeight(50),
+        child: (Platform.isWindows || Platform.isLinux || Platform.isMacOS) ? MoveWindow(child: appBar) : appBar,
       ),
-      body: (isManual || (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ? manualMode() : mobileView(),
+      body: (isManual || (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ? manualMode(context) : mobileView(context),
     );
   }
 
-  Widget mobileView() {
+  Widget mobileView(BuildContext context) {
+    var locale = AppLocalizations.of(context)!;
     var scanned = false;
     // Camera preview with QR code scanner and button to add service manually
     return SizedBox(
@@ -63,7 +91,10 @@ class _AddServiceState extends State<AddService> {
                     if (scanned || scanData.code == null) return;
                     scanned = true;
                     if (await KeyManagement().addKeyQR(scanData.code!)) {
-                      if (context.mounted) Navigator.of(context).pop();
+                      if (context.mounted) {
+                        currentScreen = 0;
+                        Navigator.of(context).pop();
+                      }
                     }
                   });
                 },
@@ -79,9 +110,9 @@ class _AddServiceState extends State<AddService> {
                       isManual = true;
                     });
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 8.0),
-                    child: Text("Add Service Manually"),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 8.0),
+                    child: Text(context.loc.service_manual),
                   ),
                 ),
               ),
@@ -92,7 +123,7 @@ class _AddServiceState extends State<AddService> {
     );
   }
 
-  Widget manualMode() {
+  Widget manualMode(BuildContext context) {
     return SizedBox(
       height: double.infinity,
       width: double.infinity,
@@ -152,7 +183,7 @@ class _AddServiceState extends State<AddService> {
                                                 )
                                               : SizedBox(height: 32.0, width: 32.0, child: Image.memory(base64Decode(keyStruct.iconBase64))),
                                         )),
-                                const Text("Set Service Icon"),
+                                Text(context.loc.service_icon),
                               ],
                             ),
                           ),
@@ -170,7 +201,7 @@ class _AddServiceState extends State<AddService> {
                                     context: context,
                                     builder: (context) {
                                       return AlertDialog(
-                                        title: const Text("Select Color"),
+                                        title: Text(context.loc.service_color_dialog),
                                         content: SingleChildScrollView(
                                           child: ColorPicker(
                                             enableAlpha: false,
@@ -189,9 +220,10 @@ class _AddServiceState extends State<AddService> {
                                         actions: [
                                           PlatformTextButton(
                                             onPressed: () {
+                                              currentScreen = 0;
                                               Navigator.of(context).pop();
                                             },
-                                            child: const Text("Close"),
+                                            child: Text(context.loc.dialog_close),
                                           ),
                                         ],
                                       );
@@ -208,7 +240,7 @@ class _AddServiceState extends State<AddService> {
                                         padding: const EdgeInsets.all(8.0),
                                         child: Icon(Icons.color_lens, color: StructTools().getTextColor(keyStruct.color)),
                                       ),
-                                      Text("Set Service Color", style: TextStyle(color: StructTools().getTextColor(keyStruct.color))),
+                                      Text(context.loc.service_color, style: TextStyle(color: StructTools().getTextColor(keyStruct.color))),
                                     ],
                                   ),
                                 ),
@@ -242,7 +274,7 @@ class _AddServiceState extends State<AddService> {
                               keyStruct.value =
                                   KeyStruct(iconBase64: icon, key: keyStruct.value.key, service: value, color: color, description: keyStruct.value.description);
                             },
-                            decoration: const InputDecoration(border: InputBorder.none, labelText: "Service Name"),
+                            decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_name),
                           )),
                         ),
                         const Divider(
@@ -260,7 +292,7 @@ class _AddServiceState extends State<AddService> {
                                   color: keyStruct.value.color,
                                   description: keyStruct.value.description);
                             },
-                            decoration: const InputDecoration(border: InputBorder.none, labelText: "Secret Key"),
+                            decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_key),
                           )),
                         ),
                         const Divider(
@@ -278,7 +310,7 @@ class _AddServiceState extends State<AddService> {
                                   color: keyStruct.value.color,
                                   description: value);
                             },
-                            decoration: const InputDecoration(border: InputBorder.none, labelText: "Description"),
+                            decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_description),
                           )),
                         ),
                       ],
@@ -292,10 +324,13 @@ class _AddServiceState extends State<AddService> {
                         // Add service to database
                         if (await KeyManagement().addKeyManual(keyStruct.value)) {
                           KeyManagement().version.value++;
-                          if (context.mounted) Navigator.of(context).pop();
+                          if (context.mounted) {
+                            currentScreen = 0;
+                            Navigator.of(context).pop();
+                          }
                         }
                       },
-                      child: const Text("Add Service"),
+                      child: Text(context.loc.add_service_name),
                     ),
                   ),
                   !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)
@@ -306,7 +341,7 @@ class _AddServiceState extends State<AddService> {
                                 isManual = false;
                               });
                             },
-                            child: const Text("Scan QR Code"),
+                            child: Text(context.loc.service_qr),
                           ),
                         )
                       : Container(),

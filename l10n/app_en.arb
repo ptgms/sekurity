@@ -1,0 +1,49 @@
+{
+    "app_name": "Sekurity",
+
+    "home_clear": "Clear all keys",
+    "home_settings": "Settings",
+    "home_about": "About",
+
+    "home_about_description": "Sekurity\nMade by ptgms and SphericalKat",
+
+    "home_no_keys": "No keys saved, add one with the + button",
+    "copied_to_clipboard": "Copied to clipboard!",
+
+    "home_delete_confirm": "Delete your {keyName} key?",
+    "@home_delete_confirm": {
+        "placeholders": {
+            "keyName": {
+                "type": "String",
+                "example": "Website.com"
+            }
+        }
+    },
+    "home_delete_confirm_description": "Are you sure you want to delete your {keyName} key? You can't undo this action and you may not be able to log in to your account anymore.",
+    "@home_delete_confirm_description": {
+        "placeholders": {
+            "keyName": {
+                "type": "String",
+                "example": "Website.com"
+            }
+        }
+    },
+
+    "home_delete_confirm_yes": "Delete",
+    "home_delete_confirm_no": "Cancel",
+
+    "add_service_name": "Add Service",
+    "service_manual": "Add Service Manually",
+
+    "service_icon": "Set Service Icon",
+    "service_color": "Set Service Color",
+    "service_color_dialog": "Select Color",
+
+    "service_name": "Service Name",
+    "service_description": "Description",
+    "service_key": "Secret Key",
+
+    "dialog_close": "Close",
+
+    "service_qr": "Scan QR Code"
+  }
