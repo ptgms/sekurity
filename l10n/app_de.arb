@@ -45,5 +45,17 @@
 
     "dialog_close": "Schließen",
 
-    "service_qr": "QR Code scannen"
+    "service_qr": "QR Code scannen",
+
+    "settings": "Einstellungen",
+    "settings_apperance": "Erscheinungsbild",
+    "settings_theme": "Design",
+    "settings_theme_light": "Hell",
+    "settings_theme_dark": "Dunkel",
+    "settings_theme_system": "System",
+
+    "settings_accessibility": "Barrierefreiheit",
+    "settings_accessibility_font_style": "Schriftstil",
+    "settings_accessibility_font_style_normal": "Normal",
+    "settings_accessibility_font_style_large": "Fett"
   }

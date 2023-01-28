@@ -45,5 +45,17 @@
 
     "dialog_close": "Close",
 
-    "service_qr": "Scan QR Code"
+    "service_qr": "Scan QR Code",
+
+    "settings": "Settings",
+    "settings_apperance": "Apperance",
+    "settings_theme": "Theme",
+    "settings_theme_light": "Light",
+    "settings_theme_dark": "Dark",
+    "settings_theme_system": "System",
+
+    "settings_accessibility": "Accessibility",
+    "settings_accessibility_font_style": "Font Style",
+    "settings_accessibility_font_style_normal": "Normal",
+    "settings_accessibility_font_style_large": "Bold"
   }

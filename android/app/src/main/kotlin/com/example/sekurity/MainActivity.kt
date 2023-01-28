@@ -1,4 +1,4 @@
-package com.example.sekurity
+package xyz.ptgms.sekurity
 
 import io.flutter.embedding.android.FlutterActivity
 

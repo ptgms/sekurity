@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+//import 'dart:io';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:dart_dash_otp/dart_dash_otp.dart';
@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:sekurity/tools/keymanagement.dart';
+import 'package:sekurity/tools/platformtools.dart';
 import 'package:sekurity/tools/structtools.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -22,12 +23,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   ValueNotifier<double> progress = ValueNotifier(0.0);
+  var version = -1;
 
   void updateProgress() {
-    var version = -1;
     Future.delayed(const Duration(milliseconds: 10), () {
       // reverse progress
       if (version != KeyManagement().version.value) {
+        print("Version changed: ${KeyManagement().version.value}");
         setState(() {
           version = KeyManagement().version.value;
         });
@@ -46,8 +48,9 @@ class _HomePageState extends State<HomePage> {
               color: color,
             )
           : SizedBox(height: 32.0, width: 32.0, child: Image.memory(base64Decode(key.iconBase64))),
-      title: Text(key.service, style: TextStyle(color: color)),
-      subtitle: (key.description != "") ? Text(key.description, style: TextStyle(color: color, fontSize: 12.0)) : null,
+      title: Text(key.service, style: TextStyle(color: color, fontWeight: bold ? FontWeight.bold : null)),
+      subtitle:
+          (key.description != "") ? Text(key.description, style: TextStyle(color: color, fontSize: 12.0, fontWeight: bold ? FontWeight.bold : null)) : null,
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         // Add space in middle of code
         ValueListenableBuilder(
@@ -94,10 +97,18 @@ class _HomePageState extends State<HomePage> {
           Navigator.of(context).pushNamed("/addService");
         }
       }
+
+      // Ctrl + S or Cmd + , on macOS = Settings
+      if ((event.isControlPressed && event.logicalKey.keyId == 0x73) || (event.isMetaPressed && event.logicalKey.keyId == 0x2c)) {
+        // Only navigate if current screen is home
+        if (currentScreen == 0) {
+          currentScreen = 2;
+          Navigator.of(context).pushNamed("/settings");
+        }
+      }
     });
 
     var appBar = PlatformAppBar(
-      leading: (Platform.isWindows || Platform.isLinux) ? const WindowButtons() : null,
       title: Text(widget.title),
       trailingActions: [
         // 3 dots menu
@@ -124,7 +135,8 @@ class _HomePageState extends State<HomePage> {
                 await KeyManagement().saveKeys(List<KeyStruct>.empty(growable: true));
                 break;
               case 1:
-                // Settings
+                currentScreen = 2;
+                Navigator.pushNamed(context, "/settings");
                 break;
               case 2:
                 // Show about dialog
@@ -159,6 +171,7 @@ class _HomePageState extends State<HomePage> {
             }
           },
         ),
+        (isPlatformWindows() || isPlatformLinux()) ? const WindowButtons() : Container()
       ],
     );
 
@@ -166,7 +179,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(50),
-        child: (Platform.isWindows || Platform.isLinux || Platform.isMacOS) ? MoveWindow(child: appBar) : appBar,
+        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? MoveWindow(child: appBar) : appBar,
       ),
       body: FutureBuilder(
         future: KeyManagement().getSavedKeys(),
@@ -184,8 +197,6 @@ class _HomePageState extends State<HomePage> {
 
           widthCard = width ~/ count;
 
-          //List<KeyStruct> keys = List.empty(growable: true);
-          //keys.add(KeyStruct(iconBase64: "", key: "", service: "", description: "", color: Colors.black));
           if (snapshot.hasData) {
             if (snapshot.data!.isEmpty) {
               return Center(child: Text(context.loc.home_no_keys));
@@ -257,6 +268,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        mini: (isPlatformMacos() || isPlatformWindows() || isPlatformLinux()),
         onPressed: () {
           currentScreen = 1;
           Navigator.pushNamed(context, "/addService");

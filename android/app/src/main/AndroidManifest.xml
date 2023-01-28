@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.sekurity">
+    package="xyz.ptgms.sekurity">
    <application
-        android:label="sekurity"
+        android:label="Sekurity"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

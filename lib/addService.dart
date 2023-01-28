@@ -10,6 +10,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:sekurity/main.dart';
+import 'package:sekurity/tools/platformtools.dart';
 import 'package:sekurity/tools/structtools.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -46,8 +47,7 @@ class _AddServiceState extends State<AddService> {
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          (Platform.isMacOS) ? const SizedBox(width: 40) : Container(),
-          (Platform.isWindows || Platform.isLinux) ? const WindowButtons() : Container(),
+          (isPlatformMacos()) ? const SizedBox(width: 40) : Container(),
           PlatformIconButton(
             icon: Icon(PlatformIcons(context).back),
             onPressed: () {
@@ -57,15 +57,18 @@ class _AddServiceState extends State<AddService> {
           ),
         ],
       ),
+      trailingActions: [
+        (isPlatformWindows() || isPlatformLinux()) ? const WindowButtons() : Container(),
+      ],
       title: Text(context.loc.add_service_name),
     );
 
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(50),
-        child: (Platform.isWindows || Platform.isLinux || Platform.isMacOS) ? MoveWindow(child: appBar) : appBar,
+        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? MoveWindow(child: appBar) : appBar,
       ),
-      body: (isManual || (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ? manualMode(context) : mobileView(context),
+      body: (isManual || (isPlatformWindows() || isPlatformLinux() || isPlatformMacos())) ? manualMode(context) : mobileView(context),
     );
   }
 
@@ -91,6 +94,7 @@ class _AddServiceState extends State<AddService> {
                     if (scanned || scanData.code == null) return;
                     scanned = true;
                     if (await KeyManagement().addKeyQR(scanData.code!)) {
+                      KeyManagement().version.value++;
                       if (context.mounted) {
                         currentScreen = 0;
                         Navigator.of(context).pop();
@@ -140,7 +144,7 @@ class _AddServiceState extends State<AddService> {
                   Card(
                     child: InkWell(
                         onTap: () async {
-                          if (Platform.isAndroid || Platform.isIOS) {
+                          if (isPlatformMobile()) {
                             // Image picker
                             final ImagePicker picker = ImagePicker();
                             final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -204,6 +208,8 @@ class _AddServiceState extends State<AddService> {
                                         title: Text(context.loc.service_color_dialog),
                                         content: SingleChildScrollView(
                                           child: ColorPicker(
+                                            colorPickerWidth: (MediaQuery.of(context).size.width < 800 && MediaQuery.of(context).size.height > 800) ? 75 : 300,
+                                            labelTypes: const [ColorLabelType.rgb, ColorLabelType.hex],
                                             enableAlpha: false,
                                             pickerColor: keyStruct.color,
                                             onColorChanged: (color) {
@@ -214,7 +220,6 @@ class _AddServiceState extends State<AddService> {
                                                   color: color,
                                                   description: keyStruct.description);
                                             },
-                                            pickerAreaHeightPercent: 0.8,
                                           ),
                                         ),
                                         actions: [
@@ -256,8 +261,7 @@ class _AddServiceState extends State<AddService> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
-                          child: Expanded(
-                              child: TextField(
+                          child: TextField(
                             onChanged: (value) async {
                               final defaultServices = await rootBundle.loadString('assets/services.json');
                               // Structure: { "discord": { "color": 4283983346, "icon": "base64"} }
@@ -275,15 +279,14 @@ class _AddServiceState extends State<AddService> {
                                   KeyStruct(iconBase64: icon, key: keyStruct.value.key, service: value, color: color, description: keyStruct.value.description);
                             },
                             decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_name),
-                          )),
+                          ),
                         ),
                         const Divider(
                           height: 0,
                         ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
-                          child: Expanded(
-                              child: TextField(
+                          child: TextField(
                             onChanged: (value) {
                               keyStruct.value = KeyStruct(
                                   iconBase64: keyStruct.value.iconBase64,
@@ -293,15 +296,14 @@ class _AddServiceState extends State<AddService> {
                                   description: keyStruct.value.description);
                             },
                             decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_key),
-                          )),
+                          ),
                         ),
                         const Divider(
                           height: 0,
                         ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
-                          child: Expanded(
-                              child: TextField(
+                          child: TextField(
                             onChanged: (value) {
                               keyStruct.value = KeyStruct(
                                   iconBase64: keyStruct.value.iconBase64,
@@ -311,7 +313,7 @@ class _AddServiceState extends State<AddService> {
                                   description: value);
                             },
                             decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_description),
-                          )),
+                          ),
                         ),
                       ],
                     ),
@@ -333,7 +335,7 @@ class _AddServiceState extends State<AddService> {
                       child: Text(context.loc.add_service_name),
                     ),
                   ),
-                  !(Platform.isWindows || Platform.isLinux || Platform.isMacOS)
+                  !(isPlatformWindows() || isPlatformLinux() || isPlatformMacos())
                       ? Expanded(
                           child: PlatformTextButton(
                             onPressed: () {
