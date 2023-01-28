@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
-import 'package:otpauth_migration/otpauth_migration.dart';
+import 'package:base32/base32.dart';
 import 'dart:developer' as developer;
+
+import 'decode_migration.dart';
 
 class KeyStruct {
   String iconBase64;
@@ -19,9 +21,22 @@ class KeyManagement {
 
   ValueNotifier<int> version = ValueNotifier(0);
 
+  bool isValidBase32(String input) {
+    RegExp base32RegExp = RegExp(r'^[A-Z2-7]+$');
+    if (!base32RegExp.hasMatch(input)) {
+      return false;
+    }
+    try {
+      var bytes = base32.decode(input);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<List<KeyStruct>> getSavedKeys() async {
     var keys = await _storage.read(key: "keys");
-    developer.log(keys ?? "null");
+    developer.log(keys != null ? "Found keys!" : "null");
     if (keys == null) {
       return List<KeyStruct>.empty(growable: true);
     }
@@ -30,6 +45,10 @@ class KeyManagement {
     var keyList = List<KeyStruct>.empty(growable: true);
     var jsonKeys = jsonDecode(keys);
     for (var key in jsonKeys) {
+      // Check if secret key is valid base32 string
+      if (!isValidBase32(key["key"])) {
+        continue;
+      }
       keyList.add(KeyStruct(
           iconBase64: key["iconBase64"], key: key["key"], service: key["service"], color: Color(key["color"]), description: key["description"] ?? ""));
     }
@@ -38,16 +57,44 @@ class KeyManagement {
 
   Future<bool> migrateData(String key) async {
     developer.log("Migrating!");
-    // Example string: otpauth-migration://offline?data=ChwKCkhlbGxvId6tvu8SCFRlc3Qga2V5IAEoATACCh4KCgSGCQwSGAAAAAASClRlc3Qga2V5IDIgASgBMAIQARgBIAAoz8zItwM%3D
-    // The data part is base64 encoded
-    final otp_auth_parser = OtpAuthMigration();
-    final data = otp_auth_parser.decode(key);
-    print(key);
-    for (String url in data) {
-      print(url);
-      await addURL(url);
-    }
+    var decodedData = await parseMigrationURL(key);
+    var keys = await getSavedKeys();
 
+    for (var key in decodedData) {
+      // Check if key is already saved
+      if (keys.any((element) => element.key == key["secret"])) {
+        continue;
+      }
+
+      if (!isValidBase32(key["secret"])) {
+        continue;
+      }
+
+      var serviceName = key["name"];
+      developer.log("Found service: $serviceName");
+      var serviceNameSplitted = serviceName.split(":");
+      serviceName = serviceNameSplitted[0];
+      if (serviceNameSplitted.length > 1) {}
+      var secret = key["secret"];
+
+      var color = Colors.white;
+      var icon = "";
+
+      // Get default color and icon from json
+      final defaultServices = await rootBundle.loadString('assets/services.json');
+      // Structure: { "discord": { "color": "#7289DA", "icon": "discord" }, ... }
+      final Map<String, dynamic> defaultServicesMap = jsonDecode(defaultServices);
+      if (defaultServicesMap.containsKey(serviceName.toLowerCase())) {
+        color = Color(defaultServicesMap[serviceName.toLowerCase()]["color"]);
+        icon = defaultServicesMap[serviceName.toLowerCase()]["icon"];
+      } else {
+        // Random color
+        color = Color((0xFF000000 + (0xFFFFFF * (0.5 + (0.5 * (serviceName.hashCode / 0xFFFFFFFF))))).toInt());
+      }
+
+      var keyStruct = KeyStruct(iconBase64: icon, key: secret, service: serviceName, description: "", color: color);
+      await addKeyManual(keyStruct);
+    }
     return true;
   }
 
@@ -64,6 +111,15 @@ class KeyManagement {
       description = serviceNameSplitted[1];
     }
     var secret = uri.queryParameters["secret"] ?? "";
+
+    // Check if key is already saved
+    if (keys.any((element) => element.key == secret)) {
+      return false;
+    }
+
+    if (!isValidBase32(secret)) {
+      return false;
+    }
 
     // Get default color and icon from json
     final defaultServices = await rootBundle.loadString('assets/services.json');
@@ -90,6 +146,7 @@ class KeyManagement {
     // Description is optional
 
     // Check if migration QR code is used
+    developer.log("QR Code scanned!");
     if (key.startsWith("otpauth-migration://offline?")) {
       return await migrateData(key);
     }
@@ -105,7 +162,16 @@ class KeyManagement {
 
   Future<bool> addKeyManual(KeyStruct keyStruct) async {
     var keys = await getSavedKeys();
-    // UnsupportedError (Unsupported operation: Cannot add to a fixed-length list)
+
+    // Check if key is already saved
+    if (keys.any((element) => element.key == keyStruct.key)) {
+      return false;
+    }
+
+    if (!isValidBase32(keyStruct.key)) {
+      return false;
+    }
+
     keys.add(keyStruct);
     return await saveKeys(keys);
   }

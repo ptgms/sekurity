@@ -43,6 +43,9 @@
     "service_description": "Description",
     "service_key": "Secret Key",
 
+    "service_empty_error": "Service name and Key can't be empty",
+    "service_invalid_key": "Invalid key provided!",
+
     "dialog_close": "Close",
 
     "service_qr": "Scan QR Code",

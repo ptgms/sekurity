@@ -73,7 +73,6 @@ class _AddServiceState extends State<AddService> {
   }
 
   Widget mobileView(BuildContext context) {
-    var locale = AppLocalizations.of(context)!;
     var scanned = false;
     // Camera preview with QR code scanner and button to add service manually
     return SizedBox(
@@ -94,7 +93,7 @@ class _AddServiceState extends State<AddService> {
                     if (scanned || scanData.code == null) return;
                     scanned = true;
                     if (await KeyManagement().addKeyQR(scanData.code!)) {
-                      KeyManagement().version.value++;
+                      KeyManagement().version.value += 1;
                       if (context.mounted) {
                         currentScreen = 0;
                         Navigator.of(context).pop();
@@ -323,9 +322,18 @@ class _AddServiceState extends State<AddService> {
                   Expanded(
                     child: PlatformTextButton(
                       onPressed: () async {
+                        // Check if service name and key are not empty
+                        if (keyStruct.value.service == "" || keyStruct.value.key == "") {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.service_empty_error)));
+                          return;
+                        }
+                        if (!KeyManagement().isValidBase32(keyStruct.value.key)) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.service_invalid_key)));
+                          return;
+                        }
                         // Add service to database
                         if (await KeyManagement().addKeyManual(keyStruct.value)) {
-                          KeyManagement().version.value++;
+                          KeyManagement().version.value += 1;
                           if (context.mounted) {
                             currentScreen = 0;
                             Navigator.of(context).pop();

@@ -133,6 +133,7 @@ class _HomePageState extends State<HomePage> {
             switch (value) {
               case 0:
                 await KeyManagement().saveKeys(List<KeyStruct>.empty(growable: true));
+                KeyManagement().version.value += 1;
                 break;
               case 1:
                 currentScreen = 2;

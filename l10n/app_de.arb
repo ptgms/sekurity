@@ -43,6 +43,9 @@
     "service_description": "Beschreibung",
     "service_key": "Geheimer Schlüssel",
 
+    "service_empty_error": "Service Name und Schlüssel können nicht leer sein!",
+    "service_invalid_key": "Nicht valider Schlüssel angegeben!",
+
     "dialog_close": "Schließen",
 
     "service_qr": "QR Code scannen",
