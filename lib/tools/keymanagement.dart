@@ -1,11 +1,19 @@
+import 'dart:async';
+
+import 'package:universal_html/html.dart' as html;
+import 'dart:io' as io;
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:base32/base32.dart';
+import 'package:sekurity/tools/platformtools.dart';
 import 'dart:developer' as developer;
 
 import 'decode_migration.dart';
+import 'encryption_tools.dart';
 
 class KeyStruct {
   String iconBase64;
@@ -177,6 +185,7 @@ class KeyManagement {
   }
 
   Future<bool> saveKeys(List<KeyStruct> keys) async {
+    version.value++;
     // Parse List<KeyStruct> into json string
     var jsonKeys = List<Map<String, dynamic>>.empty(growable: true);
     for (var key in keys) {
@@ -187,5 +196,70 @@ class KeyManagement {
     // Save json string into FlutterSecureStorage
     await _storage.write(key: "keys", value: jsonKeysString);
     return true;
+  }
+
+  Future<bool> getEncryptedJson(String password) async {
+    var keys = await getSavedKeys();
+    var jsonKeys = List<Map<String, dynamic>>.empty(growable: true);
+    for (var key in keys) {
+      jsonKeys.add({"iconBase64": key.iconBase64, "key": key.key, "service": key.service, "color": key.color.value, "description": key.description});
+    }
+    var jsonKeysString = jsonEncode(jsonKeys);
+
+    developer.log(jsonKeysString);
+
+    var encrypted = await encryptJson(jsonKeysString, password);
+
+    if (encrypted == null) {
+      return false;
+    }
+
+    if (isPlatformWeb()) {
+      var blob = html.Blob([encrypted]);
+      var url = html.Url.createObjectUrlFromBlob(blob);
+      var anchor = html.AnchorElement(href: url);
+      anchor.download = "otp_backup.keys";
+      anchor.click();
+    } else {
+      // Open file save dialog with the bytes encrypted
+      var filePath = await FilePicker.platform
+          .saveFile(dialogTitle: "Save encrypted file", fileName: "otp_backup.keys", type: FileType.custom, allowedExtensions: ["keys"]);
+
+      if (filePath == null) {
+        return false;
+      }
+      var file = io.File(filePath);
+      await file.writeAsBytes(encrypted);
+    }
+
+    return true;
+  }
+
+  Future<bool> getDecryptedJson(String password) async {
+    var filePath = await FilePicker.platform.pickFiles(dialogTitle: "Select encrypted file", type: FileType.custom, allowedExtensions: ["keys"]);
+
+    if (filePath == null) {
+      return false;
+    }
+
+    var file = io.File(filePath.files.first.path!);
+
+    var encrypted = await file.readAsBytes();
+
+    var decrypted = await decryptJson(encrypted, password);
+
+    if (decrypted == "") {
+      return false;
+    }
+
+    var jsonKeys = jsonDecode(decrypted);
+
+    var keys = List<KeyStruct>.empty(growable: true);
+
+    for (var key in jsonKeys) {
+      keys.add(KeyStruct(iconBase64: key["iconBase64"], key: key["key"], service: key["service"], color: Color(key["color"]), description: key["description"]));
+    }
+
+    return await saveKeys(keys);
   }
 }

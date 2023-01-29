@@ -60,5 +60,24 @@
     "settings_accessibility": "Barrierefreiheit",
     "settings_accessibility_font_style": "Schriftstil",
     "settings_accessibility_font_style_normal": "Normal",
-    "settings_accessibility_font_style_large": "Fett"
+    "settings_accessibility_font_style_large": "Fett",
+
+    "qr_notice": "Scanne den QR Code der dir vom Service angezeigt wird, um ihn zu Sekurity hinzuzufügen. Du kannst auch Google Authenticator QR codes scannen, diese werden automatisch in Sekurity importiert.",
+
+    "home_import_export": "Importieren/Exportieren",
+    "import_export_description": "Importiere/Exportiere deine Schlüssel zu einer Datei die du an andere Geräte senden kannst oder als Sicherung. Halte dein Password gut in acht da wenn du es vergisst, dein Backup nicht wieder eingespielt werden kann.",
+    "import_export_password": "Passwort",
+    "import_export_export": "Exportieren",
+    "import_export_import": "Importieren",
+    "import_export_password_empty": "Passwort kann nicht leer sein!",
+
+    "import_export_no_encryption": "Keine Verschlüsselung",
+    "import_export_no_encryption_description": "Du möchtest das wirklich nicht verwenden.",
+
+    "import_export_no_encryption_dialog": "Woah, woah, woah, bist du dir sicher?",
+    "import_export_no_encryption_dialog_description": "Du bist dabei deine Schlüssel ohne jegliche Verschlüsselung handzuhaben. Dies erlaubt jedem der deine Schlüssel Datei bekommt, deine Schlüssel zu sehen. Wenn du nicht sicher bist, dann drücke \"Nein, bring mich in Sicherheit!\". Wenn du dir sicher bist, dann drücke \"Ja, ich bin mir sicher\".",
+    "import_export_no_encryption_dialog_yes": "Ja, ich bin mir sicher",
+    "import_export_no_encryption_dialog_no": "Nein, bring mich in Sicherheit!",
+
+    "import_export_no_encryption_warning": "Warning! Keine Verschlüsselung aktiv! Dies ist unsicher und deine Accounts könnten in Gefahr sein!"
   }

@@ -93,7 +93,6 @@ class _AddServiceState extends State<AddService> {
                     if (scanned || scanData.code == null) return;
                     scanned = true;
                     if (await KeyManagement().addKeyQR(scanData.code!)) {
-                      KeyManagement().version.value += 1;
                       if (context.mounted) {
                         currentScreen = 0;
                         Navigator.of(context).pop();
@@ -333,7 +332,6 @@ class _AddServiceState extends State<AddService> {
                         }
                         // Add service to database
                         if (await KeyManagement().addKeyManual(keyStruct.value)) {
-                          KeyManagement().version.value += 1;
                           if (context.mounted) {
                             currentScreen = 0;
                             Navigator.of(context).pop();
