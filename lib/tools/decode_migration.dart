@@ -2,7 +2,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:base32/base32.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:sekurity/tools/otp-migration.pb.dart';
+
+import 'keymanagement.dart';
 
 final _algorithm = {
   0: "unspecified",
@@ -48,4 +51,21 @@ Future<List<Map<String, dynamic>>> parseMigrationURL(String sourceUrl) async {
   }
 
   return otpParameters;
+}
+
+Future<String> parseTransferURL(List<KeyStruct> keys) {
+  var migrationPayload = MigrationPayload.create();
+  migrationPayload.otpParameters.addAll(keys.map((key) {
+    var otpParameter = MigrationPayload_OtpParameters.create();
+    otpParameter.secret = base32.decode(key.key);
+    otpParameter.name = key.service;
+    otpParameter.issuer = key.description;
+    otpParameter.algorithm = MigrationPayload_Algorithm.ALGORITHM_SHA256;
+    otpParameter.digits = key.eightDigits ? MigrationPayload_DigitCount.DIGIT_COUNT_EIGHT : MigrationPayload_DigitCount.DIGIT_COUNT_SIX;
+    otpParameter.type = MigrationPayload_OtpType.OTP_TYPE_TOTP;
+    otpParameter.counter = Int64(0);
+    return otpParameter;
+  }));
+
+  return Future.value(base64.encode(migrationPayload.writeToBuffer()));
 }

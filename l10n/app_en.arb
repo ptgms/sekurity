@@ -43,6 +43,10 @@
     "service_description": "Description",
     "service_key": "Secret Key",
 
+    "service_more_options": "More Options",
+    "service_digits": "Digits",
+    "service_algorithm": "Algorithm",
+
     "service_empty_error": "Service name and Key can't be empty",
     "service_invalid_key": "Invalid key provided!",
 
@@ -62,12 +66,16 @@
     "settings_accessibility_font_style_normal": "Normal",
     "settings_accessibility_font_style_large": "Bold",
 
+    "settings_reset": "Reset",
+
     "qr_notice": "Scan the QR code shown by your service to add it to Sekurity. You can also import your Google Authenticator QR code.",
+    "qr_transfer_notice": "You can use this button to transfer your keys to another device. You can also import then in Google Authenticator.",
 
     "home_import_export": "Import/Export",
-    "import_export_description": "Import/Export your keys to a file that you can share with other devices or backup. Make sure to keep your password safe, you won't be able to recover your keys if you forget it.",
+    "import_export_description": "Import/Export your keys to a file that you can share with other devices or backup. Make sure to keep your password safe, you won't be able to recover your keys if you forget it.\nExport as QR code does not use encryption.",
     "import_export_password": "Password",
     "import_export_export": "Export",
+    "import_export_export_qr": "Export as QR Code",
     "import_export_import": "Import",
     "import_export_password_empty": "Password can't be empty!",
 

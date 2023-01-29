@@ -146,6 +146,19 @@ class _SettingsState extends State<Settings> {
                 initialValue: bold,
               ),
             ]),
+            SettingsSection(
+              title: Text(context.loc.settings_reset),
+              tiles: [
+                SettingsTile.navigation(
+                  title: Text(context.loc.home_clear),
+                  leading: const Icon(Icons.delete_forever_rounded),
+                  onPressed: (context) {
+                    KeyManagement().saveKeys(List<KeyStruct>.empty());
+                    KeyManagement().version = ValueNotifier(KeyManagement().version.value + 1);
+                  },
+                )
+              ],
+            )
           ],
         ));
   }

@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:dart_dash_otp/dart_dash_otp.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:sekurity/tools/otp-migration.pbenum.dart';
+import 'package:sekurity/tools/structtools.dart';
 import 'package:universal_html/html.dart' as html;
 import 'dart:io' as io;
 
@@ -21,7 +25,18 @@ class KeyStruct {
   String service;
   String description;
   Color color;
-  KeyStruct({required this.iconBase64, required this.key, required this.service, required this.description, required this.color});
+  bool eightDigits;
+  OTPAlgorithm algorithm;
+  int interval;
+  KeyStruct(
+      {required this.iconBase64,
+      required this.key,
+      required this.service,
+      required this.description,
+      required this.color,
+      this.eightDigits = false,
+      this.algorithm = OTPAlgorithm.SHA1,
+      this.interval = 30});
 }
 
 class KeyManagement {
@@ -58,7 +73,20 @@ class KeyManagement {
         continue;
       }
       keyList.add(KeyStruct(
-          iconBase64: key["iconBase64"], key: key["key"], service: key["service"], color: Color(key["color"]), description: key["description"] ?? ""));
+          iconBase64: key["iconBase64"],
+          key: key["key"],
+          service: key["service"],
+          color: Color(key["color"]),
+          description: key["description"] ?? "",
+          eightDigits: key["eightDigits"] ?? false,
+          algorithm: key["algorithm"] == "SHA1"
+              ? OTPAlgorithm.SHA1
+              : key["algorithm"] == "SHA256"
+                  ? OTPAlgorithm.SHA256
+                  : key["algorithm"] == "SHA512"
+                      ? OTPAlgorithm.SHA512
+                      : OTPAlgorithm.SHA1,
+          interval: key["interval"] ?? 30));
     }
     return keyList;
   }
@@ -85,6 +113,16 @@ class KeyManagement {
       if (serviceNameSplitted.length > 1) {}
       var secret = key["secret"];
 
+      var eightDigits = key["digits"] == MigrationPayload_DigitCount.DIGIT_COUNT_EIGHT;
+
+      var algorithm = key["algorithm"] == MigrationPayload_Algorithm.ALGORITHM_SHA1
+          ? OTPAlgorithm.SHA1
+          : key["algorithm"] == MigrationPayload_Algorithm.ALGORITHM_SHA256
+              ? OTPAlgorithm.SHA256
+              : key["algorithm"] == MigrationPayload_Algorithm.ALGORITHM_SHA512
+                  ? OTPAlgorithm.SHA512
+                  : OTPAlgorithm.SHA1;
+
       var color = Colors.white;
       var icon = "";
 
@@ -97,13 +135,31 @@ class KeyManagement {
         icon = defaultServicesMap[serviceName.toLowerCase()]["icon"];
       } else {
         // Random color
-        color = Color((0xFF000000 + (0xFFFFFF * (0.5 + (0.5 * (serviceName.hashCode / 0xFFFFFFFF))))).toInt());
+        color = StructTools().randomColorGenerator();
       }
 
-      var keyStruct = KeyStruct(iconBase64: icon, key: secret, service: serviceName, description: "", color: color);
+      var keyStruct =
+          KeyStruct(iconBase64: icon, key: secret, service: serviceName, description: "", color: color, eightDigits: eightDigits, algorithm: algorithm);
       await addKeyManual(keyStruct);
     }
     return true;
+  }
+
+  // Same as migrateData but to encode a QR code
+  Future<QrImage> parseTransferQR() async {
+    developer.log("Transfering!");
+    var keys = await getSavedKeys();
+    var encodedKeys = parseTransferURL(keys);
+    var url = "otpauth-migration://offline?$encodedKeys";
+
+    // generate QR code from url
+    var qr = QrImage(
+      backgroundColor: Colors.white,
+      data: url,
+      version: QrVersions.auto,
+      size: 200.0,
+    );
+    return qr;
   }
 
   Future<bool> addURL(String key) async {
@@ -120,6 +176,19 @@ class KeyManagement {
     }
     var secret = uri.queryParameters["secret"] ?? "";
 
+    var digits = uri.queryParameters["digits"] ?? "6";
+
+    var algorithmJson = uri.queryParameters["algorithm"] ?? "SHA1";
+    var algorithm = algorithmJson == "SHA1"
+        ? OTPAlgorithm.SHA1
+        : algorithmJson == "SHA256"
+            ? OTPAlgorithm.SHA256
+            : algorithmJson == "SHA512"
+                ? OTPAlgorithm.SHA512
+                : OTPAlgorithm.SHA1;
+
+    var interval = uri.queryParameters["period"] ?? "30";
+
     // Check if key is already saved
     if (keys.any((element) => element.key == secret)) {
       return false;
@@ -133,7 +202,7 @@ class KeyManagement {
     final defaultServices = await rootBundle.loadString('assets/services.json');
     // Structure: { "discord": { "color": 4283983346, "icon": "base64"} }
 
-    var color = Colors.white;
+    var color = StructTools().randomColorGenerator();
     var icon = "";
 
     if (jsonDecode(defaultServices).containsKey(serviceName.toLowerCase())) {
@@ -143,7 +212,15 @@ class KeyManagement {
     }
 
     // Add key to list
-    keys.add(KeyStruct(iconBase64: icon, key: secret, service: serviceName, description: description, color: color));
+    keys.add(KeyStruct(
+        iconBase64: icon,
+        key: secret,
+        service: serviceName,
+        description: description,
+        eightDigits: digits == "8",
+        color: color,
+        algorithm: algorithm,
+        interval: int.parse(interval)));
 
     return await saveKeys(keys);
   }
@@ -189,7 +266,22 @@ class KeyManagement {
     // Parse List<KeyStruct> into json string
     var jsonKeys = List<Map<String, dynamic>>.empty(growable: true);
     for (var key in keys) {
-      jsonKeys.add({"iconBase64": key.iconBase64, "key": key.key, "service": key.service, "color": key.color.value, "description": key.description});
+      jsonKeys.add({
+        "iconBase64": key.iconBase64,
+        "key": key.key,
+        "service": key.service,
+        "color": key.color.value,
+        "description": key.description,
+        "eightDigits": key.eightDigits,
+        "algorithm": key.algorithm == OTPAlgorithm.SHA1
+            ? "SHA1"
+            : key.algorithm == OTPAlgorithm.SHA256
+                ? "SHA256"
+                : key.algorithm == OTPAlgorithm.SHA512
+                    ? "SHA512"
+                    : "SHA1",
+        "interval": key.interval
+      });
     }
     var jsonKeysString = jsonEncode(jsonKeys);
     //developer.log(jsonKeysString);
@@ -202,7 +294,21 @@ class KeyManagement {
     var keys = await getSavedKeys();
     var jsonKeys = List<Map<String, dynamic>>.empty(growable: true);
     for (var key in keys) {
-      jsonKeys.add({"iconBase64": key.iconBase64, "key": key.key, "service": key.service, "color": key.color.value, "description": key.description});
+      jsonKeys.add({
+        "iconBase64": key.iconBase64,
+        "key": key.key,
+        "service": key.service,
+        "color": key.color.value,
+        "description": key.description,
+        "eightDigits": key.eightDigits,
+        "algorithm": key.algorithm == OTPAlgorithm.SHA1
+            ? "SHA1"
+            : key.algorithm == OTPAlgorithm.SHA256
+                ? "SHA256"
+                : key.algorithm == OTPAlgorithm.SHA512
+                    ? "SHA512"
+                    : "SHA1"
+      });
     }
     var jsonKeysString = jsonEncode(jsonKeys);
 
@@ -221,15 +327,27 @@ class KeyManagement {
       anchor.download = "otp_backup.keys";
       anchor.click();
     } else {
-      // Open file save dialog with the bytes encrypted
-      var filePath = await FilePicker.platform
-          .saveFile(dialogTitle: "Save encrypted file", fileName: "otp_backup.keys", type: FileType.custom, allowedExtensions: ["keys"]);
+      if (isPlatformMobile()) {
+        // Open file save dialog with the bytes encrypted
+        var filePath = await FilePicker.platform.getDirectoryPath(dialogTitle: "Select directory to save");
 
-      if (filePath == null) {
-        return false;
+        if (filePath == null) {
+          return false;
+        }
+
+        var file = io.File("$filePath/otp_backup.keys");
+        await file.writeAsBytes(encrypted);
+      } else {
+        // Open file save dialog with the bytes encrypted
+        var filePath = await FilePicker.platform
+            .saveFile(dialogTitle: "Save encrypted file", fileName: "otp_backup.keys", type: FileType.custom, allowedExtensions: ["keys"]);
+
+        if (filePath == null) {
+          return false;
+        }
+        var file = io.File(filePath);
+        await file.writeAsBytes(encrypted);
       }
-      var file = io.File(filePath);
-      await file.writeAsBytes(encrypted);
     }
 
     return true;
@@ -257,7 +375,21 @@ class KeyManagement {
     var keys = List<KeyStruct>.empty(growable: true);
 
     for (var key in jsonKeys) {
-      keys.add(KeyStruct(iconBase64: key["iconBase64"], key: key["key"], service: key["service"], color: Color(key["color"]), description: key["description"]));
+      keys.add(KeyStruct(
+          iconBase64: key["iconBase64"],
+          key: key["key"],
+          service: key["service"],
+          color: Color(key["color"]),
+          description: key["description"],
+          eightDigits: key["eightDigits"],
+          algorithm: key["algorithm"] == "SHA1"
+              ? OTPAlgorithm.SHA1
+              : key["algorithm"] == "SHA256"
+                  ? OTPAlgorithm.SHA256
+                  : key["algorithm"] == "SHA512"
+                      ? OTPAlgorithm.SHA512
+                      : OTPAlgorithm.SHA1,
+          interval: key["interval"]));
     }
 
     return await saveKeys(keys);

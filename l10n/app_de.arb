@@ -43,6 +43,10 @@
     "service_description": "Beschreibung",
     "service_key": "Geheimer Schlüssel",
 
+    "service_more_options": "Weitere Optionen",
+    "service_digits": "Zahlen",
+    "service_algorithm": "Algorithmus",
+
     "service_empty_error": "Service Name und Schlüssel können nicht leer sein!",
     "service_invalid_key": "Nicht valider Schlüssel angegeben!",
 
@@ -57,18 +61,22 @@
     "settings_theme_dark": "Dunkel",
     "settings_theme_system": "System",
 
+    "settings_reset": "Zurücksetzen",
+
     "settings_accessibility": "Barrierefreiheit",
     "settings_accessibility_font_style": "Schriftstil",
     "settings_accessibility_font_style_normal": "Normal",
     "settings_accessibility_font_style_large": "Fett",
 
     "qr_notice": "Scanne den QR Code der dir vom Service angezeigt wird, um ihn zu Sekurity hinzuzufügen. Du kannst auch Google Authenticator QR codes scannen, diese werden automatisch in Sekurity importiert.",
+    "qr_transfer_notice": "Du kannst dies verwenden, um deine Schlüssel an ein anderes Gerät zu übertragen. Du kannst diese auch in Google Authenticator oder ähnliche impoprtieren.",
 
     "home_import_export": "Importieren/Exportieren",
-    "import_export_description": "Importiere/Exportiere deine Schlüssel zu einer Datei die du an andere Geräte senden kannst oder als Sicherung. Halte dein Password gut in acht da wenn du es vergisst, dein Backup nicht wieder eingespielt werden kann.",
+    "import_export_description": "Importiere/Exportiere deine Schlüssel zu einer Datei die du an andere Geräte senden kannst oder als Sicherung. Halte dein Password gut in acht da wenn du es vergisst, dein Backup nicht wieder eingespielt werden kann.\nAls QR Code exportieren hat keine Verschlüsselung.",
     "import_export_password": "Passwort",
     "import_export_export": "Exportieren",
     "import_export_import": "Importieren",
+    "import_export_export_qr": "Als QR Code exportieren",
     "import_export_password_empty": "Passwort kann nicht leer sein!",
 
     "import_export_no_encryption": "Keine Verschlüsselung",

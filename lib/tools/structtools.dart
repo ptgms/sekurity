@@ -16,7 +16,11 @@ class StructTools {
     }
   }
 
-  String cropAndResizeImage(String base64Image) {
+  Color randomColorGenerator() {
+    return Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
+  }
+
+  Future<String> cropAndResizeImage(String base64Image) async {
     // Decode base64 image to Image object
     final image = ImageModule.decodeImage(base64Decode(base64Image))!;
 

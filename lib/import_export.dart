@@ -1,6 +1,7 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/platformtools.dart';
 
@@ -66,7 +67,7 @@ class _ImportExportState extends State<ImportExport> {
                   leading: const Icon(Icons.warning_rounded, color: Colors.orange),
                 ),
         ),
-        Padding(
+        /*Padding(
           padding: const EdgeInsets.all(8.0),
           child: CheckboxListTile(
             title: Text(context.loc.import_export_no_encryption),
@@ -108,7 +109,7 @@ class _ImportExportState extends State<ImportExport> {
               }
             },
           ),
-        ),
+        ),*/
         Row(
           children: [
             Expanded(
@@ -137,6 +138,46 @@ class _ImportExportState extends State<ImportExport> {
                       return;
                     }
                     await KeyManagement().getEncryptedJson(password);
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+        const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Divider(),
+        ),
+        ListTile(
+          title: Text(context.loc.qr_transfer_notice),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: PlatformTextButton(
+                  child: Text(context.loc.import_export_export_qr),
+                  onPressed: () async {
+                    // Show dialog
+                    KeyManagement().parseTransferQR().then((value) {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text(context.loc.import_export_export_qr),
+                              content: SizedBox(height: 200, width: 200, child: Center(child: value)),
+                              actions: [
+                                TextButton(
+                                  child: Text(context.loc.dialog_close),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          });
+                    });
                   },
                 ),
               ),
