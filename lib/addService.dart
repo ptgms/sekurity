@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:dart_dash_otp/dart_dash_otp.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -55,16 +54,13 @@ class _AddServiceState extends State<AddService> {
           ),
         ],
       ),
-      trailingActions: [
-        (isPlatformWindows() || isPlatformLinux()) ? const WindowButtons() : Container(),
-      ],
       title: Text(context.loc.add_service_name),
     );
 
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(50),
-        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? MoveWindow(child: appBar) : appBar,
+        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? appBar : appBar,
       ),
       body: (isManual || (isPlatformWindows() || isPlatformLinux() || isPlatformMacos())) ? manualMode(context) : mobileView(context),
     );

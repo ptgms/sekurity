@@ -79,6 +79,8 @@
     "import_export_export_qr": "Als QR Code exportieren",
     "import_export_password_empty": "Passwort kann nicht leer sein!",
 
+    "import_export_no_keys": "You have no keys to export!",
+
     "import_export_no_encryption": "Keine Verschlüsselung",
     "import_export_no_encryption_description": "Du möchtest das wirklich nicht verwenden.",
 

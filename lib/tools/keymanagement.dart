@@ -59,7 +59,7 @@ class KeyManagement {
 
   Future<List<KeyStruct>> getSavedKeys() async {
     var keys = await _storage.read(key: "keys");
-    developer.log(keys != null ? "Found keys!" : "null");
+    //developer.log(keys != null ? "Found keys!" : "null");
     if (keys == null) {
       return List<KeyStruct>.empty(growable: true);
     }
@@ -307,7 +307,8 @@ class KeyManagement {
                 ? "SHA256"
                 : key.algorithm == OTPAlgorithm.SHA512
                     ? "SHA512"
-                    : "SHA1"
+                    : "SHA1",
+        "interval": key.interval
       });
     }
     var jsonKeysString = jsonEncode(jsonKeys);

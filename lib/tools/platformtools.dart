@@ -33,3 +33,9 @@ bool isPlatformMobile() {
   }
   return Platform.isAndroid || Platform.isIOS;
 }
+
+void exitApp() {
+  if (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) {
+    exit(0);
+  }
+}

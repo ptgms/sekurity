@@ -79,6 +79,8 @@
     "import_export_import": "Import",
     "import_export_password_empty": "Password can't be empty!",
 
+    "import_export_no_keys": "You have no keys to export!",
+
     "import_export_no_encryption": "No encryption",
     "import_export_no_encryption_description": "You really don't want to use this.",
 

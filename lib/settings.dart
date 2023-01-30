@@ -1,4 +1,3 @@
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -59,20 +58,17 @@ class _SettingsState extends State<Settings> {
           ),
         ],
       ),
-      trailingActions: [
-        (isPlatformWindows() || isPlatformLinux()) ? const WindowButtons() : Container(),
-      ],
       title: Text(context.loc.settings),
     );
 
     var platform = PlatformUtils.detectPlatform(context);
 
-    if (platform == DevicePlatform.web) platform = DevicePlatform.android;
+    if (platform == DevicePlatform.web || platform == DevicePlatform.windows) platform = DevicePlatform.android;
 
     return Scaffold(
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(50),
-          child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? MoveWindow(child: appBar) : appBar,
+          child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? appBar : appBar,
         ),
         body: SettingsList(
           platform: platform,

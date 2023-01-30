@@ -1,7 +1,5 @@
 import 'dart:convert';
-//import 'dart:io';
 
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:dart_dash_otp/dart_dash_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,6 +24,11 @@ class _HomePageState extends State<HomePage> {
 
   void updateProgress() {
     Future.delayed(const Duration(milliseconds: 100), () async {
+      if (currentScreen != 0) {
+        // If the user is not on the home screen, don't update the progress
+        updateProgress();
+        return;
+      }
       var keys = await KeyManagement().getSavedKeys();
 
       if (keys.isEmpty) {
@@ -175,15 +178,14 @@ class _HomePageState extends State<HomePage> {
                 break;
             }
           },
-        ),
-        (isPlatformWindows() || isPlatformLinux()) ? const WindowButtons() : Container()
+        )
       ],
     );
 
     double width = MediaQuery.of(context).size.width;
     int widthCard = 400;
 
-    int heightCard = 90;
+    int heightCard = 94;
 
     if (width < widthCard) {
       widthCard = width.toInt() - 1;
@@ -197,7 +199,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(50),
-        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? MoveWindow(child: appBar) : appBar,
+        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? appBar : appBar,
       ),
       body: FutureBuilder(
         future: KeyManagement().getSavedKeys(),

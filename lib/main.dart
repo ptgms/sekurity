@@ -1,4 +1,3 @@
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sekurity/homescreen.dart';
@@ -6,10 +5,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sekurity/import_export.dart';
 import 'package:sekurity/settings.dart';
 import 'package:sekurity/tools/platformtools.dart';
+import 'package:window_size/window_size.dart';
 
 import 'addService.dart';
 
-void main() {
+Future<void> main() async {
   runApp(const SekurityApp());
 
   const storage = FlutterSecureStorage();
@@ -29,12 +29,9 @@ void main() {
   });
 
   if (isPlatformMacos() || isPlatformLinux() || isPlatformWindows()) {
-    doWhenWindowReady(() {
-      appWindow.minSize = const Size(600, 450);
-      appWindow.size = const Size(600, 450);
-      appWindow.alignment = Alignment.center;
-      appWindow.show();
-    });
+    // Set the window title
+    setWindowTitle('Sekurity');
+    setWindowMinSize(const Size(400, 450));
   }
 }
 
@@ -94,33 +91,6 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
           ),
         );
       },
-    );
-  }
-}
-
-final buttonColors = WindowButtonColors(
-    iconNormal: const Color.fromARGB(255, 175, 175, 175),
-    mouseOver: const Color.fromARGB(255, 255, 255, 255),
-    mouseDown: const Color.fromARGB(255, 66, 66, 66),
-    iconMouseOver: const Color.fromARGB(255, 0, 0, 0),
-    iconMouseDown: const Color.fromARGB(255, 0, 0, 0));
-
-final closeButtonColors = WindowButtonColors(
-    mouseOver: const Color(0xFFD32F2F), mouseDown: const Color(0xFFB71C1C), iconNormal: const Color.fromARGB(255, 175, 175, 175), iconMouseOver: Colors.white);
-
-class WindowButtons extends StatelessWidget {
-  const WindowButtons({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          MinimizeWindowButton(colors: buttonColors),
-          MaximizeWindowButton(colors: buttonColors),
-          CloseWindowButton(colors: closeButtonColors),
-        ],
-      ),
     );
   }
 }

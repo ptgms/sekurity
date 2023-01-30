@@ -1,7 +1,5 @@
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/platformtools.dart';
 
@@ -35,16 +33,13 @@ class _ImportExportState extends State<ImportExport> {
           ),
         ],
       ),
-      trailingActions: [
-        (isPlatformWindows() || isPlatformLinux()) ? const WindowButtons() : Container(),
-      ],
       title: Text(context.loc.home_import_export),
     );
 
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(50),
-        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? MoveWindow(child: appBar) : appBar,
+        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? appBar : appBar,
       ),
       body: ListView(children: [
         ListTile(
@@ -133,6 +128,10 @@ class _ImportExportState extends State<ImportExport> {
                 child: PlatformTextButton(
                   child: Text(context.loc.import_export_export),
                   onPressed: () async {
+                    if ((await KeyManagement().getSavedKeys()).isEmpty) {
+                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_no_keys)));
+                      return;
+                    }
                     if (password == "") {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_password_empty)));
                       return;
@@ -159,6 +158,10 @@ class _ImportExportState extends State<ImportExport> {
                 child: PlatformTextButton(
                   child: Text(context.loc.import_export_export_qr),
                   onPressed: () async {
+                    if ((await KeyManagement().getSavedKeys()).isEmpty) {
+                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_no_keys)));
+                      return;
+                    }
                     // Show dialog
                     KeyManagement().parseTransferQR().then((value) {
                       showDialog(
