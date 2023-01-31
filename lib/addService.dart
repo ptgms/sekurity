@@ -224,6 +224,7 @@ class _AddServiceState extends State<AddService> {
                                             color: color,
                                             description: keyStruct.value.description,
                                             interval: keyStruct.value.interval,
+                                            eightDigits: keyStruct.value.eightDigits,
                                             algorithm: keyStruct.value.algorithm);
                                       },
                                     ),
@@ -288,6 +289,7 @@ class _AddServiceState extends State<AddService> {
                                   color: color,
                                   description: keyStruct.value.description,
                                   interval: keyStruct.value.interval,
+                                  eightDigits: keyStruct.value.eightDigits,
                                   algorithm: keyStruct.value.algorithm);
                             },
                             decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_name),
@@ -307,6 +309,7 @@ class _AddServiceState extends State<AddService> {
                                   color: keyStruct.value.color,
                                   description: keyStruct.value.description,
                                   interval: keyStruct.value.interval,
+                                  eightDigits: keyStruct.value.eightDigits,
                                   algorithm: keyStruct.value.algorithm);
                             },
                             decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_key),
@@ -326,6 +329,7 @@ class _AddServiceState extends State<AddService> {
                                   color: keyStruct.value.color,
                                   description: value,
                                   interval: keyStruct.value.interval,
+                                  eightDigits: keyStruct.value.eightDigits,
                                   algorithm: keyStruct.value.algorithm);
                             },
                             decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_description),
@@ -365,6 +369,7 @@ class _AddServiceState extends State<AddService> {
                                   service: keyStruct.value.service,
                                   color: keyStruct.value.color,
                                   description: keyStruct.value.description,
+                                  interval: keyStruct.value.interval,
                                   eightDigits: value ?? false,
                                   algorithm: keyStruct.value.algorithm);
                             });
@@ -374,34 +379,68 @@ class _AddServiceState extends State<AddService> {
                       height: 0,
                     ),
                     ListTile(
-                      title: Text(context.loc.service_algorithm),
+                        title: Text(context.loc.service_algorithm),
+                        trailing: DropdownButton(
+                          underline: Container(),
+                          value: keyStruct.value.algorithm,
+                          items: const [
+                            DropdownMenuItem(
+                              value: OTPAlgorithm.SHA1,
+                              child: Text("SHA1"),
+                            ),
+                            DropdownMenuItem(
+                              value: OTPAlgorithm.SHA256,
+                              child: Text("SHA256"),
+                            ),
+                            DropdownMenuItem(
+                              value: OTPAlgorithm.SHA512,
+                              child: Text("SHA512"),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              keyStruct.value = KeyStruct(
+                                  iconBase64: keyStruct.value.iconBase64,
+                                  key: keyStruct.value.key,
+                                  service: keyStruct.value.service,
+                                  color: keyStruct.value.color,
+                                  description: keyStruct.value.description,
+                                  interval: keyStruct.value.interval,
+                                  eightDigits: keyStruct.value.eightDigits,
+                                  algorithm: value ?? OTPAlgorithm.SHA1);
+                            });
+                          },
+                        )),
+                    const Divider(
+                      height: 0,
+                    ),
+                    ListTile(
+                      title: Text(context.loc.service_interval),
                       trailing: DropdownButton(
                         underline: Container(),
-                        value: keyStruct.value.algorithm,
+                        value: keyStruct.value.interval,
                         items: const [
                           DropdownMenuItem(
-                            value: OTPAlgorithm.SHA1,
-                            child: Text("SHA1"),
+                            value: 30,
+                            child: Text("30"),
                           ),
                           DropdownMenuItem(
-                            value: OTPAlgorithm.SHA256,
-                            child: Text("SHA256"),
-                          ),
-                          DropdownMenuItem(
-                            value: OTPAlgorithm.SHA512,
-                            child: Text("SHA512"),
+                            value: 60,
+                            child: Text("60"),
                           ),
                         ],
                         onChanged: (value) {
                           setState(() {
                             keyStruct.value = KeyStruct(
-                                iconBase64: keyStruct.value.iconBase64,
-                                key: keyStruct.value.key,
-                                service: keyStruct.value.service,
-                                color: keyStruct.value.color,
-                                description: keyStruct.value.description,
-                                eightDigits: keyStruct.value.eightDigits,
-                                algorithm: value ?? OTPAlgorithm.SHA1);
+                              iconBase64: keyStruct.value.iconBase64,
+                              key: keyStruct.value.key,
+                              service: keyStruct.value.service,
+                              color: keyStruct.value.color,
+                              description: keyStruct.value.description,
+                              eightDigits: keyStruct.value.eightDigits,
+                              interval: value ?? 30,
+                              algorithm: keyStruct.value.algorithm,
+                            );
                           });
                         },
                       ),

@@ -133,7 +133,7 @@ class _ImportExportState extends State<ImportExport> {
                       return;
                     }
                     if (password == "") {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_password_empty)));
+                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_password_empty)));
                       return;
                     }
                     await KeyManagement().getEncryptedJson(password);

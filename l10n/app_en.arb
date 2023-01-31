@@ -46,6 +46,7 @@
     "service_more_options": "More Options",
     "service_digits": "Digits",
     "service_algorithm": "Algorithm",
+    "service_interval": "Interval",
 
     "service_empty_error": "Service name and Key can't be empty",
     "service_invalid_key": "Invalid key provided!",

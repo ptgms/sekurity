@@ -4,6 +4,7 @@ import 'package:dart_dash_otp/dart_dash_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:reorderable_grid/reorderable_grid.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/platformtools.dart';
 import 'package:sekurity/tools/structtools.dart';
@@ -183,7 +184,7 @@ class _HomePageState extends State<HomePage> {
     );
 
     double width = MediaQuery.of(context).size.width;
-    int widthCard = 400;
+    int widthCard = 300;
 
     int heightCard = 94;
 
@@ -214,72 +215,80 @@ class _HomePageState extends State<HomePage> {
               child: ValueListenableBuilder(
                 valueListenable: KeyManagement().version,
                 builder: (context, value, child) {
-                  return GridView.builder(
-                    scrollDirection: Axis.vertical,
+                  return ReorderableGridView.builder(
+                    //scrollDirection: Axis.vertical,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: count,
+                      //crossAxisSpacing: 8,
                       childAspectRatio: (widthCard / heightCard),
                     ),
                     itemCount: snapshot.data!.length,
                     itemBuilder: (BuildContext context, int index) {
                       var color = StructTools().getTextColor(snapshot.data![index].color);
                       return Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Card(
-                          color: snapshot.data![index].color,
-                          child: Center(
-                            child: InkWell(
-                              onTap: () async {
-                                await Clipboard.setData(ClipboardData(
-                                    text: TOTP(
-                                            secret: snapshot.data![index].key,
-                                            digits: snapshot.data![index].eightDigits ? 8 : 6,
-                                            interval: snapshot.data![index].interval,
-                                            algorithm: snapshot.data![index].algorithm)
-                                        .now()));
-                                // Show snackbar
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text(context.loc.copied_to_clipboard),
-                                    duration: const Duration(seconds: 1),
-                                  ));
-                                }
-                              },
-                              onLongPress: () {
-                                // Show menu to delete
-                                showPlatformDialog(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                    title: Text(context.loc.home_delete_confirm(snapshot.data![index].service)),
-                                    content: Text(context.loc.home_delete_confirm_description(snapshot.data![index].service)),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text(context.loc.home_delete_confirm_no),
-                                      ),
-                                      TextButton(
-                                        onPressed: () async {
-                                          // Delete key
-                                          var keys = await KeyManagement().getSavedKeys();
-                                          setState(() {
-                                            keys.removeAt(index);
-                                          });
-                                          await KeyManagement().saveKeys(keys);
-                                          if (context.mounted) Navigator.of(context).pop();
-                                        },
-                                        child: Text(context.loc.home_delete_confirm_yes),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              child: OTPListTile(snapshot.data![index], color, index),
+                          key: ValueKey(snapshot.data![index].key),
+                          padding: const EdgeInsets.all(5.0),
+                          child: Card(
+                            color: snapshot.data![index].color,
+                            child: Center(
+                              child: InkWell(
+                                onTap: () async {
+                                  await Clipboard.setData(ClipboardData(
+                                      text: TOTP(
+                                              secret: snapshot.data![index].key,
+                                              digits: snapshot.data![index].eightDigits ? 8 : 6,
+                                              interval: snapshot.data![index].interval,
+                                              algorithm: snapshot.data![index].algorithm)
+                                          .now()));
+                                  // Show snackbar
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                      content: Text(context.loc.copied_to_clipboard),
+                                      duration: const Duration(seconds: 1),
+                                    ));
+                                  }
+                                },
+                                onLongPress: () {
+                                  // Show menu to delete
+                                  showPlatformDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: Text(context.loc.home_delete_confirm(snapshot.data![index].service)),
+                                      content: Text(context.loc.home_delete_confirm_description(snapshot.data![index].service)),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text(context.loc.home_delete_confirm_no),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            // Delete key
+                                            var keys = await KeyManagement().getSavedKeys();
+                                            setState(() {
+                                              keys.removeAt(index);
+                                            });
+                                            await KeyManagement().saveKeys(keys);
+                                            if (context.mounted) Navigator.of(context).pop();
+                                          },
+                                          child: Text(context.loc.home_delete_confirm_yes),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: OTPListTile(snapshot.data![index], color, index),
+                              ),
                             ),
-                          ),
-                        ),
-                      );
+                          ));
+                    },
+                    onReorder: (int oldIndex, int newIndex) {
+                      setState(() {
+                        final KeyStruct item = snapshot.data!.removeAt(oldIndex);
+                        snapshot.data!.insert(newIndex, item);
+                      });
+                      KeyManagement().saveKeys(snapshot.data!);
                     },
                   );
                 },
