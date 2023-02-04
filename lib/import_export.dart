@@ -112,12 +112,24 @@ class _ImportExportState extends State<ImportExport> {
                 padding: const EdgeInsets.all(16.0),
                 child: PlatformTextButton(
                   child: Text(context.loc.import_export_import),
-                  onPressed: () {
+                  onPressed: () async {
                     if (password == "") {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_password_empty)));
                       return;
                     }
-                    KeyManagement().getDecryptedJson(password);
+                    if (await KeyManagement().getDecryptedJson(password)) {
+                      if (context.mounted){
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_import_success), 
+                        action: SnackBarAction(label: context.loc.import_export_import_success_restart, onPressed: exitApp),));
+                      } 
+                    } else {
+                      if (context.mounted){
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_import_error)));
+                      }
+                    }
                   },
                 ),
               ),
@@ -129,11 +141,17 @@ class _ImportExportState extends State<ImportExport> {
                   child: Text(context.loc.import_export_export),
                   onPressed: () async {
                     if ((await KeyManagement().getSavedKeys()).isEmpty) {
-                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_no_keys)));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_no_keys)));
+                      }
                       return;
                     }
                     if (password == "") {
-                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_password_empty)));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_password_empty)));
+                      }
                       return;
                     }
                     await KeyManagement().getEncryptedJson(password);
@@ -159,7 +177,10 @@ class _ImportExportState extends State<ImportExport> {
                   child: Text(context.loc.import_export_export_qr),
                   onPressed: () async {
                     if ((await KeyManagement().getSavedKeys()).isEmpty) {
-                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_no_keys)));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_no_keys)));
+                        }
                       return;
                     }
                     // Show dialog

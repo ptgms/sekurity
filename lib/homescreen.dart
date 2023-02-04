@@ -21,7 +21,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  ValueNotifier<List<double>> progress = ValueNotifier(List<double>.filled(0, 0));
+  ValueNotifier<List<double>> progress =
+      ValueNotifier(List<double>.filled(0, 0));
 
   void updateProgress() {
     Future.delayed(const Duration(milliseconds: 100), () async {
@@ -39,7 +40,10 @@ class _HomePageState extends State<HomePage> {
       var newProg = List<double>.filled(keys.length, 0);
 
       for (var i = 0; i < keys.length; i++) {
-        newProg[i] = 1 - ((DateTime.now().millisecondsSinceEpoch % (keys[i].interval * 1000)) / (keys[i].interval * 1000));
+        newProg[i] = 1 -
+            ((DateTime.now().millisecondsSinceEpoch %
+                    (keys[i].interval * 1000)) /
+                (keys[i].interval * 1000));
       }
 
       progress.value = newProg;
@@ -47,29 +51,88 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Widget OTPListTile(KeyStruct key, Color color, int index) {
+  Widget OTPListTile(KeyStruct key, Color color, int index, bool editMode) {
     return ListTile(
-      leading: (key.iconBase64 == "")
-          ? Icon(
-              Icons.key,
-              size: 32.0,
-              color: color,
+      leading: editMode
+          ? IconButton(
+              icon: Icon(Icons.delete, size: 30.0, color: color),
+              onPressed: () {
+                showPlatformDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text(context.loc.home_delete_confirm(key.service)),
+                    content: Text(context.loc
+                        .home_delete_confirm_description(key.service)),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(context.loc.home_delete_confirm_no),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          // Delete key
+                          var keys = await KeyManagement().getSavedKeys();
+                          setState(() {
+                            keys.removeAt(index);
+                          });
+                          await KeyManagement().saveKeys(keys);
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        child: Text(context.loc.home_delete_confirm_yes),
+                      ),
+                    ],
+                  ),
+                );
+              },
             )
-          : SizedBox(height: 32.0, width: 32.0, child: Image.memory(base64Decode(key.iconBase64))),
-      title: Text(key.service, style: TextStyle(color: color, fontWeight: bold ? FontWeight.bold : null)),
-      subtitle:
-          (key.description != "") ? Text(key.description, style: TextStyle(color: color, fontSize: 12.0, fontWeight: bold ? FontWeight.bold : null)) : null,
+          : (key.iconBase64 == "")
+              ? Icon(
+                  Icons.key,
+                  size: 32.0,
+                  color: color,
+                )
+              : SizedBox(
+                  height: 32.0,
+                  width: 32.0,
+                  child: Image.memory(base64Decode(key.iconBase64))),
+      title: Text(key.service,
+          style: TextStyle(
+              color: color, fontWeight: bold ? FontWeight.bold : null)),
+      subtitle: (key.description != "")
+          ? Text(key.description,
+              style: TextStyle(
+                  color: color,
+                  fontSize: 12.0,
+                  fontWeight: bold ? FontWeight.bold : null))
+          : null,
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         // Add space in middle of code
         ValueListenableBuilder(
             valueListenable: progress,
             builder: (context, value, child) {
-              var authCode = TOTP(secret: key.key, digits: key.eightDigits ? 8 : 6, interval: key.interval, algorithm: key.algorithm).now();
+              var authCode = TOTP(
+                      secret: key.key,
+                      digits: key.eightDigits ? 8 : 6,
+                      interval: key.interval,
+                      algorithm: key.algorithm)
+                  .now();
               return key.eightDigits
-                  ? PlatformText("${authCode.substring(0, 4)} ${authCode.substring(4)}",
-                      style: TextStyle(fontSize: 20, color: color, fontWeight: FontWeight.bold))
-                  : PlatformText("${authCode.substring(0, 3)} ${authCode.substring(3)}",
-                      style: TextStyle(fontSize: 20, color: color, fontWeight: FontWeight.bold));
+                  ? PlatformText(
+                      "${authCode.substring(0, 4)} ${authCode.substring(4)}",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: color,
+                          fontWeight: FontWeight.bold))
+                  : PlatformText(
+                      "${authCode.substring(0, 3)} ${authCode.substring(3)}",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: color,
+                          fontWeight: FontWeight.bold));
             }),
         // Progress bar of time left before code changes and update it automatically
         SizedBox(
@@ -96,6 +159,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  var editMode = false;
+
   @override
   Widget build(BuildContext context) {
     // Keyboard shortcuts
@@ -110,7 +175,8 @@ class _HomePageState extends State<HomePage> {
       }
 
       // Ctrl + S or Cmd + , on macOS = Settings
-      if ((event.isControlPressed && event.logicalKey.keyId == 0x73) || (event.isMetaPressed && event.logicalKey.keyId == 0x2c)) {
+      if ((event.isControlPressed && event.logicalKey.keyId == 0x73) ||
+          (event.isMetaPressed && event.logicalKey.keyId == 0x2c)) {
         // Only navigate if current screen is home
         if (currentScreen == 0) {
           currentScreen = 2;
@@ -120,17 +186,19 @@ class _HomePageState extends State<HomePage> {
     });
 
     var appBar = PlatformAppBar(
-      title: Text(widget.title),
+      title: editMode ? Text(context.loc.editing) : Text(widget.title),
       trailingActions: [
         // 3 dots menu
         PopupMenuButton(
           itemBuilder: (BuildContext context) {
             return [
+              PopupMenuItem(value: 0, child: Text(context.loc.edit)),
               PopupMenuItem(
                 value: 1,
                 child: Text(context.loc.home_settings),
               ),
-              PopupMenuItem(value: 2, child: Text(context.loc.home_import_export)),
+              PopupMenuItem(
+                  value: 2, child: Text(context.loc.home_import_export)),
               PopupMenuItem(
                 value: 3,
                 child: Text(context.loc.home_about),
@@ -139,6 +207,11 @@ class _HomePageState extends State<HomePage> {
           },
           onSelected: (int value) async {
             switch (value) {
+              case 0:
+                setState(() {
+                  editMode = !editMode;
+                });
+                break;
               case 1:
                 currentScreen = 2;
                 Navigator.pushNamed(context, "/settings");
@@ -158,13 +231,15 @@ class _HomePageState extends State<HomePage> {
                       PlatformDialogAction(
                         child: const Text("ptgms"),
                         onPressed: () async {
-                          await launchUrl(Uri.parse("https://github.com/ptgms"));
+                          await launchUrl(
+                              Uri.parse("https://github.com/ptgms"));
                         },
                       ),
                       PlatformDialogAction(
                         child: const Text("SphericalKat"),
                         onPressed: () async {
-                          await launchUrl(Uri.parse("https://github.com/SphericalKat"));
+                          await launchUrl(
+                              Uri.parse("https://github.com/SphericalKat"));
                         },
                       ),
                       PlatformDialogAction(
@@ -200,11 +275,14 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(50),
-        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? appBar : appBar,
+        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos())
+            ? appBar
+            : appBar,
       ),
       body: FutureBuilder(
         future: KeyManagement().getSavedKeys(),
-        builder: (BuildContext context, AsyncSnapshot<List<KeyStruct>> snapshot) {
+        builder:
+            (BuildContext context, AsyncSnapshot<List<KeyStruct>> snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data!.isEmpty) {
               return Center(child: Text(context.loc.home_no_keys));
@@ -224,68 +302,87 @@ class _HomePageState extends State<HomePage> {
                     ),
                     itemCount: snapshot.data!.length,
                     itemBuilder: (BuildContext context, int index) {
-                      var color = StructTools().getTextColor(snapshot.data![index].color);
-                      return Padding(
+                      var color = StructTools()
+                          .getTextColor(snapshot.data![index].color);
+                      return GestureDetector(
                           key: ValueKey(snapshot.data![index].key),
-                          padding: const EdgeInsets.all(5.0),
+                          onTap: () async {
+                            await Clipboard.setData(ClipboardData(
+                                text: TOTP(
+                                        secret: snapshot.data![index].key,
+                                        digits:
+                                            snapshot.data![index].eightDigits
+                                                ? 8
+                                                : 6,
+                                        interval:
+                                            snapshot.data![index].interval,
+                                        algorithm:
+                                            snapshot.data![index].algorithm)
+                                    .now()));
+                            // Show snackbar
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context)
+                                  .hideCurrentSnackBar();
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text(context.loc.copied_to_clipboard),
+                                duration: const Duration(seconds: 1),
+                              ));
+                            }
+                          },
+                          onLongPress: editMode
+                              ? null
+                              : () async {
+                                  // Show menu to delete
+                                  /*showPlatformDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: Text(context.loc.home_delete_confirm(
+                                    snapshot.data![index].service)),
+                                content: Text(context.loc
+                                    .home_delete_confirm_description(
+                                        snapshot.data![index].service)),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text(
+                                        context.loc.home_delete_confirm_no),
+                                  ),
+                                  TextButton(
+                                    onPressed: () async {
+                                      // Delete key
+                                      var keys =
+                                          await KeyManagement().getSavedKeys();
+                                      setState(() {
+                                        keys.removeAt(index);
+                                      });
+                                      await KeyManagement().saveKeys(keys);
+                                      if (context.mounted)
+                                        Navigator.of(context).pop();
+                                    },
+                                    child: Text(
+                                        context.loc.home_delete_confirm_yes),
+                                  ),
+                                ],
+                              ),
+                            );*/
+                                },
                           child: Card(
                             color: snapshot.data![index].color,
                             child: Center(
-                              child: InkWell(
-                                onTap: () async {
-                                  await Clipboard.setData(ClipboardData(
-                                      text: TOTP(
-                                              secret: snapshot.data![index].key,
-                                              digits: snapshot.data![index].eightDigits ? 8 : 6,
-                                              interval: snapshot.data![index].interval,
-                                              algorithm: snapshot.data![index].algorithm)
-                                          .now()));
-                                  // Show snackbar
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                      content: Text(context.loc.copied_to_clipboard),
-                                      duration: const Duration(seconds: 1),
-                                    ));
-                                  }
-                                },
-                                onLongPress: () {
-                                  // Show menu to delete
-                                  showPlatformDialog(
-                                    context: context,
-                                    builder: (_) => AlertDialog(
-                                      title: Text(context.loc.home_delete_confirm(snapshot.data![index].service)),
-                                      content: Text(context.loc.home_delete_confirm_description(snapshot.data![index].service)),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: Text(context.loc.home_delete_confirm_no),
-                                        ),
-                                        TextButton(
-                                          onPressed: () async {
-                                            // Delete key
-                                            var keys = await KeyManagement().getSavedKeys();
-                                            setState(() {
-                                              keys.removeAt(index);
-                                            });
-                                            await KeyManagement().saveKeys(keys);
-                                            if (context.mounted) Navigator.of(context).pop();
-                                          },
-                                          child: Text(context.loc.home_delete_confirm_yes),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                                child: OTPListTile(snapshot.data![index], color, index),
-                              ),
-                            ),
+                                child: OTPListTile(snapshot.data![index], color,
+                                    index, editMode)),
                           ));
                     },
                     onReorder: (int oldIndex, int newIndex) {
+                      if (!editMode) {
+                        return;
+                      }
                       setState(() {
-                        final KeyStruct item = snapshot.data!.removeAt(oldIndex);
+                        final KeyStruct item =
+                            snapshot.data!.removeAt(oldIndex);
                         snapshot.data!.insert(newIndex, item);
                       });
                       KeyManagement().saveKeys(snapshot.data!);

@@ -455,10 +455,12 @@ class _AddServiceState extends State<AddService> {
                       onPressed: () async {
                         // Check if service name and key are not empty
                         if (keyStruct.value.service == "" || keyStruct.value.key == "") {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.service_empty_error)));
                           return;
                         }
                         if (!KeyManagement().isValidBase32(keyStruct.value.key)) {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.service_invalid_key)));
                           return;
                         }

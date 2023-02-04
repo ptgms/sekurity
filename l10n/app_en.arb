@@ -1,6 +1,8 @@
 {
     "app_name": "Sekurity",
 
+    "edit": "Toggle Edit",
+    "editing": "Editing",
     "home_clear": "Clear all keys",
     "home_settings": "Settings",
     "home_about": "About",
@@ -79,6 +81,13 @@
     "import_export_export_qr": "Export as QR Code",
     "import_export_import": "Import",
     "import_export_password_empty": "Password can't be empty!",
+
+    "import_export_import_success": "Imported keys successfully! Restart the app to see them.",
+    "import_export_import_success_restart": "Restart",
+    "import_export_import_error": "Error importing keys!",
+
+    "import_export_export_success": "Exported keys successfully!",
+    "import_export_export_error": "Error exporting keys!",
 
     "import_export_no_keys": "You have no keys to export!",
 

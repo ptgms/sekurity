@@ -1,6 +1,8 @@
 {
     "app_name": "Sekurity",
 
+    "edit": "Bearbeiten",
+    "editing": "Am Bearbeiten",
     "home_clear": "Alle Schlüssel löschen",
     "home_settings": "Einstellungen",
     "home_about": "Über",
@@ -46,6 +48,7 @@
     "service_more_options": "Weitere Optionen",
     "service_digits": "Zahlen",
     "service_algorithm": "Algorithmus",
+    "service_interval": "Interval",
 
     "service_empty_error": "Service Name und Schlüssel können nicht leer sein!",
     "service_invalid_key": "Nicht valider Schlüssel angegeben!",
@@ -78,6 +81,13 @@
     "import_export_import": "Importieren",
     "import_export_export_qr": "Als QR Code exportieren",
     "import_export_password_empty": "Passwort kann nicht leer sein!",
+
+    "import_export_import_success": "Schlüssel erfolgreich importiert! Starte die App neu um die Änderungen zu übernehmen.",
+    "import_export_import_success_restart": "Neustarten",
+    "import_export_import_error": "Fehler beim Importieren der Schlüssel!",
+
+    "import_export_export_success": "Schlüssel erfolgreich exportiert!",
+    "import_export_export_error": "Fehler beim Exportieren der Schlüssel!",
 
     "import_export_no_keys": "You have no keys to export!",
 

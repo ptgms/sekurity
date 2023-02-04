@@ -149,7 +149,7 @@ class KeyManagement {
   Future<QrImage> parseTransferQR() async {
     developer.log("Transfering!");
     var keys = await getSavedKeys();
-    var encodedKeys = parseTransferURL(keys);
+    var encodedKeys = await parseTransferURL(keys);
     var url = "otpauth-migration://offline?$encodedKeys";
 
     // generate QR code from url
@@ -355,7 +355,13 @@ class KeyManagement {
   }
 
   Future<bool> getDecryptedJson(String password) async {
-    var filePath = await FilePicker.platform.pickFiles(dialogTitle: "Select encrypted file", type: FileType.custom, allowedExtensions: ["keys"]);
+    // On mobile filetypes are not supported
+    FilePickerResult? filePath;
+    if (isPlatformMobile()) {
+      filePath = await FilePicker.platform.pickFiles(dialogTitle: "Select encrypted file");
+    } else {
+      filePath = await FilePicker.platform.pickFiles(dialogTitle: "Select encrypted file", type: FileType.custom, allowedExtensions: ["keys"]);
+    }
 
     if (filePath == null) {
       return false;
