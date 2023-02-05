@@ -8,6 +8,7 @@ import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/platformtools.dart';
 import 'package:sekurity/tools/structtools.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vibration/vibration.dart';
 
 import 'main.dart';
 
@@ -221,7 +222,39 @@ class _HomePageState extends State<HomePage> {
                 break;
               case 3:
                 // Show about dialog
-                showDialog(
+                showAboutDialog(context: context, applicationIcon: Icon(Icons.person), applicationName: "Sekurity", children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Text(context.loc.home_about_description),
+                        Row(
+                        children: [
+                          // 2 Image buttons
+                          Expanded(
+                            child: TextButton(
+                              child: const Text("ptgms"),
+                              onPressed: () async {
+                                await launchUrl(
+                                    Uri.parse(""));
+                              },
+                            ),
+                          ),
+                          Expanded(
+                            child: TextButton(
+                              child: const Text("SphericalKat"),
+                              onPressed: () async {
+                                await launchUrl(
+                                    Uri.parse(""));
+                              },
+                            ),
+                          ),
+                        ],
+                      ),]
+                    ),
+                  ),
+                ]);
+                /*showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
                     title: Text(context.loc.home_about),
@@ -249,7 +282,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                );
+                );*/
                 break;
             }
           },
@@ -327,41 +360,13 @@ class _HomePageState extends State<HomePage> {
                           onLongPress: editMode
                               ? null
                               : () async {
-                                  // Show menu to delete
-                                  /*showPlatformDialog(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                title: Text(context.loc.home_delete_confirm(
-                                    snapshot.data![index].service)),
-                                content: Text(context.loc
-                                    .home_delete_confirm_description(
-                                        snapshot.data![index].service)),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text(
-                                        context.loc.home_delete_confirm_no),
-                                  ),
-                                  TextButton(
-                                    onPressed: () async {
-                                      // Delete key
-                                      var keys =
-                                          await KeyManagement().getSavedKeys();
-                                      setState(() {
-                                        keys.removeAt(index);
-                                      });
-                                      await KeyManagement().saveKeys(keys);
-                                      if (context.mounted)
-                                        Navigator.of(context).pop();
-                                    },
-                                    child: Text(
-                                        context.loc.home_delete_confirm_yes),
-                                  ),
-                                ],
-                              ),
-                            );*/
+                                  // Vibrate
+                                  if (isPlatformMobile() && (await Vibration.hasVibrator()??false)) {
+                                    Vibration.vibrate(duration: 50);
+                                  }
+                                  setState(() {
+                                    editMode = true;                                    
+                                  });
                                 },
                           child: Card(
                             color: snapshot.data![index].color,

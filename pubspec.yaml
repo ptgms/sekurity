@@ -62,6 +62,7 @@ dependencies:
   fixnum: ^1.0.1
   qr_flutter: ^4.0.0
   reorderable_grid: ^1.0.5
+  vibration: ^1.7.6
 
 dev_dependencies:
   flutter_test:

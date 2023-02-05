@@ -47,7 +47,6 @@ class _SettingsState extends State<Settings> {
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          (isPlatformMacos()) ? const SizedBox(width: 40) : Container(),
           IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {

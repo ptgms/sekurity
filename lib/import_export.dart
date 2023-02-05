@@ -22,7 +22,6 @@ class _ImportExportState extends State<ImportExport> {
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          (isPlatformMacos()) ? const SizedBox(width: 40) : Container(),
           IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
