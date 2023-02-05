@@ -121,14 +121,12 @@ class _HomePageState extends State<HomePage> {
                       algorithm: key.algorithm)
                   .now();
               return key.eightDigits
-                  ? Text(
-                      "${authCode.substring(0, 4)} ${authCode.substring(4)}",
+                  ? Text("${authCode.substring(0, 4)} ${authCode.substring(4)}",
                       style: TextStyle(
                           fontSize: 20,
                           color: color,
                           fontWeight: FontWeight.bold))
-                  : Text(
-                      "${authCode.substring(0, 3)} ${authCode.substring(3)}",
+                  : Text("${authCode.substring(0, 3)} ${authCode.substring(3)}",
                       style: TextStyle(
                           fontSize: 20,
                           color: color,
@@ -222,67 +220,39 @@ class _HomePageState extends State<HomePage> {
                 break;
               case 3:
                 // Show about dialog
-                showAboutDialog(context: context, applicationIcon: Icon(Icons.person), applicationName: "Sekurity", children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Text(context.loc.home_about_description),
-                        Row(
-                        children: [
-                          // 2 Image buttons
-                          Expanded(
-                            child: TextButton(
-                              child: const Text("ptgms"),
-                              onPressed: () async {
-                                await launchUrl(
-                                    Uri.parse(""));
-                              },
-                            ),
+                showAboutDialog(
+                    context: context,
+                    applicationIcon: const Icon(Icons.person),
+                    applicationName: "Sekurity",
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(children: [
+                          Text(context.loc.home_about_description),
+                          Row(
+                            children: [
+                              // 2 Image buttons
+                              Expanded(
+                                child: TextButton(
+                                  child: const Text("ptgms"),
+                                  onPressed: () async {
+                                    await launchUrl(Uri.parse(""));
+                                  },
+                                ),
+                              ),
+                              Expanded(
+                                child: TextButton(
+                                  child: const Text("SphericalKat"),
+                                  onPressed: () async {
+                                    await launchUrl(Uri.parse(""));
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                          Expanded(
-                            child: TextButton(
-                              child: const Text("SphericalKat"),
-                              onPressed: () async {
-                                await launchUrl(
-                                    Uri.parse(""));
-                              },
-                            ),
-                          ),
-                        ],
-                      ),]
-                    ),
-                  ),
-                ]);
-                /*showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: Text(context.loc.home_about),
-                    content: Text(context.loc.home_about_description),
-                    actions: [
-                      TextButton(
-                        child: const Text("ptgms"),
-                        onPressed: () async {
-                          await launchUrl(
-                              Uri.parse("https://github.com/ptgms"));
-                        },
+                        ]),
                       ),
-                      TextButton(
-                        child: const Text("SphericalKat"),
-                        onPressed: () async {
-                          await launchUrl(
-                              Uri.parse("https://github.com/SphericalKat"));
-                        },
-                      ),
-                      TextButton(
-                        child: Text(context.loc.dialog_close),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  ),
-                );*/
+                    ]);
                 break;
             }
           },
@@ -320,73 +290,8 @@ class _HomePageState extends State<HomePage> {
               child: ValueListenableBuilder(
                 valueListenable: KeyManagement().version,
                 builder: (context, value, child) {
-                  return ReorderableGridView.builder(
-                    //scrollDirection: Axis.vertical,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: count,
-                      //crossAxisSpacing: 8,
-                      childAspectRatio: (widthCard / heightCard),
-                    ),
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      var color = StructTools()
-                          .getTextColor(snapshot.data![index].color);
-                      return GestureDetector(
-                          key: ValueKey(snapshot.data![index].key),
-                          onTap: () async {
-                            await Clipboard.setData(ClipboardData(
-                                text: TOTP(
-                                        secret: snapshot.data![index].key,
-                                        digits:
-                                            snapshot.data![index].eightDigits
-                                                ? 8
-                                                : 6,
-                                        interval:
-                                            snapshot.data![index].interval,
-                                        algorithm:
-                                            snapshot.data![index].algorithm)
-                                    .now()));
-                            // Show snackbar
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context)
-                                  .hideCurrentSnackBar();
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: Text(context.loc.copied_to_clipboard),
-                                duration: const Duration(seconds: 1),
-                              ));
-                            }
-                          },
-                          onLongPress: editMode
-                              ? null
-                              : () async {
-                                  // Vibrate
-                                  if (isPlatformMobile() && (await Vibration.hasVibrator()??false)) {
-                                    Vibration.vibrate(duration: 50);
-                                  }
-                                  setState(() {
-                                    editMode = true;                                    
-                                  });
-                                },
-                          child: Card(
-                            color: snapshot.data![index].color,
-                            child: Center(
-                                child: OTPListTile(snapshot.data![index], color,
-                                    index, editMode)),
-                          ));
-                    },
-                    onReorder: (int oldIndex, int newIndex) {
-                      if (!editMode) {
-                        return;
-                      }
-                      setState(() {
-                        final KeyStruct item =
-                            snapshot.data!.removeAt(oldIndex);
-                        snapshot.data!.insert(newIndex, item);
-                      });
-                      KeyManagement().saveKeys(snapshot.data!);
-                    },
-                  );
+                  return gridViewBuilder(
+                      count, widthCard, heightCard, snapshot);
                 },
               ),
             );
@@ -398,12 +303,93 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         mini: (isPlatformMacos() || isPlatformWindows() || isPlatformLinux()),
         onPressed: () {
-          currentScreen = 1;
-          Navigator.pushNamed(context, "/addService");
+          if (!editMode) {
+            currentScreen = 1;
+            Navigator.pushNamed(context, "/addService");
+          } else {
+            setState(() {
+              editMode = false;
+            });
+          }
         },
-        tooltip: context.loc.add_service_name,
-        child: const Icon(Icons.add),
+        tooltip: editMode ? context.loc.edit : context.loc.add_service_name,
+        child: editMode ? const Icon(Icons.done) : const Icon(Icons.add),
       ),
+    );
+  }
+
+  ReorderableGridView gridViewBuilder(int count, int widthCard, int heightCard,
+      AsyncSnapshot<List<KeyStruct>> snapshot) {
+    return ReorderableGridView.builder(
+      //scrollDirection: Axis.vertical,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: count,
+        //crossAxisSpacing: 8,
+        childAspectRatio: (widthCard / heightCard),
+      ),
+      itemCount: snapshot.data!.length,
+      itemBuilder: (BuildContext context, int index) {
+        var color = StructTools().getTextColor(snapshot.data![index].color);
+        return GestureDetector(
+            key: ValueKey(snapshot.data![index].key),
+            onTap: editMode
+                ? () async {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(context.loc.home_edit_info),
+                        duration: const Duration(seconds: 1),
+                      ));
+                    }
+                  }
+                : () async {
+                    await Clipboard.setData(ClipboardData(
+                        text: TOTP(
+                                secret: snapshot.data![index].key,
+                                digits:
+                                    snapshot.data![index].eightDigits ? 8 : 6,
+                                interval: snapshot.data![index].interval,
+                                algorithm: snapshot.data![index].algorithm)
+                            .now()));
+                    // Show snackbar
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(context.loc.copied_to_clipboard),
+                        duration: const Duration(seconds: 1),
+                      ));
+                    }
+                  },
+            onDoubleTap: editMode ? () async {} : null,
+            onLongPress: editMode
+                ? null
+                : () async {
+                    // Vibrate
+                    if (isPlatformMobile() &&
+                        (await Vibration.hasVibrator() ?? false)) {
+                      Vibration.vibrate(duration: 50);
+                    }
+                    setState(() {
+                      editMode = true;
+                    });
+                  },
+            child: Card(
+              color: snapshot.data![index].color,
+              child: Center(
+                  child: OTPListTile(
+                      snapshot.data![index], color, index, editMode)),
+            ));
+      },
+      onReorder: (int oldIndex, int newIndex) {
+        if (!editMode) {
+          return;
+        }
+        setState(() {
+          final KeyStruct item = snapshot.data!.removeAt(oldIndex);
+          snapshot.data!.insert(newIndex, item);
+        });
+        KeyManagement().saveKeys(snapshot.data!);
+      },
     );
   }
 }

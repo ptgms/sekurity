@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sekurity/editService.dart';
 import 'package:sekurity/homescreen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sekurity/import_export.dart';
@@ -76,6 +77,7 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
             '/addService': (BuildContext context) => const AddService(),
             '/settings': (BuildContext context) => const Settings(),
             '/importExport': (BuildContext context) => const ImportExport(),
+            '/editService': (BuildContext context) => const EditService(),
           },
           themeMode: (mode == 0)
               ? ThemeMode.system
@@ -83,7 +85,7 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
                   ? ThemeMode.light
                   : ThemeMode.dark,
           theme: ThemeData(
-            primarySwatch: Colors.blue,
+            //primarySwatch: Colors.blue,
             useMaterial3: true,
           ),
           darkTheme: ThemeData.dark(

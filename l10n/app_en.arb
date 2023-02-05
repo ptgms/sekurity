@@ -31,10 +31,17 @@
         }
     },
 
+    "home_context_menu_copy": "Copy",
+    "home_context_menu_edit": "Edit",
+    "home_context_menu_delete": "Delete",
+
+    "home_edit_info": "Double tap to edit.",
+
     "home_delete_confirm_yes": "Delete",
     "home_delete_confirm_no": "Cancel",
 
     "add_service_name": "Add Service",
+    "edit_service_name": "Edit Service",
     "service_manual": "Add Service Manually",
 
     "service_icon": "Set Service Icon",
