@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dart_dash_otp/dart_dash_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/platformtools.dart';
@@ -57,7 +56,7 @@ class _HomePageState extends State<HomePage> {
           ? IconButton(
               icon: Icon(Icons.delete, size: 30.0, color: color),
               onPressed: () {
-                showPlatformDialog(
+                showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
                     title: Text(context.loc.home_delete_confirm(key.service)),
@@ -121,13 +120,13 @@ class _HomePageState extends State<HomePage> {
                       algorithm: key.algorithm)
                   .now();
               return key.eightDigits
-                  ? PlatformText(
+                  ? Text(
                       "${authCode.substring(0, 4)} ${authCode.substring(4)}",
                       style: TextStyle(
                           fontSize: 20,
                           color: color,
                           fontWeight: FontWeight.bold))
-                  : PlatformText(
+                  : Text(
                       "${authCode.substring(0, 3)} ${authCode.substring(3)}",
                       style: TextStyle(
                           fontSize: 20,
@@ -185,9 +184,9 @@ class _HomePageState extends State<HomePage> {
       }
     });
 
-    var appBar = PlatformAppBar(
+    var appBar = AppBar(
       title: editMode ? Text(context.loc.editing) : Text(widget.title),
-      trailingActions: [
+      actions: [
         // 3 dots menu
         PopupMenuButton(
           itemBuilder: (BuildContext context) {
@@ -222,27 +221,27 @@ class _HomePageState extends State<HomePage> {
                 break;
               case 3:
                 // Show about dialog
-                showPlatformDialog(
+                showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
                     title: Text(context.loc.home_about),
                     content: Text(context.loc.home_about_description),
                     actions: [
-                      PlatformDialogAction(
+                      TextButton(
                         child: const Text("ptgms"),
                         onPressed: () async {
                           await launchUrl(
                               Uri.parse("https://github.com/ptgms"));
                         },
                       ),
-                      PlatformDialogAction(
+                      TextButton(
                         child: const Text("SphericalKat"),
                         onPressed: () async {
                           await launchUrl(
                               Uri.parse("https://github.com/SphericalKat"));
                         },
                       ),
-                      PlatformDialogAction(
+                      TextButton(
                         child: Text(context.loc.dialog_close),
                         onPressed: () {
                           Navigator.of(context).pop();
@@ -273,12 +272,7 @@ class _HomePageState extends State<HomePage> {
 
     updateProgress();
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(50),
-        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos())
-            ? appBar
-            : appBar,
-      ),
+      appBar: appBar,
       body: FutureBuilder(
         future: KeyManagement().getSavedKeys(),
         builder:
@@ -392,7 +386,7 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           } else {
-            return Center(child: PlatformCircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
         },
       ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/platformtools.dart';
@@ -44,13 +43,13 @@ class _SettingsState extends State<Settings> {
 
     GlobalKey _dropdownTheme = GlobalKey();
 
-    var appBar = PlatformAppBar(
+    var appBar = AppBar(
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           (isPlatformMacos()) ? const SizedBox(width: 40) : Container(),
-          PlatformIconButton(
-            icon: Icon(PlatformIcons(context).back),
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
             onPressed: () {
               Navigator.of(context).pop();
               currentScreen = 0;
@@ -66,10 +65,7 @@ class _SettingsState extends State<Settings> {
     if (platform == DevicePlatform.web || platform == DevicePlatform.windows) platform = DevicePlatform.android;
 
     return Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? appBar : appBar,
-        ),
+        appBar: appBar,
         body: SettingsList(
           platform: platform,
           sections: [

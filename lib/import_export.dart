@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/platformtools.dart';
 
@@ -19,13 +18,13 @@ class _ImportExportState extends State<ImportExport> {
   Widget build(BuildContext context) {
     String password = "";
 
-    var appBar = PlatformAppBar(
+    var appBar = AppBar(
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           (isPlatformMacos()) ? const SizedBox(width: 40) : Container(),
-          PlatformIconButton(
-            icon: Icon(PlatformIcons(context).back),
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
             onPressed: () {
               Navigator.of(context).pop();
               currentScreen = 0;
@@ -37,10 +36,7 @@ class _ImportExportState extends State<ImportExport> {
     );
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(50),
-        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? appBar : appBar,
-      ),
+      appBar: appBar,
       body: ListView(children: [
         ListTile(
           title: Text(context.loc.import_export_description),
@@ -110,7 +106,7 @@ class _ImportExportState extends State<ImportExport> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: PlatformTextButton(
+                child: TextButton(
                   child: Text(context.loc.import_export_import),
                   onPressed: () async {
                     if (password == "") {
@@ -137,7 +133,7 @@ class _ImportExportState extends State<ImportExport> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: PlatformTextButton(
+                child: TextButton(
                   child: Text(context.loc.import_export_export),
                   onPressed: () async {
                     if ((await KeyManagement().getSavedKeys()).isEmpty) {
@@ -173,7 +169,7 @@ class _ImportExportState extends State<ImportExport> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: PlatformTextButton(
+                child: TextButton(
                   child: Text(context.loc.import_export_export_qr),
                   onPressed: () async {
                     if ((await KeyManagement().getSavedKeys()).isEmpty) {

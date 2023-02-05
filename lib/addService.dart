@@ -6,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:sekurity/main.dart';
@@ -40,13 +39,13 @@ class _AddServiceState extends State<AddService> {
       }
     });
 
-    var appBar = PlatformAppBar(
+    var appBar = AppBar(
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           (isPlatformMacos()) ? const SizedBox(width: 40) : Container(),
-          PlatformIconButton(
-            icon: Icon(PlatformIcons(context).back),
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
             onPressed: () {
               Navigator.of(context).pop();
               currentScreen = 0;
@@ -58,10 +57,7 @@ class _AddServiceState extends State<AddService> {
     );
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(50),
-        child: (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()) ? appBar : appBar,
-      ),
+      appBar: appBar,
       body: (isManual || (isPlatformWindows() || isPlatformLinux() || isPlatformMacos())) ? manualMode(context) : mobileView(context),
     );
   }
@@ -100,7 +96,7 @@ class _AddServiceState extends State<AddService> {
           Row(
             children: [
               Expanded(
-                child: PlatformTextButton(
+                child: TextButton(
                   onPressed: () {
                     setState(() {
                       isManual = true;
@@ -230,7 +226,7 @@ class _AddServiceState extends State<AddService> {
                                     ),
                                   ),
                                   actions: [
-                                    PlatformTextButton(
+                                    TextButton(
                                       onPressed: () {
                                         currentScreen = 0;
                                         Navigator.of(context).pop();
@@ -451,7 +447,7 @@ class _AddServiceState extends State<AddService> {
               Row(
                 children: [
                   Expanded(
-                    child: PlatformTextButton(
+                    child: TextButton(
                       onPressed: () async {
                         // Check if service name and key are not empty
                         if (keyStruct.value.service == "" || keyStruct.value.key == "") {
@@ -477,7 +473,7 @@ class _AddServiceState extends State<AddService> {
                   ),
                   !(isPlatformWindows() || isPlatformLinux() || isPlatformMacos())
                       ? Expanded(
-                          child: PlatformTextButton(
+                          child: TextButton(
                             onPressed: () {
                               setState(() {
                                 isManual = false;

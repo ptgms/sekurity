@@ -41,7 +41,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_secure_storage: ^7.0.1
   async_redux: ^18.0.2
-  flutter_platform_widgets: ^2.2.6
+  # flutter_platform_widgets: ^2.2.6
   window_size:
     git:
       url: https://github.com/google/flutter-desktop-embedding
