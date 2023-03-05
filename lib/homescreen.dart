@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:dart_dash_otp/dart_dash_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/platformtools.dart';
 import 'package:sekurity/tools/structtools.dart';
+import 'package:system_tray/system_tray.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vibration/vibration.dart';
 
@@ -21,8 +23,68 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  ValueNotifier<List<double>> progress =
-      ValueNotifier(List<double>.filled(0, 0));
+  ValueNotifier<List<double>> progress = ValueNotifier(List<double>.filled(0, 0));
+
+  Future<void> hideWindow() async {
+    const storage = FlutterSecureStorage();
+    AppWindow().hide();
+    storage.write(key: "hidden", value: "true");
+  }
+
+  Future<void> showWindow() async {
+    const storage = FlutterSecureStorage();
+    AppWindow().show();
+    storage.write(key: "hidden", value: "false");
+  }
+
+  Future<void> initSystemTray() async {
+    String path = isPlatformWindows() ? 'assets/app_icon.ico' : 'assets/app_icon.png';
+
+    final AppWindow appWindow = AppWindow();
+    final SystemTray systemTray = SystemTray();
+
+    // We first init the systray menu
+    await systemTray.initSystemTray(
+      iconPath: path,
+      title: 'Sekurity',
+    );
+
+    var keys = await KeyManagement().getSavedKeys();
+
+    // create context menu
+    final Menu menu = Menu();
+    await menu.buildFrom([
+      MenuItemLabel(label: 'Show', onClicked: (menuItem) => showWindow()),
+      MenuItemLabel(label: 'Hide', onClicked: (menuItem) => hideWindow()),
+      MenuSeparator(),
+      // Add all the services to the context menu
+      MenuItemLabel(label: "Copy OTP for:", enabled: false),
+      for (var i = 0; i < keys.length; i++)
+        MenuItemLabel(
+          label: keys[i].service,
+          onClicked: (menuItem) async {
+            var key = keys[i];
+            var otp = TOTP(secret: key.key, digits: key.eightDigits ? 8 : 6, interval: key.interval, algorithm: key.algorithm).now();
+            Clipboard.setData(ClipboardData(text: otp));
+          },
+        ),
+      MenuSeparator(),
+      MenuItemLabel(label: 'Quit', onClicked: (menuItem) => exitApp())
+    ]);
+
+    // set context menu
+    await systemTray.setContextMenu(menu);
+
+    // handle system tray event
+    systemTray.registerSystemTrayEventHandler((eventName) {
+      debugPrint("eventName: $eventName");
+      if (eventName == kSystemTrayEventClick) {
+        isPlatformWindows() ? appWindow.show() : systemTray.popUpContextMenu();
+      } else if (eventName == kSystemTrayEventRightClick) {
+        isPlatformWindows() ? systemTray.popUpContextMenu() : appWindow.show();
+      }
+    });
+  }
 
   void updateProgress() {
     Future.delayed(const Duration(milliseconds: 100), () async {
@@ -40,10 +102,7 @@ class _HomePageState extends State<HomePage> {
       var newProg = List<double>.filled(keys.length, 0);
 
       for (var i = 0; i < keys.length; i++) {
-        newProg[i] = 1 -
-            ((DateTime.now().millisecondsSinceEpoch %
-                    (keys[i].interval * 1000)) /
-                (keys[i].interval * 1000));
+        newProg[i] = 1 - ((DateTime.now().millisecondsSinceEpoch % (keys[i].interval * 1000)) / (keys[i].interval * 1000));
       }
 
       progress.value = newProg;
@@ -61,8 +120,7 @@ class _HomePageState extends State<HomePage> {
                   context: context,
                   builder: (_) => AlertDialog(
                     title: Text(context.loc.home_delete_confirm(key.service)),
-                    content: Text(context.loc
-                        .home_delete_confirm_description(key.service)),
+                    content: Text(context.loc.home_delete_confirm_description(key.service)),
                     actions: [
                       TextButton(
                         onPressed: () {
@@ -95,42 +153,19 @@ class _HomePageState extends State<HomePage> {
                   size: 32.0,
                   color: color,
                 )
-              : SizedBox(
-                  height: 32.0,
-                  width: 32.0,
-                  child: Image.memory(base64Decode(key.iconBase64))),
-      title: Text(key.service,
-          style: TextStyle(
-              color: color, fontWeight: bold ? FontWeight.bold : null)),
-      subtitle: (key.description != "")
-          ? Text(key.description,
-              style: TextStyle(
-                  color: color,
-                  fontSize: 12.0,
-                  fontWeight: bold ? FontWeight.bold : null))
-          : null,
+              : SizedBox(height: 32.0, width: 32.0, child: Image.memory(base64Decode(key.iconBase64))),
+      title: Text(key.service, style: TextStyle(color: color, fontWeight: bold ? FontWeight.bold : null)),
+      subtitle:
+          (key.description != "") ? Text(key.description, style: TextStyle(color: color, fontSize: 12.0, fontWeight: bold ? FontWeight.bold : null)) : null,
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         // Add space in middle of code
         ValueListenableBuilder(
             valueListenable: progress,
             builder: (context, value, child) {
-              var authCode = TOTP(
-                      secret: key.key,
-                      digits: key.eightDigits ? 8 : 6,
-                      interval: key.interval,
-                      algorithm: key.algorithm)
-                  .now();
+              var authCode = TOTP(secret: key.key, digits: key.eightDigits ? 8 : 6, interval: key.interval, algorithm: key.algorithm).now();
               return key.eightDigits
-                  ? Text("${authCode.substring(0, 4)} ${authCode.substring(4)}",
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: color,
-                          fontWeight: FontWeight.bold))
-                  : Text("${authCode.substring(0, 3)} ${authCode.substring(3)}",
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: color,
-                          fontWeight: FontWeight.bold));
+                  ? Text("${authCode.substring(0, 4)} ${authCode.substring(4)}", style: TextStyle(fontSize: 20, color: color, fontWeight: FontWeight.bold))
+                  : Text("${authCode.substring(0, 3)} ${authCode.substring(3)}", style: TextStyle(fontSize: 20, color: color, fontWeight: FontWeight.bold));
             }),
         // Progress bar of time left before code changes and update it automatically
         SizedBox(
@@ -160,6 +195,13 @@ class _HomePageState extends State<HomePage> {
   var editMode = false;
 
   @override
+  void initState() {
+    super.initState();
+    //updateProgress();
+    initSystemTray();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Keyboard shortcuts
     RawKeyboard.instance.addListener((RawKeyEvent event) {
@@ -173,8 +215,7 @@ class _HomePageState extends State<HomePage> {
       }
 
       // Ctrl + S or Cmd + , on macOS = Settings
-      if ((event.isControlPressed && event.logicalKey.keyId == 0x73) ||
-          (event.isMetaPressed && event.logicalKey.keyId == 0x2c)) {
+      if ((event.isControlPressed && event.logicalKey.keyId == 0x73) || (event.isMetaPressed && event.logicalKey.keyId == 0x2c)) {
         // Only navigate if current screen is home
         if (currentScreen == 0) {
           currentScreen = 2;
@@ -195,8 +236,7 @@ class _HomePageState extends State<HomePage> {
                 value: 1,
                 child: Text(context.loc.home_settings),
               ),
-              PopupMenuItem(
-                  value: 2, child: Text(context.loc.home_import_export)),
+              PopupMenuItem(value: 2, child: Text(context.loc.home_import_export)),
               PopupMenuItem(
                 value: 3,
                 child: Text(context.loc.home_about),
@@ -220,39 +260,35 @@ class _HomePageState extends State<HomePage> {
                 break;
               case 3:
                 // Show about dialog
-                showAboutDialog(
-                    context: context,
-                    applicationIcon: const Icon(Icons.person),
-                    applicationName: "Sekurity",
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(children: [
-                          Text(context.loc.home_about_description),
-                          Row(
-                            children: [
-                              // 2 Image buttons
-                              Expanded(
-                                child: TextButton(
-                                  child: const Text("ptgms"),
-                                  onPressed: () async {
-                                    await launchUrl(Uri.parse(""));
-                                  },
-                                ),
-                              ),
-                              Expanded(
-                                child: TextButton(
-                                  child: const Text("SphericalKat"),
-                                  onPressed: () async {
-                                    await launchUrl(Uri.parse(""));
-                                  },
-                                ),
-                              ),
-                            ],
+                showAboutDialog(context: context, applicationIcon: const Icon(Icons.person), applicationName: "Sekurity", children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(children: [
+                      Text(context.loc.home_about_description),
+                      Row(
+                        children: [
+                          // 2 Image buttons
+                          Expanded(
+                            child: TextButton(
+                              child: const Text("ptgms"),
+                              onPressed: () async {
+                                await launchUrl(Uri.parse(""));
+                              },
+                            ),
                           ),
-                        ]),
+                          Expanded(
+                            child: TextButton(
+                              child: const Text("SphericalKat"),
+                              onPressed: () async {
+                                await launchUrl(Uri.parse(""));
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                    ]);
+                    ]),
+                  ),
+                ]);
                 break;
             }
           },
@@ -278,8 +314,7 @@ class _HomePageState extends State<HomePage> {
       appBar: appBar,
       body: FutureBuilder(
         future: KeyManagement().getSavedKeys(),
-        builder:
-            (BuildContext context, AsyncSnapshot<List<KeyStruct>> snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<List<KeyStruct>> snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data!.isEmpty) {
               return Center(child: Text(context.loc.home_no_keys));
@@ -290,8 +325,7 @@ class _HomePageState extends State<HomePage> {
               child: ValueListenableBuilder(
                 valueListenable: KeyManagement().version,
                 builder: (context, value, child) {
-                  return gridViewBuilder(
-                      count, widthCard, heightCard, snapshot);
+                  return gridViewBuilder(count, widthCard, heightCard, snapshot);
                 },
               ),
             );
@@ -318,8 +352,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  ReorderableGridView gridViewBuilder(int count, int widthCard, int heightCard,
-      AsyncSnapshot<List<KeyStruct>> snapshot) {
+  ReorderableGridView gridViewBuilder(int count, int widthCard, int heightCard, AsyncSnapshot<List<KeyStruct>> snapshot) {
     return ReorderableGridView.builder(
       //scrollDirection: Axis.vertical,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -346,8 +379,7 @@ class _HomePageState extends State<HomePage> {
                     await Clipboard.setData(ClipboardData(
                         text: TOTP(
                                 secret: snapshot.data![index].key,
-                                digits:
-                                    snapshot.data![index].eightDigits ? 8 : 6,
+                                digits: snapshot.data![index].eightDigits ? 8 : 6,
                                 interval: snapshot.data![index].interval,
                                 algorithm: snapshot.data![index].algorithm)
                             .now()));
@@ -365,8 +397,7 @@ class _HomePageState extends State<HomePage> {
                 ? null
                 : () async {
                     // Vibrate
-                    if (isPlatformMobile() &&
-                        (await Vibration.hasVibrator() ?? false)) {
+                    if (isPlatformMobile() && (await Vibration.hasVibrator() ?? false)) {
                       Vibration.vibrate(duration: 50);
                     }
                     setState(() {
@@ -375,9 +406,7 @@ class _HomePageState extends State<HomePage> {
                   },
             child: Card(
               color: snapshot.data![index].color,
-              child: Center(
-                  child: OTPListTile(
-                      snapshot.data![index], color, index, editMode)),
+              child: Center(child: OTPListTile(snapshot.data![index], color, index, editMode)),
             ));
       },
       onReorder: (int oldIndex, int newIndex) {

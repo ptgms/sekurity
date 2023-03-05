@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'dart:developer' as developer;
-
-import 'package:image/image.dart' as ImageModule;
+import 'package:image/image.dart' as image_module;
 
 class StructTools {
   Color getTextColor(Color backgroundColor) {
@@ -20,22 +18,32 @@ class StructTools {
     return Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
   }
 
-  Future<String> cropAndResizeImage(String base64Image) async {
-    // Decode base64 image to Image object
-    final image = ImageModule.decodeImage(base64Decode(base64Image))!;
+  String cropAndResizeImage(String base64Image) {
+    // Decode the base64 image into bytes
+    Uint8List bytes = base64.decode(base64Image);
 
-    // Crop image to 64x64 (fit width and center)
-    final cropWidth = min(image.width, 64);
-    final cropHeight = min(image.height, 64);
-    final cropX = (image.width - cropWidth) ~/ 2;
-    final cropY = (image.height - cropHeight) ~/ 2;
-    final croppedImage = ImageModule.copyCrop(image, x: cropX, y: cropY, width: cropWidth, height: cropHeight);
+    // Decode the image bytes into an Image object using the image package
+    image_module.Image? image = image_module.decodeImage(bytes);
 
-    // Encode cropped image to base64
-    final base64CroppedImage = base64Encode(croppedImage.getBytes());
+    // Calculate the crop dimensions while preserving aspect ratio
+    int width = image!.width;
+    int height = image.height;
+    double ratio = width / height;
+    int cropSize = ratio >= 1 ? height : width;
+    int x = (width - cropSize) ~/ 2;
+    int y = (height - cropSize) ~/ 2;
 
-    developer.log(base64CroppedImage);
+    // Crop the image to 64x64 using the Image package
+    image_module.Image croppedImage = image_module.copyCrop(image, x: x, y: y, width: width, height: height);
 
-    return base64CroppedImage;
+    // Resize the cropped image to 64x64 using the Image package
+    image_module.Image resizedImage = image_module.copyResize(croppedImage, width: 64, height: 64);
+
+    // Encode the resized image into base64
+    Uint8List resizedBytes = image_module.encodePng(resizedImage);
+    String resizedBase64 = base64.encode(resizedBytes);
+
+    // Return the base64 encoded image
+    return resizedBase64;
   }
 }

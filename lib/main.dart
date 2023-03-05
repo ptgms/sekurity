@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sekurity/import_export.dart';
 import 'package:sekurity/settings.dart';
 import 'package:sekurity/tools/platformtools.dart';
+import 'package:system_tray/system_tray.dart';
 import 'package:window_size/window_size.dart';
 
 import 'addService.dart';
@@ -26,6 +27,14 @@ Future<void> main() async {
   storage.read(key: "bold").then((value) {
     if (value != null) {
       bold = value == "true";
+    }
+  });
+
+  storage.read(key: "hidden").then((value) {
+    if (value != null) {
+      if (value == "true") {
+        AppWindow().hide();
+      }
     }
   });
 
