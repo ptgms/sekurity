@@ -162,7 +162,9 @@ class _AddServiceState extends State<AddService> {
                             if (image != null) {
                               // Make image square and resize to 64x64
                               var imageBytes = StructTools().cropAndResizeImage(base64Encode(await image.readAsBytes()));
-                              keyStruct.value.iconBase64 = await imageBytes;
+                              setState(() {
+                                keyStruct.value.iconBase64 = imageBytes;
+                              });
                             }
                           } else {
                             // File picker
@@ -174,7 +176,9 @@ class _AddServiceState extends State<AddService> {
                               final File file = File(result.files.single.path!);
                               // Make image square and resize to 64x64
                               var imageBytes = StructTools().cropAndResizeImage(base64Encode(await file.readAsBytes()));
-                              keyStruct.value.iconBase64 = await imageBytes;
+                              setState(() {
+                                keyStruct.value.iconBase64 = imageBytes;
+                              });
                             } else {
                               // User canceled the picker
                             }
