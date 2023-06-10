@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:sekurity/main.dart';
 import 'package:sekurity/tools/platformtools.dart';
 import 'package:sekurity/tools/structtools.dart';
@@ -107,7 +106,7 @@ class _EditServiceState extends State<EditService> {
                             if (image != null) {
                               // Make image square and resize to 64x64
                               var imageBytes = StructTools().cropAndResizeImage(base64Encode(await image.readAsBytes()));
-                              keyStruct.value.iconBase64 = await imageBytes;
+                              keyStruct.value.iconBase64 = imageBytes;
                             }
                           } else {
                             // File picker
@@ -119,7 +118,7 @@ class _EditServiceState extends State<EditService> {
                               final File file = File(result.files.single.path!);
                               // Make image square and resize to 64x64
                               var imageBytes = StructTools().cropAndResizeImage(base64Encode(await file.readAsBytes()));
-                              keyStruct.value.iconBase64 = await imageBytes;
+                              keyStruct.value.iconBase64 = imageBytes;
                             } else {
                               // User canceled the picker
                             }
@@ -405,7 +404,7 @@ class _EditServiceState extends State<EditService> {
                           return;
                         }
                         // Add service to database
-                        if (await KeyManagement().addKeyManual(keyStruct.value)) {
+                        if (await KeyManagement().addKeyManual(keyStruct.value, context)) {
                           if (context.mounted) {
                             currentScreen = 0;
                             Navigator.of(context).pop();

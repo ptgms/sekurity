@@ -4,6 +4,7 @@
     "edit": "Bearbeiten",
     "editing": "Am Bearbeiten",
     "home_clear": "Alle Schlüssel löschen",
+    "home_clear_confirm": "Bist du dir sicher das du alle Schlüssel löschen möchtest? Dies kann nicht rückgängig gemacht werden und du kannst dich eventuell nicht mehr einloggen.",
     "home_settings": "Einstellungen",
     "home_about": "Über",
 
@@ -16,7 +17,7 @@
     "@home_delete_confirm": {
         "placeholders": {
             "keyName": {
-                "type": "string",
+                "type": "String",
                 "example": "Website.com"
             }
         }
@@ -25,7 +26,7 @@
     "@home_delete_confirm_description": {
         "placeholders": {
             "keyName": {
-                "type": "string",
+                "type": "String",
                 "example": "Website.com"
             }
         }
@@ -99,5 +100,10 @@
     "import_export_no_encryption_dialog_yes": "Ja, ich bin mir sicher",
     "import_export_no_encryption_dialog_no": "Nein, bring mich in Sicherheit!",
 
-    "import_export_no_encryption_warning": "Warning! Keine Verschlüsselung aktiv! Dies ist unsicher und deine Accounts könnten in Gefahr sein!"
+    "import_export_no_encryption_warning": "Warning! Keine Verschlüsselung aktiv! Dies ist unsicher und deine Accounts könnten in Gefahr sein!",
+
+    "copy_otp_for": "OTP Kopieren:",
+    "show": "Zeigen",
+    "hide": "Verstecken",
+    "quit": "Beenden"
   }

@@ -81,9 +81,10 @@ class _AddServiceState extends State<AddService> {
                   controller.scannedDataStream.listen((scanData) async {
                     if (scanned || scanData.code == null) return;
                     scanned = true;
-                    if (await KeyManagement().addKeyQR(scanData.code!)) {
+                    if (await KeyManagement().addKeyQR(scanData.code!, context)) {
                       if (context.mounted) {
                         currentScreen = 0;
+                        //widget.onServiceAdded();
                         Navigator.of(context).pop();
                       }
                     }
@@ -464,9 +465,10 @@ class _AddServiceState extends State<AddService> {
                           return;
                         }
                         // Add service to database
-                        if (await KeyManagement().addKeyManual(keyStruct.value)) {
+                        if (await KeyManagement().addKeyManual(keyStruct.value, context)) {
                           if (context.mounted) {
                             currentScreen = 0;
+                            //widget.onServiceAdded();
                             Navigator.of(context).pop();
                           }
                         }

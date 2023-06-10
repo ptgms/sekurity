@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 import 'package:sekurity/editService.dart';
 import 'package:sekurity/homescreen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sekurity/import_export.dart';
 import 'package:sekurity/settings.dart';
+import 'package:sekurity/tools/keymanagement.dart';
+import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_size/window_size.dart';
@@ -12,7 +15,7 @@ import 'package:window_size/window_size.dart';
 import 'addService.dart';
 
 Future<void> main() async {
-  runApp(const SekurityApp());
+  runApp(ChangeNotifierProvider(create: (context) => Keys(), child: const SekurityApp()));
 
   const storage = FlutterSecureStorage();
   storage.read(key: "theme").then((value) {
@@ -27,6 +30,12 @@ Future<void> main() async {
   storage.read(key: "bold").then((value) {
     if (value != null) {
       bold = value == "true";
+    }
+  });
+
+  storage.read(key: "time").then((value) {
+    if (value != null) {
+      time = int.parse(value);
     }
   });
 
@@ -69,6 +78,7 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    KeyManagement().getSavedKeys(context).then((value) => debugPrint("Success!"));
     return ValueListenableBuilder(
       valueListenable: appTheme,
       builder: (_, mode, __) {
@@ -108,6 +118,7 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
 
 var appTheme = ValueNotifier(0);
 var bold = false;
+var time = 0;
 
 extension LocalizedBuildContext on BuildContext {
   AppLocalizations get loc => AppLocalizations.of(this);

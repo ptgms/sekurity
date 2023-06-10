@@ -4,8 +4,10 @@ import 'package:dart_dash_otp/dart_dash_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:provider/provider.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
 import 'package:sekurity/tools/keymanagement.dart';
+import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
 import 'package:sekurity/tools/structtools.dart';
 import 'package:system_tray/system_tray.dart';
@@ -23,7 +25,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  ValueNotifier<List<double>> progress = ValueNotifier(List<double>.filled(0, 0));
+  //ValueNotifier<List<double>> progress = ValueNotifier(List<double>.filled(0, 0));
+  ValueNotifier<bool> refresher = ValueNotifier(false);
 
   Future<void> hideWindow() async {
     const storage = FlutterSecureStorage();
@@ -37,8 +40,30 @@ class _HomePageState extends State<HomePage> {
     storage.write(key: "hidden", value: "false");
   }
 
+  String generateTOTP(KeyStruct key) {
+    // check if setting time is set (time difference between device and server)
+    if (time == 0) {
+      return TOTP(
+              secret: key.key,
+              digits: key.eightDigits ? 8 : 6,
+              interval: key.interval,
+              algorithm: key.algorithm)
+          .now();
+    } else {
+      var timeWithDif = DateTime.now().millisecondsSinceEpoch + time;
+      DateTime newTime = DateTime.fromMillisecondsSinceEpoch(timeWithDif);
+      return TOTP(
+              secret: key.key,
+              digits: key.eightDigits ? 8 : 6,
+              interval: key.interval,
+              algorithm: key.algorithm)
+          .value(date: newTime)!;
+    }
+  }
+
   Future<void> initSystemTray() async {
-    String path = isPlatformWindows() ? 'assets/app_icon.ico' : 'assets/app_icon.png';
+    String path =
+        isPlatformWindows() ? 'assets/app_icon.ico' : 'assets/app_icon.png';
 
     final AppWindow appWindow = AppWindow();
     final SystemTray systemTray = SystemTray();
@@ -49,27 +74,28 @@ class _HomePageState extends State<HomePage> {
       title: 'Sekurity',
     );
 
-    var keys = await KeyManagement().getSavedKeys();
+    // ignore: use_build_context_synchronously
+    final itemModel = Provider.of<Keys>(context, listen: false);
 
     // create context menu
     final Menu menu = Menu();
     await menu.buildFrom([
-      MenuItemLabel(label: 'Show', onClicked: (menuItem) => showWindow()),
-      MenuItemLabel(label: 'Hide', onClicked: (menuItem) => hideWindow()),
+      MenuItemLabel(label: context.loc.show, onClicked: (menuItem) => showWindow()),
+      MenuItemLabel(label: context.loc.hide, onClicked: (menuItem) => hideWindow()),
       MenuSeparator(),
       // Add all the services to the context menu
-      MenuItemLabel(label: "Copy OTP for:", enabled: false),
-      for (var i = 0; i < keys.length; i++)
+      MenuItemLabel(label: context.loc.copy_otp_for, enabled: false),
+      for (var i = 0; i < itemModel.items.length; i++)
         MenuItemLabel(
-          label: keys[i].service,
+          label: itemModel.items[i].service,
           onClicked: (menuItem) async {
-            var key = keys[i];
-            var otp = TOTP(secret: key.key, digits: key.eightDigits ? 8 : 6, interval: key.interval, algorithm: key.algorithm).now();
+            var key = itemModel.items[i];
+            var otp = generateTOTP(key);
             Clipboard.setData(ClipboardData(text: otp));
           },
         ),
       MenuSeparator(),
-      MenuItemLabel(label: 'Quit', onClicked: (menuItem) => exitApp())
+      MenuItemLabel(label: context.loc.quit, onClicked: (menuItem) => exitApp())
     ]);
 
     // set context menu
@@ -86,27 +112,15 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void updateProgress() {
+  void loopRefresh() {
     Future.delayed(const Duration(milliseconds: 100), () async {
       if (currentScreen != 0) {
         // If the user is not on the home screen, don't update the progress
-        updateProgress();
+        loopRefresh();
         return;
       }
-      var keys = await KeyManagement().getSavedKeys();
-
-      if (keys.isEmpty) {
-        return;
-      }
-
-      var newProg = List<double>.filled(keys.length, 0);
-
-      for (var i = 0; i < keys.length; i++) {
-        newProg[i] = 1 - ((DateTime.now().millisecondsSinceEpoch % (keys[i].interval * 1000)) / (keys[i].interval * 1000));
-      }
-
-      progress.value = newProg;
-      updateProgress();
+      refresher.value = !refresher.value;
+      loopRefresh();
     });
   }
 
@@ -120,7 +134,8 @@ class _HomePageState extends State<HomePage> {
                   context: context,
                   builder: (_) => AlertDialog(
                     title: Text(context.loc.home_delete_confirm(key.service)),
-                    content: Text(context.loc.home_delete_confirm_description(key.service)),
+                    content: Text(context.loc
+                        .home_delete_confirm_description(key.service)),
                     actions: [
                       TextButton(
                         onPressed: () {
@@ -130,12 +145,14 @@ class _HomePageState extends State<HomePage> {
                       ),
                       TextButton(
                         onPressed: () async {
+                          final itemModel =
+                              Provider.of<Keys>(context, listen: false);
                           // Delete key
-                          var keys = await KeyManagement().getSavedKeys();
+
                           setState(() {
-                            keys.removeAt(index);
+                            itemModel.removeItem(key);
                           });
-                          await KeyManagement().saveKeys(keys);
+                          await KeyManagement().saveKeys(itemModel.items);
                           if (context.mounted) {
                             Navigator.of(context).pop();
                           }
@@ -153,19 +170,37 @@ class _HomePageState extends State<HomePage> {
                   size: 32.0,
                   color: color,
                 )
-              : SizedBox(height: 32.0, width: 32.0, child: Image.memory(base64Decode(key.iconBase64))),
-      title: Text(key.service, style: TextStyle(color: color, fontWeight: bold ? FontWeight.bold : null)),
-      subtitle:
-          (key.description != "") ? Text(key.description, style: TextStyle(color: color, fontSize: 12.0, fontWeight: bold ? FontWeight.bold : null)) : null,
+              : SizedBox(
+                  height: 32.0,
+                  width: 32.0,
+                  child: Image.memory(base64Decode(key.iconBase64))),
+      title: Text(key.service,
+          style: TextStyle(
+              color: color, fontWeight: bold ? FontWeight.bold : null)),
+      subtitle: (key.description != "")
+          ? Text(key.description,
+              style: TextStyle(
+                  color: color,
+                  fontSize: 12.0,
+                  fontWeight: bold ? FontWeight.bold : null))
+          : null,
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         // Add space in middle of code
         ValueListenableBuilder(
-            valueListenable: progress,
+            valueListenable: refresher,
             builder: (context, value, child) {
-              var authCode = TOTP(secret: key.key, digits: key.eightDigits ? 8 : 6, interval: key.interval, algorithm: key.algorithm).now();
+              var authCode = generateTOTP(key);
               return key.eightDigits
-                  ? Text("${authCode.substring(0, 4)} ${authCode.substring(4)}", style: TextStyle(fontSize: 20, color: color, fontWeight: FontWeight.bold))
-                  : Text("${authCode.substring(0, 3)} ${authCode.substring(3)}", style: TextStyle(fontSize: 20, color: color, fontWeight: FontWeight.bold));
+                  ? Text("${authCode.substring(0, 4)} ${authCode.substring(4)}",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: color,
+                          fontWeight: FontWeight.bold))
+                  : Text("${authCode.substring(0, 3)} ${authCode.substring(3)}",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: color,
+                          fontWeight: FontWeight.bold));
             }),
         // Progress bar of time left before code changes and update it automatically
         SizedBox(
@@ -176,10 +211,14 @@ class _HomePageState extends State<HomePage> {
             child: AspectRatio(
               aspectRatio: 1,
               child: ValueListenableBuilder(
-                valueListenable: progress,
+                valueListenable: refresher,
                 builder: (context, value, child) {
+                  int adjustedTimeMillis =
+                      DateTime.now().millisecondsSinceEpoch + time;
                   return CircularProgressIndicator(
-                    value: value[index],
+                    // calculate progress seconds left until code changes (taking into account the time difference between device and server) "time" variable
+                    value: (adjustedTimeMillis % (key.interval * 1000)) /
+                        (key.interval * 1000),
                     strokeWidth: 5,
                     color: color,
                   );
@@ -215,7 +254,8 @@ class _HomePageState extends State<HomePage> {
       }
 
       // Ctrl + S or Cmd + , on macOS = Settings
-      if ((event.isControlPressed && event.logicalKey.keyId == 0x73) || (event.isMetaPressed && event.logicalKey.keyId == 0x2c)) {
+      if ((event.isControlPressed && event.logicalKey.keyId == 0x73) ||
+          (event.isMetaPressed && event.logicalKey.keyId == 0x2c)) {
         // Only navigate if current screen is home
         if (currentScreen == 0) {
           currentScreen = 2;
@@ -233,13 +273,14 @@ class _HomePageState extends State<HomePage> {
             return [
               PopupMenuItem(value: 0, child: Text(context.loc.edit)),
               PopupMenuItem(
-                value: 1,
-                child: Text(context.loc.home_settings),
-              ),
-              PopupMenuItem(value: 2, child: Text(context.loc.home_import_export)),
+                  value: 2, child: Text(context.loc.home_import_export)),
               PopupMenuItem(
                 value: 3,
                 child: Text(context.loc.home_about),
+              ),
+              PopupMenuItem(
+                value: 1,
+                child: Text(context.loc.home_settings),
               ),
             ];
           },
@@ -260,35 +301,46 @@ class _HomePageState extends State<HomePage> {
                 break;
               case 3:
                 // Show about dialog
-                showAboutDialog(context: context, applicationIcon: const Icon(Icons.person), applicationName: "Sekurity", children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(children: [
-                      Text(context.loc.home_about_description),
-                      Row(
-                        children: [
-                          // 2 Image buttons
-                          Expanded(
-                            child: TextButton(
-                              child: const Text("ptgms"),
-                              onPressed: () async {
-                                await launchUrl(Uri.parse(""));
-                              },
-                            ),
+                showAboutDialog(
+                    context: context,
+                    applicationIcon: Image.asset(
+                      "assets/app_icon.png",
+                      width: 64,
+                      height: 64,
+                    ),
+                    applicationName: "Sekurity",
+                    applicationVersion: "1.0.0",
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(children: [
+                          Text(context.loc.home_about_description),
+                          Row(
+                            children: [
+                              // 2 Image buttons
+                              Expanded(
+                                child: TextButton(
+                                  child: const Text("ptgms"),
+                                  onPressed: () async {
+                                    await launchUrl(
+                                        Uri.parse("https://github.com/ptgms"));
+                                  },
+                                ),
+                              ),
+                              Expanded(
+                                child: TextButton(
+                                  child: const Text("SphericalKat"),
+                                  onPressed: () async {
+                                    await launchUrl(Uri.parse(
+                                        "https://github.com/SphericalKat"));
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                          Expanded(
-                            child: TextButton(
-                              child: const Text("SphericalKat"),
-                              onPressed: () async {
-                                await launchUrl(Uri.parse(""));
-                              },
-                            ),
-                          ),
-                        ],
+                        ]),
                       ),
-                    ]),
-                  ),
-                ]);
+                    ]);
                 break;
             }
           },
@@ -309,31 +361,18 @@ class _HomePageState extends State<HomePage> {
 
     widthCard = width ~/ count;
 
-    updateProgress();
+    //updateProgress();
+    loopRefresh();
     return Scaffold(
       appBar: appBar,
-      body: FutureBuilder(
-        future: KeyManagement().getSavedKeys(),
-        builder: (BuildContext context, AsyncSnapshot<List<KeyStruct>> snapshot) {
-          if (snapshot.hasData) {
-            if (snapshot.data!.isEmpty) {
-              return Center(child: Text(context.loc.home_no_keys));
-            }
-            return SizedBox(
-              width: double.infinity,
-              height: double.infinity,
-              child: ValueListenableBuilder(
-                valueListenable: KeyManagement().version,
-                builder: (context, value, child) {
-                  return gridViewBuilder(count, widthCard, heightCard, snapshot);
-                },
-              ),
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
+      body: Consumer<Keys>(builder: (context, itemModel, _) {
+        initSystemTray();
+        return SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: gridViewBuilder(count, widthCard, heightCard, itemModel.items),
+        );
+      }),
       floatingActionButton: FloatingActionButton(
         mini: (isPlatformMacos() || isPlatformWindows() || isPlatformLinux()),
         onPressed: () {
@@ -352,7 +391,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  ReorderableGridView gridViewBuilder(int count, int widthCard, int heightCard, AsyncSnapshot<List<KeyStruct>> snapshot) {
+  ReorderableGridView gridViewBuilder(
+      int count, int widthCard, int heightCard, List<KeyStruct> snapshot) {
     return ReorderableGridView.builder(
       //scrollDirection: Axis.vertical,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -360,11 +400,11 @@ class _HomePageState extends State<HomePage> {
         //crossAxisSpacing: 8,
         childAspectRatio: (widthCard / heightCard),
       ),
-      itemCount: snapshot.data!.length,
+      itemCount: snapshot.length,
       itemBuilder: (BuildContext context, int index) {
-        var color = StructTools().getTextColor(snapshot.data![index].color);
+        var color = StructTools().getTextColor(snapshot[index].color);
         return GestureDetector(
-            key: ValueKey(snapshot.data![index].key),
+            key: ValueKey(snapshot[index].key),
             onTap: editMode
                 ? () async {
                     if (context.mounted) {
@@ -376,13 +416,8 @@ class _HomePageState extends State<HomePage> {
                     }
                   }
                 : () async {
-                    await Clipboard.setData(ClipboardData(
-                        text: TOTP(
-                                secret: snapshot.data![index].key,
-                                digits: snapshot.data![index].eightDigits ? 8 : 6,
-                                interval: snapshot.data![index].interval,
-                                algorithm: snapshot.data![index].algorithm)
-                            .now()));
+                    await Clipboard.setData(
+                        ClipboardData(text: generateTOTP(snapshot[index])));
                     // Show snackbar
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -397,7 +432,8 @@ class _HomePageState extends State<HomePage> {
                 ? null
                 : () async {
                     // Vibrate
-                    if (isPlatformMobile() && (await Vibration.hasVibrator() ?? false)) {
+                    if (isPlatformMobile() &&
+                        (await Vibration.hasVibrator() ?? false)) {
                       Vibration.vibrate(duration: 50);
                     }
                     setState(() {
@@ -405,8 +441,9 @@ class _HomePageState extends State<HomePage> {
                     });
                   },
             child: Card(
-              color: snapshot.data![index].color,
-              child: Center(child: OTPListTile(snapshot.data![index], color, index, editMode)),
+              color: snapshot[index].color,
+              child: Center(
+                  child: OTPListTile(snapshot[index], color, index, editMode)),
             ));
       },
       onReorder: (int oldIndex, int newIndex) {
@@ -414,10 +451,10 @@ class _HomePageState extends State<HomePage> {
           return;
         }
         setState(() {
-          final KeyStruct item = snapshot.data!.removeAt(oldIndex);
-          snapshot.data!.insert(newIndex, item);
+          final itemModel = Provider.of<Keys>(context, listen: false);
+          itemModel.removeItem(itemModel.items[oldIndex]);
         });
-        KeyManagement().saveKeys(snapshot.data!);
+        KeyManagement().saveKeys(snapshot);
       },
     );
   }

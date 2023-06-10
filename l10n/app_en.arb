@@ -4,6 +4,9 @@
     "edit": "Toggle Edit",
     "editing": "Editing",
     "home_clear": "Clear all keys",
+    "home_clear_confirm": "Are you sure you want to clear all keys? You may not be able to log in to your accounts anymore.",
+    "home_clear_success": "Cleared all keys!",
+    "undo": "Undo",
     "home_settings": "Settings",
     "home_about": "About",
 
@@ -78,6 +81,22 @@
 
     "settings_reset": "Reset",
 
+    "settings_system": "System",
+
+    "settings_sync_time": "Sync Time",
+    "settings_sync_time_description": "In case your system time is not accurate, you can use this to sync the time with the server.",
+
+    "settings_sync_choose": "Select NTP Server",
+    "settings_sync_choose_description": "Choose a NTP server to sync your time with. The recommended server is Google's.",
+
+    "settings_sync_choose_google": "Google",
+    "settings_sync_choose_apple": "Apple",
+    "settings_sync_choose_ntppool": "NTP Pool",
+
+    "settings_sync_success": "Time synced successfully!",
+    "settings_sync_error": "Error syncing time!",
+
+    "cancel": "Cancel",
     "qr_notice": "Scan the QR code shown by your service to add it to Sekurity. You can also import your Google Authenticator QR code.",
     "qr_transfer_notice": "You can use this button to transfer your keys to another device. You can also import then in Google Authenticator.",
 
@@ -106,5 +125,10 @@
     "import_export_no_encryption_dialog_yes": "Yes, I'm sure",
     "import_export_no_encryption_dialog_no": "No, take me back to safety!",
 
-    "import_export_no_encryption_warning": "Warning! No encryption enabled! This is insecure and your accounts could be at risk!"
+    "import_export_no_encryption_warning": "Warning! No encryption enabled! This is insecure and your accounts could be at risk!",
+
+    "copy_otp_for": "Copy OTP for:",
+    "show": "Show",
+    "hide": "Hide",
+    "quit": "Quit"
   }

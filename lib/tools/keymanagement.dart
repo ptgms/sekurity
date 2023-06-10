@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:dart_dash_otp/dart_dash_otp.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/otp-migration.pbenum.dart';
 import 'package:sekurity/tools/structtools.dart';
 import 'package:universal_html/html.dart' as html;
@@ -42,37 +44,35 @@ class KeyStruct {
 class KeyManagement {
   final _storage = const FlutterSecureStorage();
 
-  ValueNotifier<int> version = ValueNotifier(0);
-
   bool isValidBase32(String input) {
     RegExp base32RegExp = RegExp(r'^[A-Z2-7]+$');
     if (!base32RegExp.hasMatch(input)) {
       return false;
     }
     try {
-      var bytes = base32.decode(input);
+      base32.decode(input);
       return true;
     } catch (e) {
       return false;
     }
   }
 
-  Future<List<KeyStruct>> getSavedKeys() async {
+  Future<bool> getSavedKeys(context) async {
+    final itemModel = Provider.of<Keys>(context, listen: false);
     var keys = await _storage.read(key: "keys");
     //developer.log(keys != null ? "Found keys!" : "null");
     if (keys == null) {
-      return List<KeyStruct>.empty(growable: true);
+      return false;
     }
 
     // keys is a json string that has to be parsed into List<KeyStruct>
-    var keyList = List<KeyStruct>.empty(growable: true);
     var jsonKeys = jsonDecode(keys);
     for (var key in jsonKeys) {
       // Check if secret key is valid base32 string
       if (!isValidBase32(key["key"])) {
         continue;
       }
-      keyList.add(KeyStruct(
+      itemModel.addItem(KeyStruct(
           iconBase64: key["iconBase64"],
           key: key["key"],
           service: key["service"],
@@ -88,17 +88,17 @@ class KeyManagement {
                       : OTPAlgorithm.SHA1,
           interval: key["interval"] ?? 30));
     }
-    return keyList;
+    return true;
   }
 
-  Future<bool> migrateData(String key) async {
+  Future<bool> migrateData(String key, context) async {
+    final itemModel = Provider.of<Keys>(context, listen: false);
     developer.log("Migrating!");
     var decodedData = await parseMigrationURL(key);
-    var keys = await getSavedKeys();
 
     for (var key in decodedData) {
       // Check if key is already saved
-      if (keys.any((element) => element.key == key["secret"])) {
+      if (itemModel.items.any((element) => element.key == key["secret"])) {
         continue;
       }
 
@@ -140,20 +140,20 @@ class KeyManagement {
 
       var keyStruct =
           KeyStruct(iconBase64: icon, key: secret, service: serviceName, description: "", color: color, eightDigits: eightDigits, algorithm: algorithm);
-      await addKeyManual(keyStruct);
+      await addKeyManual(keyStruct, context);
     }
     return true;
   }
 
   // Same as migrateData but to encode a QR code
-  Future<QrImage> parseTransferQR() async {
+  Future<QrImageView > parseTransferQR(context) async {
+    final itemModel = Provider.of<Keys>(context, listen: false);
     developer.log("Transfering!");
-    var keys = await getSavedKeys();
-    var encodedKeys = await parseTransferURL(keys);
+    var encodedKeys = await parseTransferURL(itemModel.items);
     var url = "otpauth-migration://offline?$encodedKeys";
 
     // generate QR code from url
-    var qr = QrImage(
+    var qr = QrImageView(
       backgroundColor: Colors.white,
       data: url,
       version: QrVersions.auto,
@@ -162,8 +162,8 @@ class KeyManagement {
     return qr;
   }
 
-  Future<bool> addURL(String key) async {
-    var keys = await getSavedKeys();
+  Future<bool> addURL(String key, context) async {
+    final itemM = Provider.of<Keys>(context, listen: false);
     // Read OTP link null-safely using Uri
     var uri = Uri.parse(key);
     var serviceName = Uri.decodeFull(uri.pathSegments[0]);
@@ -190,7 +190,7 @@ class KeyManagement {
     var interval = uri.queryParameters["period"] ?? "30";
 
     // Check if key is already saved
-    if (keys.any((element) => element.key == secret)) {
+    if (itemM.items.any((element) => element.key == secret)) {
       return false;
     }
 
@@ -212,7 +212,7 @@ class KeyManagement {
     }
 
     // Add key to list
-    keys.add(KeyStruct(
+    itemM.addItem(KeyStruct(
         iconBase64: icon,
         key: secret,
         service: serviceName,
@@ -222,10 +222,10 @@ class KeyManagement {
         algorithm: algorithm,
         interval: int.parse(interval)));
 
-    return await saveKeys(keys);
+    return await saveKeys(itemM.items);
   }
 
-  Future<bool> addKeyQR(String key) async {
+  Future<bool> addKeyQR(String key, context) async {
     // OTP link format: otpauth://totp/ServiceName:DescriptionText?secret=SECRET
     // Or: otpauth://totp/ServiceName?secret=SECRET
     // Description is optional
@@ -233,23 +233,23 @@ class KeyManagement {
     // Check if migration QR code is used
     developer.log("QR Code scanned!");
     if (key.startsWith("otpauth-migration://offline?")) {
-      return await migrateData(key);
+      return await migrateData(key, context);
     }
 
-    return addURL(key);
+    return addURL(key, context);
   }
 
-  Future<bool> deleteKey(KeyStruct keyStruct) async {
-    var keys = await getSavedKeys();
-    keys.remove(keyStruct);
-    return await saveKeys(keys);
+  Future<bool> deleteKey(KeyStruct keyStruct, context) async {
+    final itemModel = Provider.of<Keys>(context, listen: false);
+    itemModel.removeItem(keyStruct);
+    return await saveKeys(itemModel.items);
   }
 
-  Future<bool> addKeyManual(KeyStruct keyStruct) async {
-    var keys = await getSavedKeys();
+  Future<bool> addKeyManual(KeyStruct keyStruct, context) async {
+    final itemModel = Provider.of<Keys>(context, listen: false);
 
     // Check if key is already saved
-    if (keys.any((element) => element.key == keyStruct.key)) {
+    if (itemModel.items.any((element) => element.key == keyStruct.key)) {
       return false;
     }
 
@@ -257,12 +257,12 @@ class KeyManagement {
       return false;
     }
 
-    keys.add(keyStruct);
-    return await saveKeys(keys);
+    itemModel.addItem(keyStruct);
+    return await saveKeys(itemModel.items);
   }
 
   Future<bool> saveKeys(List<KeyStruct> keys) async {
-    version.value++;
+    //version.value++;
     // Parse List<KeyStruct> into json string
     var jsonKeys = List<Map<String, dynamic>>.empty(growable: true);
     for (var key in keys) {
@@ -290,10 +290,10 @@ class KeyManagement {
     return true;
   }
 
-  Future<bool> getEncryptedJson(String password) async {
-    var keys = await getSavedKeys();
+  Future<bool> getEncryptedJson(String password, context) async {
+    final itemModel = Provider.of<Keys>(context, listen: false);
     var jsonKeys = List<Map<String, dynamic>>.empty(growable: true);
-    for (var key in keys) {
+    for (var key in itemModel.items) {
       jsonKeys.add({
         "iconBase64": key.iconBase64,
         "key": key.key,

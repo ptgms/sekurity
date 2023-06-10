@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sekurity/tools/keymanagement.dart';
+import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
 
 import 'homescreen.dart';
@@ -16,6 +18,7 @@ class _ImportExportState extends State<ImportExport> {
   var unencrypted = false;
   @override
   Widget build(BuildContext context) {
+    final itemModel = Provider.of<Keys>(context, listen: false);
     String password = "";
 
     var appBar = AppBar(
@@ -57,49 +60,6 @@ class _ImportExportState extends State<ImportExport> {
                   leading: const Icon(Icons.warning_rounded, color: Colors.orange),
                 ),
         ),
-        /*Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CheckboxListTile(
-            title: Text(context.loc.import_export_no_encryption),
-            subtitle: Text(context.loc.import_export_no_encryption_description),
-            value: unencrypted,
-            onChanged: (bool? value) {
-              // Confirmation dialog
-              if (value == true) {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text(context.loc.import_export_no_encryption_dialog),
-                        content: Text(context.loc.import_export_no_encryption_dialog_description),
-                        actions: [
-                          TextButton(
-                            child: Text(context.loc.import_export_no_encryption_dialog_no),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                          TextButton(
-                            child: Text(context.loc.import_export_no_encryption_dialog_yes),
-                            onPressed: () {
-                              unencrypted = true;
-                              setState(() {
-                                unencrypted = true;
-                              });
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              } else {
-                setState(() {
-                  unencrypted = false;
-                });
-              }
-            },
-          ),
-        ),*/
         Row(
           children: [
             Expanded(
@@ -135,7 +95,7 @@ class _ImportExportState extends State<ImportExport> {
                 child: TextButton(
                   child: Text(context.loc.import_export_export),
                   onPressed: () async {
-                    if ((await KeyManagement().getSavedKeys()).isEmpty) {
+                    if (itemModel.items.isEmpty) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_no_keys)));
@@ -149,7 +109,7 @@ class _ImportExportState extends State<ImportExport> {
                       }
                       return;
                     }
-                    await KeyManagement().getEncryptedJson(password);
+                    await KeyManagement().getEncryptedJson(password, context);
                   },
                 ),
               ),
@@ -171,7 +131,7 @@ class _ImportExportState extends State<ImportExport> {
                 child: TextButton(
                   child: Text(context.loc.import_export_export_qr),
                   onPressed: () async {
-                    if ((await KeyManagement().getSavedKeys()).isEmpty) {
+                    if (itemModel.items.isEmpty) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_no_keys)));
@@ -179,7 +139,7 @@ class _ImportExportState extends State<ImportExport> {
                       return;
                     }
                     // Show dialog
-                    KeyManagement().parseTransferQR().then((value) {
+                    KeyManagement().parseTransferQR(context).then((value) {
                       showDialog(
                           context: context,
                           builder: (BuildContext context) {

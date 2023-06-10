@@ -32,7 +32,7 @@ Future<List<Map<String, dynamic>>> parseMigrationURL(String sourceUrl) async {
   var sourceData = uri.queryParameters['data'];
 
   if (sourceData == null) {
-    throw new Exception("source url doesn't contain otpauth data");
+    throw Exception("source url doesn't contain otpauth data");
   }
 
   var migrationPayload = MigrationPayload.fromBuffer(base64.decode(sourceData));
