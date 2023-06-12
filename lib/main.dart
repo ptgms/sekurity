@@ -1,7 +1,9 @@
+import 'package:context_menus/context_menus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
-import 'package:sekurity/editService.dart';
+import 'package:sekurity/components/progress_text.dart';
+import 'package:sekurity/edit_service.dart';
 import 'package:sekurity/homescreen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sekurity/import_export.dart';
@@ -12,11 +14,9 @@ import 'package:sekurity/tools/platformtools.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_size/window_size.dart';
 
-import 'addService.dart';
+import 'add_service.dart';
 
-Future<void> main() async {
-  runApp(ChangeNotifierProvider(create: (context) => Keys(), child: const SekurityApp()));
-
+Future<void> loadSettings() async {
   const storage = FlutterSecureStorage();
   storage.read(key: "theme").then((value) {
     if (value != null) {
@@ -47,10 +47,24 @@ Future<void> main() async {
     }
   });
 
+  storage.read(key: "altProgress").then((value) {
+    if (value != null) {
+      altProgress = value == "true";
+    }
+  });
+}
+
+Future<void> main() async {
+  runApp(ChangeNotifierProvider(
+      create: (context) => Keys(), child: const SekurityApp()));
+
+  await loadSettings();
+
   if (isPlatformMacos() || isPlatformLinux() || isPlatformWindows()) {
     // Set the window title
     setWindowTitle('Sekurity');
     setWindowMinSize(const Size(400, 450));
+    setWindowMaxSize(const Size(650, 900));
   }
 }
 
@@ -78,11 +92,13 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    KeyManagement().getSavedKeys(context).then((value) => debugPrint("Success!"));
+    KeyManagement()
+        .getSavedKeys(context)
+        .then((value) => debugPrint("Success!"));
     return ValueListenableBuilder(
       valueListenable: appTheme,
       builder: (_, mode, __) {
-        return MaterialApp(
+        MaterialApp app = MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: const [
             Locale('en', ''),
@@ -92,7 +108,8 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
           title: 'Sekurity',
           initialRoute: '/',
           routes: {
-            '/': (BuildContext context) => const HomePage(title: 'Sekurity'),
+            '/': (BuildContext context) =>
+                ContextMenuOverlay(child: const HomePage(title: 'Sekurity')),
             '/addService': (BuildContext context) => const AddService(),
             '/settings': (BuildContext context) => const Settings(),
             '/importExport': (BuildContext context) => const ImportExport(),
@@ -111,6 +128,8 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
             useMaterial3: true,
           ),
         );
+
+        return app;
       },
     );
   }
@@ -119,6 +138,7 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
 var appTheme = ValueNotifier(0);
 var bold = false;
 var time = 0;
+var altProgress = false;
 
 extension LocalizedBuildContext on BuildContext {
   AppLocalizations get loc => AppLocalizations.of(this);

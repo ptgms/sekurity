@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 
 class Keys extends ChangeNotifier {
-  List<KeyStruct> _items = [];
+  final List<KeyStruct> _items = [];
 
   List<KeyStruct> get items => _items;
 

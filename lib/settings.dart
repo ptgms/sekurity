@@ -21,6 +21,7 @@ class _SettingsState extends State<Settings> {
     const storage = FlutterSecureStorage();
     storage.write(key: "theme", value: appTheme.toString());
     storage.write(key: "bold", value: bold ? "true" : "false");
+    storage.write(key: "altProgress", value: altProgress ? "true" : "false");
 
     return;
   }
@@ -180,8 +181,9 @@ class _SettingsState extends State<Settings> {
 
     var platform = PlatformUtils.detectPlatform(context);
 
-    if (platform == DevicePlatform.web || platform == DevicePlatform.windows)
+    if (platform == DevicePlatform.web || platform == DevicePlatform.windows) {
       platform = DevicePlatform.android;
+    }
 
     return Scaffold(
         appBar: appBar,
@@ -252,6 +254,22 @@ class _SettingsState extends State<Settings> {
                     openDropdown(dropdownTheme);
                   },
                 ),
+                SettingsTile.switchTile(
+                  leading: const Icon(Icons.hourglass_bottom_rounded),
+                  initialValue: altProgress,
+                  onToggle: (value) {
+                    final itemModel =
+                        Provider.of<Keys>(context, listen: false);
+                    setState(() {
+                      altProgress = value;
+                    });
+                    itemModel.uiUpdate();
+                    saveSettings();
+                  },
+                  title: Text(context.loc.settings_alt_progress),
+                  description:
+                      Text(context.loc.settings_alt_progress_description),
+                )
               ],
             ),
             SettingsSection(
@@ -267,7 +285,8 @@ class _SettingsState extends State<Settings> {
                       setState(() {
                         bold = value;
                       });
-                      final itemModel = Provider.of<Keys>(context, listen: false);
+                      final itemModel =
+                          Provider.of<Keys>(context, listen: false);
                       itemModel.uiUpdate();
                       saveSettings();
                     },

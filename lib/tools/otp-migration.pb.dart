@@ -36,29 +36,29 @@ class MigrationPayload_OtpParameters extends $pb.GeneratedMessage {
     MigrationPayload_OtpType? type,
     $fixnum.Int64? counter,
   }) {
-    final _result = create();
+    final result = create();
     if (secret != null) {
-      _result.secret = secret;
+      result.secret = secret;
     }
     if (name != null) {
-      _result.name = name;
+      result.name = name;
     }
     if (issuer != null) {
-      _result.issuer = issuer;
+      result.issuer = issuer;
     }
     if (algorithm != null) {
-      _result.algorithm = algorithm;
+      result.algorithm = algorithm;
     }
     if (digits != null) {
-      _result.digits = digits;
+      result.digits = digits;
     }
     if (type != null) {
-      _result.type = type;
+      result.type = type;
     }
     if (counter != null) {
-      _result.counter = counter;
+      result.counter = counter;
     }
-    return _result;
+    return result;
   }
   factory MigrationPayload_OtpParameters.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory MigrationPayload_OtpParameters.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
@@ -163,23 +163,23 @@ class MigrationPayload extends $pb.GeneratedMessage {
     $core.int? batchIndex,
     $core.int? batchId,
   }) {
-    final _result = create();
+    final result = create();
     if (otpParameters != null) {
-      _result.otpParameters.addAll(otpParameters);
+      result.otpParameters.addAll(otpParameters);
     }
     if (version != null) {
-      _result.version = version;
+      result.version = version;
     }
     if (batchSize != null) {
-      _result.batchSize = batchSize;
+      result.batchSize = batchSize;
     }
     if (batchIndex != null) {
-      _result.batchIndex = batchIndex;
+      result.batchIndex = batchIndex;
     }
     if (batchId != null) {
-      _result.batchId = batchId;
+      result.batchId = batchId;
     }
-    return _result;
+    return result;
   }
   factory MigrationPayload.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory MigrationPayload.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);

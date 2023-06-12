@@ -1,11 +1,13 @@
 import 'dart:convert';
 
+import 'package:context_menus/context_menus.dart';
 import 'package:dart_dash_otp/dart_dash_otp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
+import 'package:sekurity/components/progress_text.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
@@ -38,6 +40,40 @@ class _HomePageState extends State<HomePage> {
     const storage = FlutterSecureStorage();
     AppWindow().show();
     storage.write(key: "hidden", value: "false");
+  }
+
+  void deleteDialog(KeyStruct keyToDelete, int index) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(context.loc.home_delete_confirm(keyToDelete.service)),
+        content: Text(
+            context.loc.home_delete_confirm_description(keyToDelete.service)),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(context.loc.home_delete_confirm_no),
+          ),
+          TextButton(
+            onPressed: () async {
+              final itemModel = Provider.of<Keys>(context, listen: false);
+              // Delete key
+
+              setState(() {
+                itemModel.removeItem(itemModel.items[index]);
+              });
+              await KeyManagement().saveKeys(itemModel.items);
+              if (context.mounted) {
+                Navigator.of(context).pop();
+              }
+            },
+            child: Text(context.loc.home_delete_confirm_yes),
+          ),
+        ],
+      ),
+    );
   }
 
   String generateTOTP(KeyStruct key) {
@@ -79,37 +115,46 @@ class _HomePageState extends State<HomePage> {
 
     // create context menu
     final Menu menu = Menu();
-    await menu.buildFrom([
-      MenuItemLabel(label: context.loc.show, onClicked: (menuItem) => showWindow()),
-      MenuItemLabel(label: context.loc.hide, onClicked: (menuItem) => hideWindow()),
-      MenuSeparator(),
-      // Add all the services to the context menu
-      MenuItemLabel(label: context.loc.copy_otp_for, enabled: false),
-      for (var i = 0; i < itemModel.items.length; i++)
+    if (context.mounted) {
+      await menu.buildFrom([
         MenuItemLabel(
-          label: itemModel.items[i].service,
-          onClicked: (menuItem) async {
-            var key = itemModel.items[i];
-            var otp = generateTOTP(key);
-            Clipboard.setData(ClipboardData(text: otp));
-          },
-        ),
-      MenuSeparator(),
-      MenuItemLabel(label: context.loc.quit, onClicked: (menuItem) => exitApp())
-    ]);
+            label: context.loc.show, onClicked: (menuItem) => showWindow()),
+        MenuItemLabel(
+            label: context.loc.hide, onClicked: (menuItem) => hideWindow()),
+        MenuSeparator(),
+        // Add all the services to the context menu
+        MenuItemLabel(label: context.loc.copy_otp_for, enabled: false),
+        for (var i = 0; i < itemModel.items.length; i++)
+          MenuItemLabel(
+            label: itemModel.items[i].service,
+            onClicked: (menuItem) async {
+              var key = itemModel.items[i];
+              var otp = generateTOTP(key);
+              Clipboard.setData(ClipboardData(text: otp));
+            },
+          ),
+        MenuSeparator(),
+        MenuItemLabel(
+            label: context.loc.quit, onClicked: (menuItem) => exitApp())
+      ]);
 
-    // set context menu
-    await systemTray.setContextMenu(menu);
+      // set context menu
+      await systemTray.setContextMenu(menu);
 
-    // handle system tray event
-    systemTray.registerSystemTrayEventHandler((eventName) {
-      debugPrint("eventName: $eventName");
-      if (eventName == kSystemTrayEventClick) {
-        isPlatformWindows() ? appWindow.show() : systemTray.popUpContextMenu();
-      } else if (eventName == kSystemTrayEventRightClick) {
-        isPlatformWindows() ? systemTray.popUpContextMenu() : appWindow.show();
-      }
-    });
+      // handle system tray event
+      systemTray.registerSystemTrayEventHandler((eventName) {
+        debugPrint("eventName: $eventName");
+        if (eventName == kSystemTrayEventClick) {
+          isPlatformWindows()
+              ? appWindow.show()
+              : systemTray.popUpContextMenu();
+        } else if (eventName == kSystemTrayEventRightClick) {
+          isPlatformWindows()
+              ? systemTray.popUpContextMenu()
+              : appWindow.show();
+        }
+      });
+    }
   }
 
   void loopRefresh() {
@@ -124,44 +169,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Widget OTPListTile(KeyStruct key, Color color, int index, bool editMode) {
+  Widget otpListTile(KeyStruct key, Color color, int index, bool editMode) {
     return ListTile(
       leading: editMode
           ? IconButton(
               icon: Icon(Icons.delete, size: 30.0, color: color),
               onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: Text(context.loc.home_delete_confirm(key.service)),
-                    content: Text(context.loc
-                        .home_delete_confirm_description(key.service)),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text(context.loc.home_delete_confirm_no),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          final itemModel =
-                              Provider.of<Keys>(context, listen: false);
-                          // Delete key
-
-                          setState(() {
-                            itemModel.removeItem(key);
-                          });
-                          await KeyManagement().saveKeys(itemModel.items);
-                          if (context.mounted) {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        child: Text(context.loc.home_delete_confirm_yes),
-                      ),
-                    ],
-                  ),
-                );
+                deleteDialog(key, index);
               },
             )
           : (key.iconBase64 == "")
@@ -186,47 +200,72 @@ class _HomePageState extends State<HomePage> {
           : null,
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         // Add space in middle of code
-        ValueListenableBuilder(
-            valueListenable: refresher,
-            builder: (context, value, child) {
-              var authCode = generateTOTP(key);
-              return key.eightDigits
-                  ? Text("${authCode.substring(0, 4)} ${authCode.substring(4)}",
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: color,
-                          fontWeight: FontWeight.bold))
-                  : Text("${authCode.substring(0, 3)} ${authCode.substring(3)}",
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: color,
-                          fontWeight: FontWeight.bold));
-            }),
-        // Progress bar of time left before code changes and update it automatically
         SizedBox(
-          width: 40,
-          height: 40,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: ValueListenableBuilder(
-                valueListenable: refresher,
-                builder: (context, value, child) {
-                  int adjustedTimeMillis =
-                      DateTime.now().millisecondsSinceEpoch + time;
-                  return CircularProgressIndicator(
-                    // calculate progress seconds left until code changes (taking into account the time difference between device and server) "time" variable
-                    value: (adjustedTimeMillis % (key.interval * 1000)) /
-                        (key.interval * 1000),
-                    strokeWidth: 5,
-                    color: color,
-                  );
-                },
+          child: ValueListenableBuilder(
+              valueListenable: refresher,
+              builder: (context, value, child) {
+                int adjustedTimeMillis =
+                    DateTime.now().millisecondsSinceEpoch + time;
+                var authCode = generateTOTP(key);
+                if (altProgress) {
+                  return key.eightDigits
+                      ? ProgressbarText(
+                          text:
+                              "${authCode.substring(0, 4)} ${authCode.substring(4)}",
+                          progress:
+                              (adjustedTimeMillis % (key.interval * 1000)) /
+                                  (key.interval * 1000),
+                          color: color)
+                      : ProgressbarText(
+                          text:
+                              "${authCode.substring(0, 3)} ${authCode.substring(3)}",
+                          progress:
+                              (adjustedTimeMillis % (key.interval * 1000)) /
+                                  (key.interval * 1000),
+                          color: color);
+                } else {
+                  return key.eightDigits
+                      ? Text(
+                          "${authCode.substring(0, 4)} ${authCode.substring(4)}",
+                          style: TextStyle(
+                              fontSize: 20,
+                              color: color,
+                              fontWeight: FontWeight.bold))
+                      : Text(
+                          "${authCode.substring(0, 3)} ${authCode.substring(3)}",
+                          style: TextStyle(
+                              fontSize: 20,
+                              color: color,
+                              fontWeight: FontWeight.bold));
+                }
+              }),
+        ),
+        // Progress bar of time left before code changes and update it automatically
+        if (!altProgress)
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: ValueListenableBuilder(
+                  valueListenable: refresher,
+                  builder: (context, value, child) {
+                    int adjustedTimeMillis =
+                        DateTime.now().millisecondsSinceEpoch + time;
+                    return CircularProgressIndicator(
+                      // calculate progress seconds left until code changes (taking into account the time difference between device and server) "time" variable
+                      value: (adjustedTimeMillis % (key.interval * 1000)) /
+                          (key.interval * 1000),
+                      strokeWidth: 5,
+                      color: color,
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        )
+          )
       ]),
     );
   }
@@ -326,16 +365,7 @@ class _HomePageState extends State<HomePage> {
                                         Uri.parse("https://github.com/ptgms"));
                                   },
                                 ),
-                              ),
-                              Expanded(
-                                child: TextButton(
-                                  child: const Text("SphericalKat"),
-                                  onPressed: () async {
-                                    await launchUrl(Uri.parse(
-                                        "https://github.com/SphericalKat"));
-                                  },
-                                ),
-                              ),
+                              )
                             ],
                           ),
                         ]),
@@ -349,7 +379,7 @@ class _HomePageState extends State<HomePage> {
     );
 
     double width = MediaQuery.of(context).size.width;
-    int widthCard = 300;
+    int widthCard = 290;
 
     int heightCard = 94;
 
@@ -360,6 +390,22 @@ class _HomePageState extends State<HomePage> {
     int count = width ~/ widthCard;
 
     widthCard = width ~/ count;
+
+    FloatingActionButton fab = FloatingActionButton(
+      mini: (isPlatformMacos() || isPlatformWindows() || isPlatformLinux()),
+      onPressed: () {
+        if (!editMode) {
+          currentScreen = 1;
+          Navigator.pushNamed(context, "/addService");
+        } else {
+          setState(() {
+            editMode = false;
+          });
+        }
+      },
+      tooltip: editMode ? context.loc.edit : context.loc.add_service_name,
+      child: editMode ? const Icon(Icons.done) : const Icon(Icons.add),
+    );
 
     //updateProgress();
     loopRefresh();
@@ -373,21 +419,27 @@ class _HomePageState extends State<HomePage> {
           child: gridViewBuilder(count, widthCard, heightCard, itemModel.items),
         );
       }),
-      floatingActionButton: FloatingActionButton(
-        mini: (isPlatformMacos() || isPlatformWindows() || isPlatformLinux()),
-        onPressed: () {
-          if (!editMode) {
-            currentScreen = 1;
-            Navigator.pushNamed(context, "/addService");
-          } else {
-            setState(() {
-              editMode = false;
-            });
-          }
-        },
-        tooltip: editMode ? context.loc.edit : context.loc.add_service_name,
-        child: editMode ? const Icon(Icons.done) : const Icon(Icons.add),
-      ),
+      floatingActionButton: isPlatformMobile()
+          ? fab
+          : ContextMenuRegion(
+              contextMenu: GenericContextMenu(buttonConfigs: [
+                if (!editMode) ContextMenuButtonConfig(context.loc.add_service_name,
+                    onPressed: () {
+                  currentScreen = 1;
+                  Navigator.pushNamed(context, "/addService");
+                }, icon: const Icon(Icons.add)),
+                if (!editMode) ContextMenuButtonConfig(context.loc.home_import_export,
+                    onPressed: () {
+                    currentScreen = 3;
+                    Navigator.pushNamed(context, "/importExport");
+                }, icon: const Icon(Icons.import_export)),
+                ContextMenuButtonConfig(context.loc.edit, onPressed: () {
+                  setState(() {
+                    editMode = !editMode;
+                  });
+                }, icon: const Icon(Icons.edit)),
+              ]),
+              child: fab),
     );
   }
 
@@ -403,6 +455,17 @@ class _HomePageState extends State<HomePage> {
       itemCount: snapshot.length,
       itemBuilder: (BuildContext context, int index) {
         var color = StructTools().getTextColor(snapshot[index].color);
+
+        Card card = Card(
+          shadowColor: snapshot[index].color.withOpacity(0.5),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          color: snapshot[index].color,
+          child: Center(
+              child: otpListTile(snapshot[index], color, index, editMode)),
+        );
         return GestureDetector(
             key: ValueKey(snapshot[index].key),
             onTap: editMode
@@ -440,11 +503,23 @@ class _HomePageState extends State<HomePage> {
                       editMode = true;
                     });
                   },
-            child: Card(
-              color: snapshot[index].color,
-              child: Center(
-                  child: OTPListTile(snapshot[index], color, index, editMode)),
-            ));
+            child: isPlatformMobile()
+                ? card
+                : ContextMenuRegion(
+                    contextMenu: GenericContextMenu(buttonConfigs: [
+                      ContextMenuButtonConfig(context.loc.copy, onPressed: () {
+                        Clipboard.setData(
+                            ClipboardData(text: generateTOTP(snapshot[index])));
+                      }, icon: const Icon(Icons.copy)),
+                      ContextMenuButtonConfig(
+                        context.loc.home_context_menu_delete,
+                        onPressed: () {
+                          deleteDialog(snapshot[index], index);
+                        },
+                        icon: const Icon(Icons.delete)
+                      ),
+                    ]),
+                    child: card));
       },
       onReorder: (int oldIndex, int newIndex) {
         if (!editMode) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sekurity/components/progress_text.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
