@@ -25,7 +25,7 @@ class SubMenuItem {
 class MyMenuBar extends StatefulWidget {
   final List<SubMenuItem> menuItems;
   const MyMenuBar({super.key, required this.menuItems});
-  
+
   @override
   State<StatefulWidget> createState() => _MyMenuBarState();
 }
@@ -43,13 +43,15 @@ class _MyMenuBarState extends State<MyMenuBar> {
   @override
   Widget build(BuildContext context) {
     var result = PreferredSize(
-            preferredSize: const Size.fromHeight(30),
-            child: Row(
+        preferredSize: const Size.fromHeight(30),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Expanded(
               child: MenuBar(
-                style: MenuStyle(fixedSize: MaterialStateProperty.all<Size>(const Size.fromHeight(30))),
+                style: MenuStyle(
+                    fixedSize: MaterialStateProperty.all<Size>(
+                        const Size.fromHeight(30))),
                 children: <Widget>[
                   for (var item in widget.menuItems)
                     SubmenuButton(menuChildren: [
@@ -71,8 +73,7 @@ class _MyMenuBarState extends State<MyMenuBar> {
       for (var item in widget.menuItems) {
         for (var subItem in item.items) {
           if (subItem.keybind != null) {
-            shortcuts[subItem.keybind!] =
-              VoidCallbackIntent(subItem.onPressed);
+            shortcuts[subItem.keybind!] = VoidCallbackIntent(subItem.onPressed);
           }
         }
       }

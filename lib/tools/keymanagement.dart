@@ -113,9 +113,11 @@ class KeyManagement {
       if (serviceNameSplitted.length > 1) {}
       var secret = key["secret"];
 
-      var eightDigits = key["digits"] == MigrationPayload_DigitCount.DIGIT_COUNT_EIGHT;
+      var eightDigits =
+          key["digits"] == MigrationPayload_DigitCount.DIGIT_COUNT_EIGHT;
 
-      var algorithm = key["algorithm"] == MigrationPayload_Algorithm.ALGORITHM_SHA1
+      var algorithm = key["algorithm"] ==
+              MigrationPayload_Algorithm.ALGORITHM_SHA1
           ? OTPAlgorithm.SHA1
           : key["algorithm"] == MigrationPayload_Algorithm.ALGORITHM_SHA256
               ? OTPAlgorithm.SHA256
@@ -127,9 +129,11 @@ class KeyManagement {
       var icon = "";
 
       // Get default color and icon from json
-      final defaultServices = await rootBundle.loadString('assets/services.json');
+      final defaultServices =
+          await rootBundle.loadString('assets/services.json');
       // Structure: { "discord": { "color": "#7289DA", "icon": "discord" }, ... }
-      final Map<String, dynamic> defaultServicesMap = jsonDecode(defaultServices);
+      final Map<String, dynamic> defaultServicesMap =
+          jsonDecode(defaultServices);
       if (defaultServicesMap.containsKey(serviceName.toLowerCase())) {
         color = Color(defaultServicesMap[serviceName.toLowerCase()]["color"]);
         icon = defaultServicesMap[serviceName.toLowerCase()]["icon"];
@@ -138,15 +142,21 @@ class KeyManagement {
         color = StructTools().randomColorGenerator();
       }
 
-      var keyStruct =
-          KeyStruct(iconBase64: icon, key: secret, service: serviceName, description: "", color: color, eightDigits: eightDigits, algorithm: algorithm);
+      var keyStruct = KeyStruct(
+          iconBase64: icon,
+          key: secret,
+          service: serviceName,
+          description: "",
+          color: color,
+          eightDigits: eightDigits,
+          algorithm: algorithm);
       await addKeyManual(keyStruct, context);
     }
     return true;
   }
 
   // Same as migrateData but to encode a QR code
-  Future<QrImageView > parseTransferQR(context) async {
+  Future<QrImageView> parseTransferQR(context) async {
     final itemModel = Provider.of<Keys>(context, listen: false);
     developer.log("Transfering!");
     var encodedKeys = await parseTransferURL(itemModel.items);
@@ -207,7 +217,8 @@ class KeyManagement {
 
     if (jsonDecode(defaultServices).containsKey(serviceName.toLowerCase())) {
       // Get color and icon from json
-      color = Color(jsonDecode(defaultServices)[serviceName.toLowerCase()]["color"]);
+      color = Color(
+          jsonDecode(defaultServices)[serviceName.toLowerCase()]["color"]);
       icon = jsonDecode(defaultServices)[serviceName.toLowerCase()]["icon"];
     }
 
@@ -330,7 +341,8 @@ class KeyManagement {
     } else {
       if (isPlatformMobile()) {
         // Open file save dialog with the bytes encrypted
-        var filePath = await FilePicker.platform.getDirectoryPath(dialogTitle: "Select directory to save");
+        var filePath = await FilePicker.platform
+            .getDirectoryPath(dialogTitle: "Select directory to save");
 
         if (filePath == null) {
           return false;
@@ -340,8 +352,11 @@ class KeyManagement {
         await file.writeAsBytes(encrypted);
       } else {
         // Open file save dialog with the bytes encrypted
-        var filePath = await FilePicker.platform
-            .saveFile(dialogTitle: "Save encrypted file", fileName: "otp_backup.keys", type: FileType.custom, allowedExtensions: ["keys"]);
+        var filePath = await FilePicker.platform.saveFile(
+            dialogTitle: "Save encrypted file",
+            fileName: "otp_backup.keys",
+            type: FileType.custom,
+            allowedExtensions: ["keys"]);
 
         if (filePath == null) {
           return false;
@@ -358,9 +373,13 @@ class KeyManagement {
     // On mobile filetypes are not supported
     FilePickerResult? filePath;
     if (isPlatformMobile()) {
-      filePath = await FilePicker.platform.pickFiles(dialogTitle: "Select encrypted file");
+      filePath = await FilePicker.platform
+          .pickFiles(dialogTitle: "Select encrypted file");
     } else {
-      filePath = await FilePicker.platform.pickFiles(dialogTitle: "Select encrypted file", type: FileType.custom, allowedExtensions: ["keys"]);
+      filePath = await FilePicker.platform.pickFiles(
+          dialogTitle: "Select encrypted file",
+          type: FileType.custom,
+          allowedExtensions: ["keys"]);
     }
 
     if (filePath == null) {

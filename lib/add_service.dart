@@ -22,8 +22,12 @@ class AddService extends StatefulWidget {
 }
 
 class _AddServiceState extends State<AddService> {
-  ValueNotifier<KeyStruct> keyStruct =
-      ValueNotifier(KeyStruct(iconBase64: "", key: "", service: "", color: StructTools().randomColorGenerator(), description: ""));
+  ValueNotifier<KeyStruct> keyStruct = ValueNotifier(KeyStruct(
+      iconBase64: "",
+      key: "",
+      service: "",
+      color: StructTools().randomColorGenerator(),
+      description: ""));
 
   var isManual = false;
   var isEscaped = false;
@@ -57,7 +61,10 @@ class _AddServiceState extends State<AddService> {
 
     return Scaffold(
       appBar: appBar,
-      body: (isManual || (isPlatformWindows() || isPlatformLinux() || isPlatformMacos())) ? manualMode(context) : mobileView(context),
+      body: (isManual ||
+              (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()))
+          ? manualMode(context)
+          : mobileView(context),
     );
   }
 
@@ -75,13 +82,19 @@ class _AddServiceState extends State<AddService> {
               child: QRView(
                 formatsAllowed: const [BarcodeFormat.qrcode],
                 overlay: QrScannerOverlayShape(
-                    borderColor: Colors.red, borderRadius: 10, borderLength: 30, borderWidth: 10, cutOutSize: 300, overlayColor: Colors.black.withOpacity(0.5)),
+                    borderColor: Colors.red,
+                    borderRadius: 10,
+                    borderLength: 30,
+                    borderWidth: 10,
+                    cutOutSize: 300,
+                    overlayColor: Colors.black.withOpacity(0.5)),
                 key: GlobalKey(debugLabel: 'QR'),
                 onQRViewCreated: (QRViewController controller) {
                   controller.scannedDataStream.listen((scanData) async {
                     if (scanned || scanData.code == null) return;
                     scanned = true;
-                    if (await KeyManagement().addKeyQR(scanData.code!, context)) {
+                    if (await KeyManagement()
+                        .addKeyQR(scanData.code!, context)) {
                       if (context.mounted) {
                         currentScreen = 0;
                         //widget.onServiceAdded();
@@ -143,7 +156,11 @@ class _AddServiceState extends State<AddService> {
                                         Icons.key,
                                         size: 32.0,
                                       )
-                                    : SizedBox(height: 32.0, width: 32.0, child: Image.memory(base64Decode(value.iconBase64))),
+                                    : SizedBox(
+                                        height: 32.0,
+                                        width: 32.0,
+                                        child: Image.memory(
+                                            base64Decode(value.iconBase64))),
                               )));
                     },
                   ),
@@ -159,24 +176,28 @@ class _AddServiceState extends State<AddService> {
                           if (isPlatformMobile()) {
                             // Image picker
                             final ImagePicker picker = ImagePicker();
-                            final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                            final XFile? image = await picker.pickImage(
+                                source: ImageSource.gallery);
                             if (image != null) {
                               // Make image square and resize to 64x64
-                              var imageBytes = StructTools().cropAndResizeImage(base64Encode(await image.readAsBytes()));
+                              var imageBytes = StructTools().cropAndResizeImage(
+                                  base64Encode(await image.readAsBytes()));
                               setState(() {
                                 keyStruct.value.iconBase64 = imageBytes;
                               });
                             }
                           } else {
                             // File picker
-                            final FilePickerResult? result = await FilePicker.platform.pickFiles(
+                            final FilePickerResult? result =
+                                await FilePicker.platform.pickFiles(
                               type: FileType.image,
                             );
 
                             if (result != null) {
                               final File file = File(result.files.single.path!);
                               // Make image square and resize to 64x64
-                              var imageBytes = StructTools().cropAndResizeImage(base64Encode(await file.readAsBytes()));
+                              var imageBytes = StructTools().cropAndResizeImage(
+                                  base64Encode(await file.readAsBytes()));
                               setState(() {
                                 keyStruct.value.iconBase64 = imageBytes;
                               });
@@ -193,7 +214,10 @@ class _AddServiceState extends State<AddService> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const SizedBox(height: 32.0, width: 32.0, child: Icon(Icons.web)),
+                                const SizedBox(
+                                    height: 32.0,
+                                    width: 32.0,
+                                    child: Icon(Icons.web)),
                                 Text(context.loc.service_icon),
                               ],
                             ),
@@ -218,14 +242,18 @@ class _AddServiceState extends State<AddService> {
                                       pickerColor: keyStruct.value.color,
                                       onColorChanged: (color) {
                                         keyStruct.value = KeyStruct(
-                                            iconBase64: keyStruct.value.iconBase64,
+                                            iconBase64:
+                                                keyStruct.value.iconBase64,
                                             key: keyStruct.value.key,
                                             service: keyStruct.value.service,
                                             color: color,
-                                            description: keyStruct.value.description,
+                                            description:
+                                                keyStruct.value.description,
                                             interval: keyStruct.value.interval,
-                                            eightDigits: keyStruct.value.eightDigits,
-                                            algorithm: keyStruct.value.algorithm);
+                                            eightDigits:
+                                                keyStruct.value.eightDigits,
+                                            algorithm:
+                                                keyStruct.value.algorithm);
                                       },
                                     ),
                                   ),
@@ -267,19 +295,24 @@ class _AddServiceState extends State<AddService> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
+                          padding:
+                              const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
                           child: TextField(
                             onChanged: (value) async {
-                              final defaultServices = await rootBundle.loadString('assets/services.json');
+                              final defaultServices = await rootBundle
+                                  .loadString('assets/services.json');
                               // Structure: { "discord": { "color": 4283983346, "icon": "base64"} }
 
                               var color = keyStruct.value.color;
                               var icon = keyStruct.value.iconBase64;
 
-                              if (jsonDecode(defaultServices).containsKey(value.toLowerCase())) {
+                              if (jsonDecode(defaultServices)
+                                  .containsKey(value.toLowerCase())) {
                                 // Get color and icon from json
-                                color = Color(jsonDecode(defaultServices)[value.toLowerCase()]["color"]);
-                                icon = jsonDecode(defaultServices)[value.toLowerCase()]["icon"];
+                                color = Color(jsonDecode(defaultServices)[
+                                    value.toLowerCase()]["color"]);
+                                icon = jsonDecode(defaultServices)[
+                                    value.toLowerCase()]["icon"];
                               }
 
                               keyStruct.value = KeyStruct(
@@ -292,14 +325,17 @@ class _AddServiceState extends State<AddService> {
                                   eightDigits: keyStruct.value.eightDigits,
                                   algorithm: keyStruct.value.algorithm);
                             },
-                            decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_name),
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                labelText: context.loc.service_name),
                           ),
                         ),
                         const Divider(
                           height: 0,
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
+                          padding:
+                              const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
                           child: TextField(
                             onChanged: (value) {
                               keyStruct.value = KeyStruct(
@@ -312,14 +348,17 @@ class _AddServiceState extends State<AddService> {
                                   eightDigits: keyStruct.value.eightDigits,
                                   algorithm: keyStruct.value.algorithm);
                             },
-                            decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_key),
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                labelText: context.loc.service_key),
                           ),
                         ),
                         const Divider(
                           height: 0,
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
+                          padding:
+                              const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
                           child: TextField(
                             onChanged: (value) {
                               keyStruct.value = KeyStruct(
@@ -332,7 +371,9 @@ class _AddServiceState extends State<AddService> {
                                   eightDigits: keyStruct.value.eightDigits,
                                   algorithm: keyStruct.value.algorithm);
                             },
-                            decoration: InputDecoration(border: InputBorder.none, labelText: context.loc.service_description),
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                labelText: context.loc.service_description),
                           ),
                         ),
                       ],
@@ -454,18 +495,23 @@ class _AddServiceState extends State<AddService> {
                     child: TextButton(
                       onPressed: () async {
                         // Check if service name and key are not empty
-                        if (keyStruct.value.service == "" || keyStruct.value.key == "") {
+                        if (keyStruct.value.service == "" ||
+                            keyStruct.value.key == "") {
                           ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.service_empty_error)));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(context.loc.service_empty_error)));
                           return;
                         }
-                        if (!KeyManagement().isValidBase32(keyStruct.value.key)) {
+                        if (!KeyManagement()
+                            .isValidBase32(keyStruct.value.key)) {
                           ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.service_invalid_key)));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(context.loc.service_invalid_key)));
                           return;
                         }
                         // Add service to database
-                        if (await KeyManagement().addKeyManual(keyStruct.value, context)) {
+                        if (await KeyManagement()
+                            .addKeyManual(keyStruct.value, context)) {
                           if (context.mounted) {
                             currentScreen = 0;
                             //widget.onServiceAdded();
@@ -476,7 +522,9 @@ class _AddServiceState extends State<AddService> {
                       child: Text(context.loc.add_service_name),
                     ),
                   ),
-                  !(isPlatformWindows() || isPlatformLinux() || isPlatformMacos())
+                  !(isPlatformWindows() ||
+                          isPlatformLinux() ||
+                          isPlatformMacos())
                       ? Expanded(
                           child: TextButton(
                             onPressed: () {

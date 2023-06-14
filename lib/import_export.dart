@@ -52,12 +52,14 @@ class _ImportExportState extends State<ImportExport> {
                   },
                   decoration: InputDecoration(
                       icon: const Icon(Icons.password_rounded),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20)),
                       labelText: context.loc.import_export_password),
                 )
               : ListTile(
                   title: Text(context.loc.import_export_no_encryption_warning),
-                  leading: const Icon(Icons.warning_rounded, color: Colors.orange),
+                  leading:
+                      const Icon(Icons.warning_rounded, color: Colors.orange),
                 ),
         ),
         Row(
@@ -70,19 +72,29 @@ class _ImportExportState extends State<ImportExport> {
                   onPressed: () async {
                     if (password == "") {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_password_empty)));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content:
+                              Text(context.loc.import_export_password_empty)));
                       return;
                     }
                     if (await KeyManagement().getDecryptedJson(password)) {
-                      if (context.mounted){
+                      if (context.mounted) {
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_import_success), 
-                        action: SnackBarAction(label: context.loc.import_export_import_success_restart, onPressed: exitApp),));
-                      } 
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content:
+                              Text(context.loc.import_export_import_success),
+                          action: SnackBarAction(
+                              label: context
+                                  .loc.import_export_import_success_restart,
+                              onPressed: exitApp),
+                        ));
+                      }
                     } else {
-                      if (context.mounted){
+                      if (context.mounted) {
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_import_error)));
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content:
+                                Text(context.loc.import_export_import_error)));
                       }
                     }
                   },
@@ -98,14 +110,17 @@ class _ImportExportState extends State<ImportExport> {
                     if (itemModel.items.isEmpty) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_no_keys)));
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(context.loc.import_export_no_keys)));
                       }
                       return;
                     }
                     if (password == "") {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_password_empty)));
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                context.loc.import_export_password_empty)));
                       }
                       return;
                     }
@@ -134,8 +149,9 @@ class _ImportExportState extends State<ImportExport> {
                     if (itemModel.items.isEmpty) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.loc.import_export_no_keys)));
-                        }
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(context.loc.import_export_no_keys)));
+                      }
                       return;
                     }
                     // Show dialog
@@ -145,7 +161,10 @@ class _ImportExportState extends State<ImportExport> {
                           builder: (BuildContext context) {
                             return AlertDialog(
                               title: Text(context.loc.import_export_export_qr),
-                              content: SizedBox(height: 200, width: 200, child: Center(child: value)),
+                              content: SizedBox(
+                                  height: 200,
+                                  width: 200,
+                                  child: Center(child: value)),
                               actions: [
                                 TextButton(
                                   child: Text(context.loc.dialog_close),

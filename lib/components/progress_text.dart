@@ -7,7 +7,11 @@ class ProgressbarText extends StatelessWidget {
   final double progress;
   final Color color;
 
-  const ProgressbarText({super.key, required this.text, required this.progress, required this.color});
+  const ProgressbarText(
+      {super.key,
+      required this.text,
+      required this.progress,
+      required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +27,8 @@ class ProgressbarText extends StatelessWidget {
       shaderCallback: (bounds) => gradient.createShader(
         Rect.fromLTWH(0, 0, bounds.width, bounds.height),
       ),
-      child: Text(text, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+      child: Text(text,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
     );
 
     // anti-aliasing the text

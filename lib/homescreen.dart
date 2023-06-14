@@ -337,104 +337,107 @@ class _HomePageState extends State<HomePage> {
     loopRefresh();
     return Scaffold(
       appBar: (isPlatformMobile() || forceAppbar.value)
-        ? AppBar(
-            title: editMode ? Text(context.loc.editing) : Text(widget.title),
-            actions: [
-              // 3 dots menu
-              PopupMenuButton(
-                itemBuilder: (BuildContext context) {
-                  return [
-                    PopupMenuItem(value: 0, child: Text(context.loc.edit)),
-                    PopupMenuItem(
-                        value: 2, child: Text(context.loc.home_import_export)),
-                    PopupMenuItem(
-                      value: 3,
-                      child: Text(context.loc.home_about),
-                    ),
-                    PopupMenuItem(
-                      value: 1,
-                      child: Text(context.loc.home_settings),
-                    ),
-                  ];
-                },
-                onSelected: (int value) async {
-                  switch (value) {
-                    case 0:
-                      setState(() {
-                        editMode = !editMode;
-                      });
-                      break;
-                    case 1:
-                      currentScreen = 2;
-                      Navigator.pushNamed(context, "/settings");
-                      break;
-                    case 2:
-                      currentScreen = 3;
-                      Navigator.pushNamed(context, "/importExport");
-                      break;
-                    case 3:
-                      // Show about dialog
-                      aboutDialog(context);
-                      break;
-                  }
-                },
-              )
-            ],
-          )
-        : PreferredSize(preferredSize: const Size.fromHeight(40.0), child: MyMenuBar(menuItems: [
-            SubMenuItem(title: "File", items: [
-              MenuItem(
-                  title: context.loc.home_about,
-                  onPressed: () {
-                    aboutDialog(context);
-                  }),
-              MenuItem(
-                  title: context.loc.home_import_export,
-                  onPressed: () {
-                    currentScreen = 3;
-                    Navigator.pushNamed(context, "/importExport");
-                  }),
-              MenuItem(
-                  title: context.loc.quit,
-                  onPressed: () {
-                    exitApp();
-                  })
-            ]),
-            SubMenuItem(title: "Edit", items: [
-              MenuItem(
-                  title: context.loc.add_service_name,
-                  keybind: const SingleActivator(LogicalKeyboardKey.keyA,
-                      control: true),
-                  onPressed: () {
-                    if (currentScreen == 0) {
-                      currentScreen = 1;
-                      Navigator.pushNamed(context, "/addService");
+          ? AppBar(
+              title: editMode ? Text(context.loc.editing) : Text(widget.title),
+              actions: [
+                // 3 dots menu
+                PopupMenuButton(
+                  itemBuilder: (BuildContext context) {
+                    return [
+                      PopupMenuItem(value: 0, child: Text(context.loc.edit)),
+                      PopupMenuItem(
+                          value: 2,
+                          child: Text(context.loc.home_import_export)),
+                      PopupMenuItem(
+                        value: 3,
+                        child: Text(context.loc.home_about),
+                      ),
+                      PopupMenuItem(
+                        value: 1,
+                        child: Text(context.loc.home_settings),
+                      ),
+                    ];
+                  },
+                  onSelected: (int value) async {
+                    switch (value) {
+                      case 0:
+                        setState(() {
+                          editMode = !editMode;
+                        });
+                        break;
+                      case 1:
+                        currentScreen = 2;
+                        Navigator.pushNamed(context, "/settings");
+                        break;
+                      case 2:
+                        currentScreen = 3;
+                        Navigator.pushNamed(context, "/importExport");
+                        break;
+                      case 3:
+                        // Show about dialog
+                        aboutDialog(context);
+                        break;
                     }
-                  }),
-              MenuItem(
-                  title: context.loc.edit,
-                  keybind: const SingleActivator(LogicalKeyboardKey.keyE,
-                      control: true),
-                  onPressed: () {
-                    setState(() {
-                      editMode = !editMode;
-                    });
-                  }),
-              MenuItem(
-                  title: context.loc.home_settings,
-                  keybind: isPlatformMacos()
-                      ? const SingleActivator(LogicalKeyboardKey.comma,
-                          control: true)
-                      : const SingleActivator(LogicalKeyboardKey.keyS,
+                  },
+                )
+              ],
+            )
+          : PreferredSize(
+              preferredSize: const Size.fromHeight(40.0),
+              child: MyMenuBar(menuItems: [
+                SubMenuItem(title: "File", items: [
+                  MenuItem(
+                      title: context.loc.home_about,
+                      onPressed: () {
+                        aboutDialog(context);
+                      }),
+                  MenuItem(
+                      title: context.loc.home_import_export,
+                      onPressed: () {
+                        currentScreen = 3;
+                        Navigator.pushNamed(context, "/importExport");
+                      }),
+                  MenuItem(
+                      title: context.loc.quit,
+                      onPressed: () {
+                        exitApp();
+                      })
+                ]),
+                SubMenuItem(title: "Edit", items: [
+                  MenuItem(
+                      title: context.loc.add_service_name,
+                      keybind: const SingleActivator(LogicalKeyboardKey.keyA,
                           control: true),
-                  onPressed: () {
-                    if (currentScreen == 0) {
-                      currentScreen = 2;
-                      Navigator.pushNamed(context, "/settings");
-                    }
-                  }),
-            ])
-          ])),
+                      onPressed: () {
+                        if (currentScreen == 0) {
+                          currentScreen = 1;
+                          Navigator.pushNamed(context, "/addService");
+                        }
+                      }),
+                  MenuItem(
+                      title: context.loc.edit,
+                      keybind: const SingleActivator(LogicalKeyboardKey.keyE,
+                          control: true),
+                      onPressed: () {
+                        setState(() {
+                          editMode = !editMode;
+                        });
+                      }),
+                  MenuItem(
+                      title: context.loc.home_settings,
+                      keybind: isPlatformMacos()
+                          ? const SingleActivator(LogicalKeyboardKey.comma,
+                              control: true)
+                          : const SingleActivator(LogicalKeyboardKey.keyS,
+                              control: true),
+                      onPressed: () {
+                        if (currentScreen == 0) {
+                          currentScreen = 2;
+                          Navigator.pushNamed(context, "/settings");
+                        }
+                      }),
+                ])
+              ])),
       body: Consumer<Keys>(builder: (context, itemModel, _) {
         initSystemTray();
         return SizedBox(

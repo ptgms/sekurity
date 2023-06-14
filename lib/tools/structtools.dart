@@ -6,7 +6,11 @@ import 'package:image/image.dart' as image_module;
 
 class StructTools {
   Color getTextColor(Color backgroundColor) {
-    double darkness = 1 - (0.299 * backgroundColor.red + 0.587 * backgroundColor.green + 0.114 * backgroundColor.blue) / 255;
+    double darkness = 1 -
+        (0.299 * backgroundColor.red +
+                0.587 * backgroundColor.green +
+                0.114 * backgroundColor.blue) /
+            255;
     if (darkness < 0.5) {
       return Colors.black;
     } else {
@@ -34,10 +38,12 @@ class StructTools {
     int y = (height - cropSize) ~/ 2;
 
     // Crop the image to 64x64 using the Image package
-    image_module.Image croppedImage = image_module.copyCrop(image, x: x, y: y, width: width, height: height);
+    image_module.Image croppedImage =
+        image_module.copyCrop(image, x: x, y: y, width: width, height: height);
 
     // Resize the cropped image to 64x64 using the Image package
-    image_module.Image resizedImage = image_module.copyResize(croppedImage, width: 64, height: 64);
+    image_module.Image resizedImage =
+        image_module.copyResize(croppedImage, width: 64, height: 64);
 
     // Encode the resized image into base64
     Uint8List resizedBytes = image_module.encodePng(resizedImage);

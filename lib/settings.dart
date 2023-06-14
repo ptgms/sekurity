@@ -22,7 +22,8 @@ class _SettingsState extends State<Settings> {
     storage.write(key: "theme", value: appTheme.toString());
     storage.write(key: "bold", value: bold ? "true" : "false");
     storage.write(key: "altProgress", value: altProgress ? "true" : "false");
-    storage.write(key: "forceAppbar", value: forceAppbar.value ? "true" : "false");
+    storage.write(
+        key: "forceAppbar", value: forceAppbar.value ? "true" : "false");
 
     return;
   }
@@ -259,8 +260,7 @@ class _SettingsState extends State<Settings> {
                   leading: const Icon(Icons.hourglass_bottom_rounded),
                   initialValue: altProgress,
                   onToggle: (value) {
-                    final itemModel =
-                        Provider.of<Keys>(context, listen: false);
+                    final itemModel = Provider.of<Keys>(context, listen: false);
                     setState(() {
                       altProgress = value;
                     });
@@ -275,8 +275,7 @@ class _SettingsState extends State<Settings> {
                   leading: const Icon(Icons.menu),
                   initialValue: forceAppbar.value,
                   onToggle: (value) {
-                    final itemModel =
-                        Provider.of<Keys>(context, listen: false);
+                    final itemModel = Provider.of<Keys>(context, listen: false);
                     setState(() {
                       forceAppbar.value = value;
                     });
@@ -284,8 +283,8 @@ class _SettingsState extends State<Settings> {
                     saveSettings();
                   },
                   title: Text(context.loc.settings_menubar_replacement),
-                  description:
-                      Text(context.loc.settings_menubar_replacement_description),
+                  description: Text(
+                      context.loc.settings_menubar_replacement_description),
                 ),
               ],
             ),

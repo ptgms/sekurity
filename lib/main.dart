@@ -1,9 +1,7 @@
 import 'package:context_menus/context_menus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
-import 'package:sekurity/components/menubar.dart';
 import 'package:sekurity/edit_service.dart';
 import 'package:sekurity/homescreen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -115,8 +113,10 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
           title: 'Sekurity',
           initialRoute: '/',
           routes: {
-            '/': (BuildContext context) =>
-                ContextMenuOverlay(child: const HomePage(title: "Sekurity",)),
+            '/': (BuildContext context) => ContextMenuOverlay(
+                    child: const HomePage(
+                  title: "Sekurity",
+                )),
             '/addService': (BuildContext context) => const AddService(),
             '/settings': (BuildContext context) => const Settings(),
             '/importExport': (BuildContext context) => const ImportExport(),

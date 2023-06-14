@@ -61,7 +61,9 @@ Future<String> parseTransferURL(List<KeyStruct> keys) {
     otpParameter.name = key.service;
     otpParameter.issuer = key.description;
     otpParameter.algorithm = MigrationPayload_Algorithm.ALGORITHM_SHA256;
-    otpParameter.digits = key.eightDigits ? MigrationPayload_DigitCount.DIGIT_COUNT_EIGHT : MigrationPayload_DigitCount.DIGIT_COUNT_SIX;
+    otpParameter.digits = key.eightDigits
+        ? MigrationPayload_DigitCount.DIGIT_COUNT_EIGHT
+        : MigrationPayload_DigitCount.DIGIT_COUNT_SIX;
     otpParameter.type = MigrationPayload_OtpType.OTP_TYPE_TOTP;
     otpParameter.counter = Int64(0);
     return otpParameter;
