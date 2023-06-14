@@ -99,6 +99,9 @@
     "settings_alt_progress": "Alternative Progress Indicator",
     "settings_alt_progress_description": "Shows a progress bar of the codes expiry inside the text.",
 
+    "settings_menubar_replacement": "Show App Bar on Desktop",
+    "settings_menubar_replacement_description": "Show the app bar on desktop instead of the menubar.",
+
     "cancel": "Cancel",
     "qr_notice": "Scan the QR code shown by your service to add it to Sekurity. You can also import your Google Authenticator QR code.",
     "qr_transfer_notice": "You can use this button to transfer your keys to another device. You can also import then in Google Authenticator.",

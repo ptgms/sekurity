@@ -22,6 +22,7 @@ class _SettingsState extends State<Settings> {
     storage.write(key: "theme", value: appTheme.toString());
     storage.write(key: "bold", value: bold ? "true" : "false");
     storage.write(key: "altProgress", value: altProgress ? "true" : "false");
+    storage.write(key: "forceAppbar", value: forceAppbar.value ? "true" : "false");
 
     return;
   }
@@ -269,7 +270,23 @@ class _SettingsState extends State<Settings> {
                   title: Text(context.loc.settings_alt_progress),
                   description:
                       Text(context.loc.settings_alt_progress_description),
-                )
+                ),
+                SettingsTile.switchTile(
+                  leading: const Icon(Icons.menu),
+                  initialValue: forceAppbar.value,
+                  onToggle: (value) {
+                    final itemModel =
+                        Provider.of<Keys>(context, listen: false);
+                    setState(() {
+                      forceAppbar.value = value;
+                    });
+                    itemModel.uiUpdate();
+                    saveSettings();
+                  },
+                  title: Text(context.loc.settings_menubar_replacement),
+                  description:
+                      Text(context.loc.settings_menubar_replacement_description),
+                ),
               ],
             ),
             SettingsSection(

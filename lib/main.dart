@@ -1,8 +1,9 @@
 import 'package:context_menus/context_menus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
-import 'package:sekurity/components/progress_text.dart';
+import 'package:sekurity/components/menubar.dart';
 import 'package:sekurity/edit_service.dart';
 import 'package:sekurity/homescreen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -50,6 +51,12 @@ Future<void> loadSettings() async {
   storage.read(key: "altProgress").then((value) {
     if (value != null) {
       altProgress = value == "true";
+    }
+  });
+
+  storage.read(key: "forceAppbar").then((value) {
+    if (value != null) {
+      forceAppbar.value = value == "true";
     }
   });
 }
@@ -109,7 +116,7 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
           initialRoute: '/',
           routes: {
             '/': (BuildContext context) =>
-                ContextMenuOverlay(child: const HomePage(title: 'Sekurity')),
+                ContextMenuOverlay(child: const HomePage(title: "Sekurity",)),
             '/addService': (BuildContext context) => const AddService(),
             '/settings': (BuildContext context) => const Settings(),
             '/importExport': (BuildContext context) => const ImportExport(),
@@ -128,7 +135,6 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
             useMaterial3: true,
           ),
         );
-
         return app;
       },
     );
@@ -139,6 +145,7 @@ var appTheme = ValueNotifier(0);
 var bold = false;
 var time = 0;
 var altProgress = false;
+var forceAppbar = ValueNotifier(false);
 
 extension LocalizedBuildContext on BuildContext {
   AppLocalizations get loc => AppLocalizations.of(this);

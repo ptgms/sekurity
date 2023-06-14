@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
+import 'package:sekurity/components/menubar.dart';
 import 'package:sekurity/components/progress_text.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
@@ -282,7 +283,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     // Keyboard shortcuts
-    RawKeyboard.instance.addListener((RawKeyEvent event) {
+    /*RawKeyboard.instance.addListener((RawKeyEvent event) {
       // Ctrl + A = Add service
       if (event.isControlPressed && event.logicalKey.keyId == 0x61) {
         // Only navigate if current screen is home
@@ -301,82 +302,7 @@ class _HomePageState extends State<HomePage> {
           Navigator.of(context).pushNamed("/settings");
         }
       }
-    });
-
-    var appBar = AppBar(
-      title: editMode ? Text(context.loc.editing) : Text(widget.title),
-      actions: [
-        // 3 dots menu
-        PopupMenuButton(
-          itemBuilder: (BuildContext context) {
-            return [
-              PopupMenuItem(value: 0, child: Text(context.loc.edit)),
-              PopupMenuItem(
-                  value: 2, child: Text(context.loc.home_import_export)),
-              PopupMenuItem(
-                value: 3,
-                child: Text(context.loc.home_about),
-              ),
-              PopupMenuItem(
-                value: 1,
-                child: Text(context.loc.home_settings),
-              ),
-            ];
-          },
-          onSelected: (int value) async {
-            switch (value) {
-              case 0:
-                setState(() {
-                  editMode = !editMode;
-                });
-                break;
-              case 1:
-                currentScreen = 2;
-                Navigator.pushNamed(context, "/settings");
-                break;
-              case 2:
-                currentScreen = 3;
-                Navigator.pushNamed(context, "/importExport");
-                break;
-              case 3:
-                // Show about dialog
-                showAboutDialog(
-                    context: context,
-                    applicationIcon: Image.asset(
-                      "assets/app_icon.png",
-                      width: 64,
-                      height: 64,
-                    ),
-                    applicationName: "Sekurity",
-                    applicationVersion: "1.0.0",
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(children: [
-                          Text(context.loc.home_about_description),
-                          Row(
-                            children: [
-                              // 2 Image buttons
-                              Expanded(
-                                child: TextButton(
-                                  child: const Text("ptgms"),
-                                  onPressed: () async {
-                                    await launchUrl(
-                                        Uri.parse("https://github.com/ptgms"));
-                                  },
-                                ),
-                              )
-                            ],
-                          ),
-                        ]),
-                      ),
-                    ]);
-                break;
-            }
-          },
-        )
-      ],
-    );
+    });*/
 
     double width = MediaQuery.of(context).size.width;
     int widthCard = 290;
@@ -410,7 +336,105 @@ class _HomePageState extends State<HomePage> {
     //updateProgress();
     loopRefresh();
     return Scaffold(
-      appBar: appBar,
+      appBar: (isPlatformMobile() || forceAppbar.value)
+        ? AppBar(
+            title: editMode ? Text(context.loc.editing) : Text(widget.title),
+            actions: [
+              // 3 dots menu
+              PopupMenuButton(
+                itemBuilder: (BuildContext context) {
+                  return [
+                    PopupMenuItem(value: 0, child: Text(context.loc.edit)),
+                    PopupMenuItem(
+                        value: 2, child: Text(context.loc.home_import_export)),
+                    PopupMenuItem(
+                      value: 3,
+                      child: Text(context.loc.home_about),
+                    ),
+                    PopupMenuItem(
+                      value: 1,
+                      child: Text(context.loc.home_settings),
+                    ),
+                  ];
+                },
+                onSelected: (int value) async {
+                  switch (value) {
+                    case 0:
+                      setState(() {
+                        editMode = !editMode;
+                      });
+                      break;
+                    case 1:
+                      currentScreen = 2;
+                      Navigator.pushNamed(context, "/settings");
+                      break;
+                    case 2:
+                      currentScreen = 3;
+                      Navigator.pushNamed(context, "/importExport");
+                      break;
+                    case 3:
+                      // Show about dialog
+                      aboutDialog(context);
+                      break;
+                  }
+                },
+              )
+            ],
+          )
+        : PreferredSize(preferredSize: const Size.fromHeight(40.0), child: MyMenuBar(menuItems: [
+            SubMenuItem(title: "File", items: [
+              MenuItem(
+                  title: context.loc.home_about,
+                  onPressed: () {
+                    aboutDialog(context);
+                  }),
+              MenuItem(
+                  title: context.loc.home_import_export,
+                  onPressed: () {
+                    currentScreen = 3;
+                    Navigator.pushNamed(context, "/importExport");
+                  }),
+              MenuItem(
+                  title: context.loc.quit,
+                  onPressed: () {
+                    exitApp();
+                  })
+            ]),
+            SubMenuItem(title: "Edit", items: [
+              MenuItem(
+                  title: context.loc.add_service_name,
+                  keybind: const SingleActivator(LogicalKeyboardKey.keyA,
+                      control: true),
+                  onPressed: () {
+                    if (currentScreen == 0) {
+                      currentScreen = 1;
+                      Navigator.pushNamed(context, "/addService");
+                    }
+                  }),
+              MenuItem(
+                  title: context.loc.edit,
+                  keybind: const SingleActivator(LogicalKeyboardKey.keyE,
+                      control: true),
+                  onPressed: () {
+                    setState(() {
+                      editMode = !editMode;
+                    });
+                  }),
+              MenuItem(
+                  title: context.loc.home_settings,
+                  keybind: isPlatformMacos()
+                      ? const SingleActivator(LogicalKeyboardKey.comma,
+                          control: true)
+                      : const SingleActivator(LogicalKeyboardKey.keyS,
+                          control: true),
+                  onPressed: () {
+                    if (currentScreen == 0) {
+                      currentScreen = 2;
+                      Navigator.pushNamed(context, "/settings");
+                    }
+                  }),
+            ])
+          ])),
       body: Consumer<Keys>(builder: (context, itemModel, _) {
         initSystemTray();
         return SizedBox(
@@ -423,16 +447,18 @@ class _HomePageState extends State<HomePage> {
           ? fab
           : ContextMenuRegion(
               contextMenu: GenericContextMenu(buttonConfigs: [
-                if (!editMode) ContextMenuButtonConfig(context.loc.add_service_name,
-                    onPressed: () {
-                  currentScreen = 1;
-                  Navigator.pushNamed(context, "/addService");
-                }, icon: const Icon(Icons.add)),
-                if (!editMode) ContextMenuButtonConfig(context.loc.home_import_export,
-                    onPressed: () {
+                if (!editMode)
+                  ContextMenuButtonConfig(context.loc.add_service_name,
+                      onPressed: () {
+                    currentScreen = 1;
+                    Navigator.pushNamed(context, "/addService");
+                  }, icon: const Icon(Icons.add)),
+                if (!editMode)
+                  ContextMenuButtonConfig(context.loc.home_import_export,
+                      onPressed: () {
                     currentScreen = 3;
                     Navigator.pushNamed(context, "/importExport");
-                }, icon: const Icon(Icons.import_export)),
+                  }, icon: const Icon(Icons.import_export)),
                 ContextMenuButtonConfig(context.loc.edit, onPressed: () {
                   setState(() {
                     editMode = !editMode;
@@ -441,6 +467,39 @@ class _HomePageState extends State<HomePage> {
               ]),
               child: fab),
     );
+  }
+
+  void aboutDialog(BuildContext context) {
+    showAboutDialog(
+        context: context,
+        applicationIcon: Image.asset(
+          "assets/app_icon.png",
+          width: 64,
+          height: 64,
+        ),
+        applicationName: "Sekurity",
+        applicationVersion: "1.0.0",
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(children: [
+              Text(context.loc.home_about_description),
+              Row(
+                children: [
+                  // 2 Image buttons
+                  Expanded(
+                    child: TextButton(
+                      child: const Text("ptgms"),
+                      onPressed: () async {
+                        await launchUrl(Uri.parse("https://github.com/ptgms"));
+                      },
+                    ),
+                  )
+                ],
+              ),
+            ]),
+          ),
+        ]);
   }
 
   ReorderableGridView gridViewBuilder(
@@ -512,12 +571,9 @@ class _HomePageState extends State<HomePage> {
                             ClipboardData(text: generateTOTP(snapshot[index])));
                       }, icon: const Icon(Icons.copy)),
                       ContextMenuButtonConfig(
-                        context.loc.home_context_menu_delete,
-                        onPressed: () {
-                          deleteDialog(snapshot[index], index);
-                        },
-                        icon: const Icon(Icons.delete)
-                      ),
+                          context.loc.home_context_menu_delete, onPressed: () {
+                        deleteDialog(snapshot[index], index);
+                      }, icon: const Icon(Icons.delete)),
                     ]),
                     child: card));
       },
