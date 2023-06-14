@@ -42,6 +42,9 @@ class _MyMenuBarState extends State<MyMenuBar> {
 
   @override
   Widget build(BuildContext context) {
+    var menuShape = MaterialStateProperty.all<OutlinedBorder>(
+        const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10))));
     var result = PreferredSize(
         preferredSize: const Size.fromHeight(30),
         child: Row(
@@ -54,14 +57,18 @@ class _MyMenuBarState extends State<MyMenuBar> {
                         const Size.fromHeight(30))),
                 children: <Widget>[
                   for (var item in widget.menuItems)
-                    SubmenuButton(menuChildren: [
-                      for (var subItem in item.items)
-                        MenuItemButton(
-                          onPressed: subItem.onPressed,
-                          shortcut: subItem.keybind,
-                          child: Text(subItem.title),
-                        ),
-                    ], child: Text(item.title)),
+                    SubmenuButton(
+                        style: ButtonStyle(shape: menuShape),
+                        menuStyle: MenuStyle(shape: menuShape),
+                        menuChildren: [
+                          for (var subItem in item.items)
+                            MenuItemButton(
+                              onPressed: subItem.onPressed,
+                              shortcut: subItem.keybind,
+                              child: Text(subItem.title),
+                            ),
+                        ],
+                        child: Text(item.title)),
                 ],
               ),
             ),

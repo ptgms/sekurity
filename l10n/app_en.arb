@@ -1,4 +1,6 @@
 {
+    "@@locale": "en",
+    
     "app_name": "Sekurity",
 
     "edit": "Toggle Edit",
@@ -9,6 +11,9 @@
     "undo": "Undo",
     "home_settings": "Settings",
     "home_about": "About",
+
+    "restart": "Restart",
+    "restart_prompt": "You need to restart the app for the changes to take effect.",
 
     "home_about_description": "Made by ptgms",
 

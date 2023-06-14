@@ -1,6 +1,5 @@
 import 'package:context_menus/context_menus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:sekurity/edit_service.dart';
 import 'package:sekurity/homescreen.dart';
@@ -10,13 +9,24 @@ import 'package:sekurity/settings.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_size/window_size.dart';
 
 import 'add_service.dart';
 
-Future<void> loadSettings() async {
-  const storage = FlutterSecureStorage();
+void loadSettings() {
+  SharedPreferences.getInstance().then((prefs) {
+    appTheme.value = prefs.getInt('theme') ?? 0;
+    bold = prefs.getBool('bold') ?? false;
+    time = prefs.getInt('time') ?? 0;
+    if (prefs.getBool('hidden') ?? false) {
+      AppWindow().hide();
+    }
+    altProgress = prefs.getBool('altProgress') ?? false;
+    forceAppbar.value = prefs.getBool('forceAppbar') ?? false;
+  });
+  /*const storage = FlutterSecureStorage();
   storage.read(key: "theme").then((value) {
     if (value != null) {
       appTheme.value = value == "0"
@@ -56,14 +66,14 @@ Future<void> loadSettings() async {
     if (value != null) {
       forceAppbar.value = value == "true";
     }
-  });
+  });*/
 }
 
 Future<void> main() async {
   runApp(ChangeNotifierProvider(
       create: (context) => Keys(), child: const SekurityApp()));
 
-  await loadSettings();
+  loadSettings();
 
   if (isPlatformMacos() || isPlatformLinux() || isPlatformWindows()) {
     // Set the window title

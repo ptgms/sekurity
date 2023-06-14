@@ -173,12 +173,18 @@ class _HomePageState extends State<HomePage> {
   Widget otpListTile(KeyStruct key, Color color, int index, bool editMode) {
     return ListTile(
       leading: editMode
-          ? IconButton(
-              icon: Icon(Icons.delete, size: 30.0, color: color),
-              onPressed: () {
-                deleteDialog(key, index);
-              },
-            )
+          ? SizedBox(
+            height: 32.0,
+                  width: 32.0,
+            child: IconButton(
+              padding: const EdgeInsets.all(0.0),
+              iconSize: 15.0,
+                icon: Icon(Icons.delete, size: 32.0, color: color),
+                onPressed: () {
+                  deleteDialog(key, index);
+                },
+              ),
+          )
           : (key.iconBase64 == "")
               ? Icon(
                   Icons.key,
@@ -282,28 +288,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Keyboard shortcuts
-    /*RawKeyboard.instance.addListener((RawKeyEvent event) {
-      // Ctrl + A = Add service
-      if (event.isControlPressed && event.logicalKey.keyId == 0x61) {
-        // Only navigate if current screen is home
-        if (currentScreen == 0) {
-          currentScreen = 1;
-          Navigator.of(context).pushNamed("/addService");
-        }
-      }
-
-      // Ctrl + S or Cmd + , on macOS = Settings
-      if ((event.isControlPressed && event.logicalKey.keyId == 0x73) ||
-          (event.isMetaPressed && event.logicalKey.keyId == 0x2c)) {
-        // Only navigate if current screen is home
-        if (currentScreen == 0) {
-          currentScreen = 2;
-          Navigator.of(context).pushNamed("/settings");
-        }
-      }
-    });*/
-
     double width = MediaQuery.of(context).size.width;
     int widthCard = 290;
 
@@ -407,7 +391,7 @@ class _HomePageState extends State<HomePage> {
                   MenuItem(
                       title: context.loc.add_service_name,
                       keybind: const SingleActivator(LogicalKeyboardKey.keyA,
-                          control: true),
+                          control: true, includeRepeats: false),
                       onPressed: () {
                         if (currentScreen == 0) {
                           currentScreen = 1;
@@ -417,7 +401,7 @@ class _HomePageState extends State<HomePage> {
                   MenuItem(
                       title: context.loc.edit,
                       keybind: const SingleActivator(LogicalKeyboardKey.keyE,
-                          control: true),
+                          control: true, includeRepeats: false),
                       onPressed: () {
                         setState(() {
                           editMode = !editMode;
@@ -427,9 +411,9 @@ class _HomePageState extends State<HomePage> {
                       title: context.loc.home_settings,
                       keybind: isPlatformMacos()
                           ? const SingleActivator(LogicalKeyboardKey.comma,
-                              control: true)
+                              control: true, includeRepeats: false)
                           : const SingleActivator(LogicalKeyboardKey.keyS,
-                              control: true),
+                              control: true, includeRepeats: false),
                       onPressed: () {
                         if (currentScreen == 0) {
                           currentScreen = 2;
@@ -576,7 +560,7 @@ class _HomePageState extends State<HomePage> {
                       ContextMenuButtonConfig(
                           context.loc.home_context_menu_delete, onPressed: () {
                         deleteDialog(snapshot[index], index);
-                      }, icon: const Icon(Icons.delete)),
+                      }, icon: const Icon(Icons.delete)), 
                     ]),
                     child: card));
       },

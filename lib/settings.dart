@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
+import 'package:sekurity/tools/platformtools.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:ntp/ntp.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'homescreen.dart';
 import 'main.dart';
@@ -18,13 +19,11 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   Future<void> saveSettings() async {
-    const storage = FlutterSecureStorage();
-    storage.write(key: "theme", value: appTheme.toString());
-    storage.write(key: "bold", value: bold ? "true" : "false");
-    storage.write(key: "altProgress", value: altProgress ? "true" : "false");
-    storage.write(
-        key: "forceAppbar", value: forceAppbar.value ? "true" : "false");
-
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setInt("theme", appTheme.value);
+    prefs.setBool("bold", bold);
+    prefs.setBool("altProgress", altProgress);
+    prefs.setBool("forceAppbar", forceAppbar.value);
     return;
   }
 
@@ -46,8 +45,8 @@ class _SettingsState extends State<Settings> {
     try {
       int timeLookup = await NTP.getNtpOffset(
           localTime: DateTime.now(), lookUpAddress: server);
-      const storage = FlutterSecureStorage();
-      storage.write(key: "time", value: time.toString());
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setInt("time", time);
       time = timeLookup;
       return true;
     } catch (e) {
@@ -271,21 +270,31 @@ class _SettingsState extends State<Settings> {
                   description:
                       Text(context.loc.settings_alt_progress_description),
                 ),
-                SettingsTile.switchTile(
-                  leading: const Icon(Icons.menu),
-                  initialValue: forceAppbar.value,
-                  onToggle: (value) {
-                    final itemModel = Provider.of<Keys>(context, listen: false);
-                    setState(() {
-                      forceAppbar.value = value;
-                    });
-                    itemModel.uiUpdate();
-                    saveSettings();
-                  },
-                  title: Text(context.loc.settings_menubar_replacement),
-                  description: Text(
-                      context.loc.settings_menubar_replacement_description),
-                ),
+                if (!isPlatformMobile())
+                  SettingsTile.switchTile(
+                    leading: const Icon(Icons.menu),
+                    initialValue: forceAppbar.value,
+                    onToggle: (value) {
+                      setState(() {
+                        forceAppbar.value = value;
+                      });
+                      // show snackbar for restart
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(context.loc.restart_prompt),
+                        action: SnackBarAction(
+                          label: context.loc.restart,
+                          onPressed: () {
+                            exitApp();
+                          },
+                        ),
+                        duration: const Duration(seconds: 2),
+                      ));
+                      saveSettings();
+                    },
+                    title: Text(context.loc.settings_menubar_replacement),
+                    description: Text(
+                        context.loc.settings_menubar_replacement_description),
+                  ),
               ],
             ),
             SettingsSection(
