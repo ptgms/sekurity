@@ -3,11 +3,12 @@ import 'dart:io';
 
 import 'package:dart_dash_otp/dart_dash_otp.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:sekurity/main.dart';
 import 'package:sekurity/tools/platformtools.dart';
 import 'package:sekurity/tools/structtools.dart';
@@ -47,7 +48,14 @@ class _AddServiceState extends State<AddService> {
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
+          isPlatformMacos()
+              ? CupertinoNavigationBarBackButton(
+                  onPressed: () {
+                    currentScreen = 0;
+                    Navigator.of(context).pop();
+                  },
+                )
+              : IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
               Navigator.of(context).pop();
@@ -62,7 +70,7 @@ class _AddServiceState extends State<AddService> {
     return Scaffold(
       appBar: appBar,
       body: (isManual ||
-              (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()))
+              (isPlatformWindows() || isPlatformLinux()))
           ? manualMode(context)
           : mobileView(context),
     );
@@ -79,8 +87,21 @@ class _AddServiceState extends State<AddService> {
         children: [
           Expanded(
             child: Center(
-              child: QRView(
-                formatsAllowed: const [BarcodeFormat.qrcode],
+              child: MobileScanner(
+                onDetect: (BarcodeCapture barcodes) async { 
+                if (scanned) return;
+                    scanned = true;
+                    //debugPrint(barcodes.barcodes[0].rawValue);
+                    if (await KeyManagement()
+                        .addKeyQR(barcodes.barcodes[0].rawValue!, context)) {
+                      if (context.mounted) {
+                        currentScreen = 0;
+                        //widget.onServiceAdded();
+                        Navigator.of(context).pop();
+                      }
+                    }
+               },
+                /*formatsAllowed: const [BarcodeFormat.qrcode],
                 overlay: QrScannerOverlayShape(
                     borderColor: Colors.red,
                     borderRadius: 10,
@@ -102,7 +123,7 @@ class _AddServiceState extends State<AddService> {
                       }
                     }
                   });
-                },
+                },*/
               ),
             ),
           ),

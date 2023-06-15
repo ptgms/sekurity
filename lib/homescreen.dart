@@ -43,6 +43,14 @@ class _HomePageState extends State<HomePage> {
     storage.write(key: "hidden", value: "false");
   }
 
+  dynamic getShortcut(key, bool extra) {
+    if (isPlatformMacos()) {
+      return SingleActivator(key, meta: true, includeRepeats: false);
+    } else {
+      return SingleActivator(key, control: true, includeRepeats: false);
+    }
+  }
+
   void deleteDialog(KeyStruct keyToDelete, int index) {
     showDialog(
       context: context,
@@ -383,6 +391,7 @@ class _HomePageState extends State<HomePage> {
                       }),
                   MenuItem(
                       title: context.loc.quit,
+                      keybind: getShortcut(LogicalKeyboardKey.keyQ, true),
                       onPressed: () {
                         exitApp();
                       })
@@ -390,8 +399,7 @@ class _HomePageState extends State<HomePage> {
                 SubMenuItem(title: "Edit", items: [
                   MenuItem(
                       title: context.loc.add_service_name,
-                      keybind: const SingleActivator(LogicalKeyboardKey.keyA,
-                          control: true, includeRepeats: false),
+                      keybind: getShortcut(LogicalKeyboardKey.keyA, true),
                       onPressed: () {
                         if (currentScreen == 0) {
                           currentScreen = 1;
@@ -400,8 +408,7 @@ class _HomePageState extends State<HomePage> {
                       }),
                   MenuItem(
                       title: context.loc.edit,
-                      keybind: const SingleActivator(LogicalKeyboardKey.keyE,
-                          control: true, includeRepeats: false),
+                      keybind: getShortcut(LogicalKeyboardKey.keyE, true),
                       onPressed: () {
                         setState(() {
                           editMode = !editMode;
@@ -410,10 +417,8 @@ class _HomePageState extends State<HomePage> {
                   MenuItem(
                       title: context.loc.home_settings,
                       keybind: isPlatformMacos()
-                          ? const SingleActivator(LogicalKeyboardKey.comma,
-                              control: true, includeRepeats: false)
-                          : const SingleActivator(LogicalKeyboardKey.keyS,
-                              control: true, includeRepeats: false),
+                          ? getShortcut(LogicalKeyboardKey.comma, true)
+                          : getShortcut(LogicalKeyboardKey.keyS, true),
                       onPressed: () {
                         if (currentScreen == 0) {
                           currentScreen = 2;

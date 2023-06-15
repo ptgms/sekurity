@@ -26,47 +26,6 @@ void loadSettings() {
     altProgress = prefs.getBool('altProgress') ?? false;
     forceAppbar.value = prefs.getBool('forceAppbar') ?? false;
   });
-  /*const storage = FlutterSecureStorage();
-  storage.read(key: "theme").then((value) {
-    if (value != null) {
-      appTheme.value = value == "0"
-          ? 0
-          : value == "1"
-              ? 1
-              : 2;
-    }
-  });
-  storage.read(key: "bold").then((value) {
-    if (value != null) {
-      bold = value == "true";
-    }
-  });
-
-  storage.read(key: "time").then((value) {
-    if (value != null) {
-      time = int.parse(value);
-    }
-  });
-
-  storage.read(key: "hidden").then((value) {
-    if (value != null) {
-      if (value == "true") {
-        AppWindow().hide();
-      }
-    }
-  });
-
-  storage.read(key: "altProgress").then((value) {
-    if (value != null) {
-      altProgress = value == "true";
-    }
-  });
-
-  storage.read(key: "forceAppbar").then((value) {
-    if (value != null) {
-      forceAppbar.value = value == "true";
-    }
-  });*/
 }
 
 Future<void> main() async {

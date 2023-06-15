@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sekurity/tools/platformtools.dart';
 
 class MenuItem {
   const MenuItem({
@@ -42,7 +43,8 @@ class _MyMenuBarState extends State<MyMenuBar> {
 
   @override
   Widget build(BuildContext context) {
-    var menuShape = MaterialStateProperty.all<OutlinedBorder>(
+    if (!isPlatformMacos()) {
+      var menuShape = MaterialStateProperty.all<OutlinedBorder>(
         const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10))));
     var result = PreferredSize(
@@ -88,5 +90,22 @@ class _MyMenuBarState extends State<MyMenuBar> {
     }
 
     return result;
+    }
+    return PlatformMenuBar(menus: [
+    for (var item in widget.menuItems)
+      PlatformMenu(
+        label: item.title,
+        menus: [
+          PlatformMenuItemGroup(members: [
+            for (var subItem in item.items)
+            PlatformMenuItem(
+              label: subItem.title,
+              onSelected: subItem.onPressed,
+              shortcut: subItem.keybind,
+            ),
+          ])
+        ],
+      ),
+    ]);
   }
 }

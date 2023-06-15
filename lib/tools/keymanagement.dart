@@ -95,7 +95,6 @@ class KeyManagement {
     final itemModel = Provider.of<Keys>(context, listen: false);
     developer.log("Migrating!");
     var decodedData = await parseMigrationURL(key);
-
     for (var key in decodedData) {
       // Check if key is already saved
       if (itemModel.items.any((element) => element.key == key["secret"])) {

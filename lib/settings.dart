@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sekurity/tools/keymanagement.dart';
@@ -50,6 +51,7 @@ class _SettingsState extends State<Settings> {
       time = timeLookup;
       return true;
     } catch (e) {
+      debugPrint(e.toString());
       return false;
     }
   }
@@ -168,13 +170,20 @@ class _SettingsState extends State<Settings> {
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop();
-              currentScreen = 0;
-            },
-          ),
+          isPlatformMacos()
+              ? CupertinoNavigationBarBackButton(
+                  onPressed: () {
+                    currentScreen = 0;
+                    Navigator.of(context).pop();
+                  },
+                )
+              : IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    currentScreen = 0;
+                  },
+                ),
         ],
       ),
       title: Text(context.loc.settings),

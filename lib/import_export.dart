@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sekurity/tools/keymanagement.dart';
@@ -25,7 +26,14 @@ class _ImportExportState extends State<ImportExport> {
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
+          isPlatformMacos()
+              ? CupertinoNavigationBarBackButton(
+                  onPressed: () {
+                    currentScreen = 0;
+                    Navigator.of(context).pop();
+                  },
+                )
+              : IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
               Navigator.of(context).pop();
