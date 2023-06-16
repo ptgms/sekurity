@@ -60,7 +60,7 @@ class _MyMenuBarState extends State<MyMenuBar> {
                 children: <Widget>[
                   for (var item in widget.menuItems)
                     SubmenuButton(
-                        style: ButtonStyle(shape: menuShape),
+                        style: ButtonStyle(shape: menuShape, padding: MaterialStateProperty.all<EdgeInsetsGeometry>(const EdgeInsets.fromLTRB(0, 8, 0, 8))),
                         menuStyle: MenuStyle(shape: menuShape),
                         menuChildren: [
                           for (var subItem in item.items)

@@ -18,6 +18,24 @@ class StructTools {
     }
   }
 
+  Color getComplimentaryColor(Color color) {
+    // the color is either 25% brighter or darker based on brightness
+    double darkness = 1 -
+        (0.299 * color.red +
+                0.587 * color.green +
+                0.114 * color.blue) /
+            255;
+    bool dark = (darkness < 0.5);
+
+    double percentage = dark ? -0.25 : 0.25;
+
+    double r = color.red + (255 - color.red) * percentage;
+    double g = color.green + (255 - color.green) * percentage;
+    double b = color.blue + (255 - color.blue) * percentage;
+
+    return Color.fromRGBO(r.toInt(), g.toInt(), b.toInt(), 1);
+  }
+
   Color randomColorGenerator() {
     return Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
   }

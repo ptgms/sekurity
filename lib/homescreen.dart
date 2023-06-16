@@ -299,7 +299,7 @@ class _HomePageState extends State<HomePage> {
     double width = MediaQuery.of(context).size.width;
     int widthCard = 290;
 
-    int heightCard = 94;
+    int heightCard = 70;
 
     if (width < widthCard) {
       widthCard = width.toInt() - 1;
@@ -508,14 +508,21 @@ class _HomePageState extends State<HomePage> {
         var color = StructTools().getTextColor(snapshot[index].color);
 
         Card card = Card(
+          clipBehavior: Clip.antiAlias,
           shadowColor: snapshot[index].color.withOpacity(0.5),
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
           ),
-          color: snapshot[index].color,
-          child: Center(
-              child: otpListTile(snapshot[index], color, index, editMode)),
+          color: Colors.white,
+          child: Container(
+            decoration: BoxDecoration(gradient: LinearGradient(colors: [
+              snapshot[index].color,
+              StructTools().getComplimentaryColor(snapshot[index].color),
+            ], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+            child: Center(
+                child: otpListTile(snapshot[index], color, index, editMode)),
+          ),
         );
         return GestureDetector(
             key: ValueKey(snapshot[index].key),
