@@ -1,61 +1,61 @@
 {
   "images" : [
     {
-      "filename" : "Group 2.16.png",
+      "filename" : "Icon16.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "16x16"
     },
     {
-      "filename" : "Group 2.32.png",
+      "filename" : "Icon32.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "16x16"
     },
     {
-      "filename" : "Group 2.32 1.png",
+      "filename" : "Icon32 1.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "32x32"
     },
     {
-      "filename" : "Group 2.64.png",
+      "filename" : "Icon64.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "32x32"
     },
     {
-      "filename" : "Group 2.128.png",
+      "filename" : "Icon128.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "128x128"
     },
     {
-      "filename" : "Group 2.256.png",
+      "filename" : "Icon256.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "128x128"
     },
     {
-      "filename" : "Group 2.256 1.png",
+      "filename" : "Icon256 1.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "256x256"
     },
     {
-      "filename" : "Group 2.512.png",
+      "filename" : "Icon512.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "256x256"
     },
     {
-      "filename" : "Group 2.512 1.png",
+      "filename" : "Icon512 1.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "512x512"
     },
     {
-      "filename" : "Group 2.1024.png",
+      "filename" : "Icon1024.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"
