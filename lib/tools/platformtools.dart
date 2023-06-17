@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:vibration/vibration.dart';
 
 bool isPlatformWindows() {
   if (kIsWeb) {
@@ -32,6 +33,17 @@ bool isPlatformMobile() {
     return false;
   }
   return Platform.isAndroid || Platform.isIOS;
+}
+
+void vibrate(int duration) {
+  if (!isPlatformMobile()) {
+    return;
+  }
+  Vibration.hasVibrator().then((value) {
+    if (value != null && value) {
+      Vibration.vibrate(duration: duration);
+    }
+  });
 }
 
 void exitApp() {

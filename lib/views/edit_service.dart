@@ -94,7 +94,7 @@ class _EditServiceState extends State<EditService> {
                                         height: 32.0,
                                         width: 32.0,
                                         child: Image.memory(
-                                            base64Decode(value.iconBase64))),
+                                            base64Decode(value.iconBase64), gaplessPlayback: true,)),
                               )));
                     },
                   ),

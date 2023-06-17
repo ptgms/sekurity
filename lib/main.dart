@@ -1,4 +1,5 @@
 import 'package:context_menus/context_menus.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sekurity/views/edit_service.dart';
@@ -73,7 +74,8 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
     return ValueListenableBuilder(
       valueListenable: appTheme,
       builder: (_, mode, __) {
-        MaterialApp app = MaterialApp(
+        return DynamicColorBuilder(builder: ((lightDynamic, darkDynamic) {
+          return MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: const [
             Locale('en', ''),
@@ -99,13 +101,16 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
                   : ThemeMode.dark,
           theme: ThemeData(
             //primarySwatch: Colors.blue,
+            colorScheme: lightDynamic,
             useMaterial3: true,
           ),
-          darkTheme: ThemeData.dark(
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            colorScheme: darkDynamic,
             useMaterial3: true,
           ),
         );
-        return app;
+        }));
       },
     );
   }

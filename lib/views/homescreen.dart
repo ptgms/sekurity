@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
+import 'package:sekurity/components/animation_push.dart';
 import 'package:sekurity/components/menubar.dart';
 import 'package:sekurity/components/progress_text.dart';
 import 'package:sekurity/tools/keymanagement.dart';
@@ -180,6 +181,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget otpListTile(KeyStruct key, Color color, int index, bool editMode) {
     return ListTile(
+      mouseCursor: SystemMouseCursors.click,
       leading: editMode
           ? SizedBox(
               height: 32.0,
@@ -202,7 +204,7 @@ class _HomePageState extends State<HomePage> {
               : SizedBox(
                   height: 32.0,
                   width: 32.0,
-                  child: Image.memory(base64Decode(key.iconBase64))),
+                  child: Image.memory(base64Decode(key.iconBase64), gaplessPlayback: true,)),
       title: Text(key.service,
           style: TextStyle(
               color: color, fontWeight: bold ? FontWeight.bold : null)),
@@ -506,40 +508,43 @@ class _HomePageState extends State<HomePage> {
       itemCount: snapshot.length,
       itemBuilder: (BuildContext context, int index) {
         var color = StructTools().getTextColor(snapshot[index].color);
-
-        Card card = Card(
-          clipBehavior: Clip.antiAlias,
-          shadowColor: snapshot[index].color.withOpacity(0.5),
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.0),
-          ),
-          color: Colors.white,
-          child: Container(
-            decoration: gradientBackground
-                ? BoxDecoration(
-                    gradient: LinearGradient(colors: [
-                    snapshot[index].color,
-                    StructTools().getComplimentaryColor(snapshot[index].color),
-                  ], begin: Alignment.topLeft, end: Alignment.bottomRight))
-                : BoxDecoration(color: snapshot[index].color),
-            child: Center(
-                child: otpListTile(snapshot[index], color, index, editMode)),
+        Widget card = MouseRegion(
+          cursor: SystemMouseCursors.basic,
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            shadowColor: snapshot[index].color.withOpacity(0.5),
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+            color: Colors.white,
+            child: Container(
+              decoration: gradientBackground
+                  ? BoxDecoration(
+                      gradient: LinearGradient(colors: [
+                      snapshot[index].color,
+                      StructTools().getComplimentaryColor(snapshot[index].color),
+                    ], begin: Alignment.topLeft, end: Alignment.bottomRight))
+                  : BoxDecoration(color: snapshot[index].color),
+              child: Center(
+                  child: otpListTile(snapshot[index], color, index, editMode)),
+            ),
           ),
         );
         return GestureDetector(
             key: ValueKey(snapshot[index].key),
-            onTap: editMode
-                ? () async {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(context.loc.home_edit_info),
-                        duration: const Duration(seconds: 1),
-                      ));
-                    }
-                  }
+            onDoubleTap: editMode ? () async {} : null,
+            onLongPress: editMode
+                ? null
                 : () async {
+                    // Vibrate
+                    vibrate(25);
+                    setState(() {
+                      editMode = true;
+                    });
+                  },
+            child: isPlatformMobile()
+                ? editMode? card : AnimationPush(onPressed: () async {
                     await Clipboard.setData(
                         ClipboardData(text: generateTOTP(snapshot[index])));
                     // Show snackbar
@@ -550,22 +555,7 @@ class _HomePageState extends State<HomePage> {
                         duration: const Duration(seconds: 1),
                       ));
                     }
-                  },
-            onDoubleTap: editMode ? () async {} : null,
-            onLongPress: editMode
-                ? null
-                : () async {
-                    // Vibrate
-                    if (isPlatformMobile() &&
-                        (await Vibration.hasVibrator() ?? false)) {
-                      Vibration.vibrate(duration: 25);
-                    }
-                    setState(() {
-                      editMode = true;
-                    });
-                  },
-            child: isPlatformMobile()
-                ? card
+                  }, child: card)
                 : ContextMenuRegion(
                     contextMenu: GenericContextMenu(buttonConfigs: [
                       ContextMenuButtonConfig(context.loc.copy, onPressed: () {
@@ -577,7 +567,18 @@ class _HomePageState extends State<HomePage> {
                         deleteDialog(snapshot[index], index);
                       }, icon: const Icon(Icons.delete)),
                     ]),
-                    child: card));
+                    child: editMode? card : AnimationPush(onPressed: () async {
+                    await Clipboard.setData(
+                        ClipboardData(text: generateTOTP(snapshot[index])));
+                    // Show snackbar
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(context.loc.copied_to_clipboard),
+                        duration: const Duration(seconds: 1),
+                      ));
+                    }
+                  }, child: card)));
       },
       onReorder: (int oldIndex, int newIndex) {
         if (!editMode) {
