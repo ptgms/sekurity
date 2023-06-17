@@ -21,6 +21,7 @@ class Keys extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// This is used to update the UI when settings are changed
   void uiUpdate() {
     notifyListeners();
   }

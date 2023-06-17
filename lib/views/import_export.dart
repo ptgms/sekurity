@@ -6,7 +6,7 @@ import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
 
 import 'homescreen.dart';
-import 'main.dart';
+import '../main.dart';
 
 class ImportExport extends StatefulWidget {
   const ImportExport({super.key});
@@ -34,12 +34,12 @@ class _ImportExportState extends State<ImportExport> {
                   },
                 )
               : IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop();
-              currentScreen = 0;
-            },
-          ),
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    currentScreen = 0;
+                  },
+                ),
         ],
       ),
       title: Text(context.loc.home_import_export),

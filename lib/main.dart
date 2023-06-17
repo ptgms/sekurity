@@ -1,11 +1,11 @@
 import 'package:context_menus/context_menus.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sekurity/edit_service.dart';
-import 'package:sekurity/homescreen.dart';
+import 'package:sekurity/views/edit_service.dart';
+import 'package:sekurity/views/homescreen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:sekurity/import_export.dart';
-import 'package:sekurity/settings.dart';
+import 'package:sekurity/views/import_export.dart';
+import 'package:sekurity/views/settings.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:window_size/window_size.dart';
 
-import 'add_service.dart';
+import 'views/add_service.dart';
 
 void loadSettings() {
   SharedPreferences.getInstance().then((prefs) {
@@ -25,6 +25,7 @@ void loadSettings() {
     }
     altProgress = prefs.getBool('altProgress') ?? false;
     forceAppbar.value = prefs.getBool('forceAppbar') ?? false;
+    gradientBackground = prefs.getBool('gradientBackground') ?? true;
   });
 }
 
@@ -115,6 +116,7 @@ var bold = false;
 var time = 0;
 var altProgress = false;
 var forceAppbar = ValueNotifier(false);
+var gradientBackground = true;
 
 extension LocalizedBuildContext on BuildContext {
   AppLocalizations get loc => AppLocalizations.of(this);

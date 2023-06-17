@@ -45,67 +45,73 @@ class _MyMenuBarState extends State<MyMenuBar> {
   Widget build(BuildContext context) {
     if (!isPlatformMacos()) {
       var menuShape = MaterialStateProperty.all<OutlinedBorder>(
-        const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10))));
-    var result = PreferredSize(
-        preferredSize: const Size.fromHeight(30),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(
-              child: MenuBar(
-                style: MenuStyle(
-                    fixedSize: MaterialStateProperty.all<Size>(
-                        const Size.fromHeight(30))),
-                children: <Widget>[
-                  for (var item in widget.menuItems)
-                    SubmenuButton(
-                        style: ButtonStyle(shape: menuShape, padding: MaterialStateProperty.all<EdgeInsetsGeometry>(const EdgeInsets.fromLTRB(0, 8, 0, 8))),
-                        menuStyle: MenuStyle(shape: menuShape),
-                        menuChildren: [
-                          for (var subItem in item.items)
-                            MenuItemButton(
-                              onPressed: subItem.onPressed,
-                              shortcut: subItem.keybind,
-                              child: Text(subItem.title),
-                            ),
-                        ],
-                        child: Text(item.title)),
-                ],
+          const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10))));
+      var result = PreferredSize(
+          preferredSize: const Size.fromHeight(35),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(
+                child: MenuBar(
+                  style: MenuStyle(
+                      fixedSize: MaterialStateProperty.all<Size>(
+                          const Size.fromHeight(30))),
+                  children: <Widget>[
+                    for (var item in widget.menuItems)
+                      SubmenuButton(
+                          style: ButtonStyle(
+                              shape: menuShape,
+                              padding:
+                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
+                                      const EdgeInsets.fromLTRB(0, 8, 0, 8)),
+                              alignment: Alignment.center),
+                          menuStyle: MenuStyle(shape: menuShape),
+                          menuChildren: [
+                            for (var subItem in item.items)
+                              MenuItemButton(
+                                onPressed: subItem.onPressed,
+                                shortcut: subItem.keybind,
+                                child: Text(subItem.title),
+                              ),
+                          ],
+                          child: Text(item.title)),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ));
+            ],
+          ));
 
-    if (_shortcutsEntry == null) {
-      Map<ShortcutActivator, Intent> shortcuts = {};
-      for (var item in widget.menuItems) {
-        for (var subItem in item.items) {
-          if (subItem.keybind != null) {
-            shortcuts[subItem.keybind!] = VoidCallbackIntent(subItem.onPressed);
+      if (_shortcutsEntry == null) {
+        Map<ShortcutActivator, Intent> shortcuts = {};
+        for (var item in widget.menuItems) {
+          for (var subItem in item.items) {
+            if (subItem.keybind != null) {
+              shortcuts[subItem.keybind!] =
+                  VoidCallbackIntent(subItem.onPressed);
+            }
           }
         }
+        _shortcutsEntry = ShortcutRegistry.of(context).addAll(shortcuts);
       }
-      _shortcutsEntry = ShortcutRegistry.of(context).addAll(shortcuts);
-    }
 
-    return result;
+      return result;
     }
     return PlatformMenuBar(menus: [
-    for (var item in widget.menuItems)
-      PlatformMenu(
-        label: item.title,
-        menus: [
-          PlatformMenuItemGroup(members: [
-            for (var subItem in item.items)
-            PlatformMenuItem(
-              label: subItem.title,
-              onSelected: subItem.onPressed,
-              shortcut: subItem.keybind,
-            ),
-          ])
-        ],
-      ),
+      for (var item in widget.menuItems)
+        PlatformMenu(
+          label: item.title,
+          menus: [
+            PlatformMenuItemGroup(members: [
+              for (var subItem in item.items)
+                PlatformMenuItem(
+                  label: subItem.title,
+                  onSelected: subItem.onPressed,
+                  shortcut: subItem.keybind,
+                ),
+            ])
+          ],
+        ),
     ]);
   }
 }

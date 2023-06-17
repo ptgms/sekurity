@@ -9,7 +9,7 @@ import 'package:ntp/ntp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'homescreen.dart';
-import 'main.dart';
+import '../main.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -25,6 +25,7 @@ class _SettingsState extends State<Settings> {
     prefs.setBool("bold", bold);
     prefs.setBool("altProgress", altProgress);
     prefs.setBool("forceAppbar", forceAppbar.value);
+    prefs.setBool("gradientBackground", gradientBackground);
     return;
   }
 
@@ -211,7 +212,7 @@ class _SettingsState extends State<Settings> {
               )
             ]),
             SettingsSection(
-              title: Text(context.loc.settings_apperance),
+              title: Text(context.loc.settings_appearance),
               tiles: [
                 SettingsTile.navigation(
                   leading: const Icon(Icons.color_lens_outlined),
@@ -304,6 +305,21 @@ class _SettingsState extends State<Settings> {
                     description: Text(
                         context.loc.settings_menubar_replacement_description),
                   ),
+                SettingsTile.switchTile(
+                    initialValue: gradientBackground,
+                    onToggle: (value) {
+                      final itemModel =
+                          Provider.of<Keys>(context, listen: false);
+                      setState(() {
+                        gradientBackground = value;
+                      });
+                      itemModel.uiUpdate();
+                      saveSettings();
+                    },
+                    title: Text(context.loc.settings_gradient),
+                    description:
+                        Text(context.loc.settings_gradient_description),
+                    leading: const Icon(Icons.gradient)),
               ],
             ),
             SettingsSection(

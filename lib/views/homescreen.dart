@@ -17,7 +17,7 @@ import 'package:system_tray/system_tray.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vibration/vibration.dart';
 
-import 'main.dart';
+import '../main.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -182,17 +182,17 @@ class _HomePageState extends State<HomePage> {
     return ListTile(
       leading: editMode
           ? SizedBox(
-            height: 32.0,
-                  width: 32.0,
-            child: IconButton(
-              padding: const EdgeInsets.all(0.0),
-              iconSize: 15.0,
+              height: 32.0,
+              width: 32.0,
+              child: IconButton(
+                padding: const EdgeInsets.all(0.0),
+                iconSize: 15.0,
                 icon: Icon(Icons.delete, size: 32.0, color: color),
                 onPressed: () {
                   deleteDialog(key, index);
                 },
               ),
-          )
+            )
           : (key.iconBase64 == "")
               ? Icon(
                   Icons.key,
@@ -516,10 +516,13 @@ class _HomePageState extends State<HomePage> {
           ),
           color: Colors.white,
           child: Container(
-            decoration: BoxDecoration(gradient: LinearGradient(colors: [
-              snapshot[index].color,
-              StructTools().getComplimentaryColor(snapshot[index].color),
-            ], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+            decoration: gradientBackground
+                ? BoxDecoration(
+                    gradient: LinearGradient(colors: [
+                    snapshot[index].color,
+                    StructTools().getComplimentaryColor(snapshot[index].color),
+                  ], begin: Alignment.topLeft, end: Alignment.bottomRight))
+                : BoxDecoration(color: snapshot[index].color),
             child: Center(
                 child: otpListTile(snapshot[index], color, index, editMode)),
           ),
@@ -555,7 +558,7 @@ class _HomePageState extends State<HomePage> {
                     // Vibrate
                     if (isPlatformMobile() &&
                         (await Vibration.hasVibrator() ?? false)) {
-                      Vibration.vibrate(duration: 50);
+                      Vibration.vibrate(duration: 25);
                     }
                     setState(() {
                       editMode = true;
@@ -572,7 +575,7 @@ class _HomePageState extends State<HomePage> {
                       ContextMenuButtonConfig(
                           context.loc.home_context_menu_delete, onPressed: () {
                         deleteDialog(snapshot[index], index);
-                      }, icon: const Icon(Icons.delete)), 
+                      }, icon: const Icon(Icons.delete)),
                     ]),
                     child: card));
       },

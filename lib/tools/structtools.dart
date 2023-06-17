@@ -4,7 +4,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image_module;
 
+/// This class contains tools for manipulating data structures
 class StructTools {
+  /// Returns a readable text color based on the brightness of the color [backgroundColor]
   Color getTextColor(Color backgroundColor) {
     double darkness = 1 -
         (0.299 * backgroundColor.red +
@@ -18,13 +20,11 @@ class StructTools {
     }
   }
 
+  /// Returns a complimentary color based on the brightness of the color [color]
   Color getComplimentaryColor(Color color) {
     // the color is either 25% brighter or darker based on brightness
     double darkness = 1 -
-        (0.299 * color.red +
-                0.587 * color.green +
-                0.114 * color.blue) /
-            255;
+        (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
     bool dark = (darkness < 0.5);
 
     double percentage = dark ? -0.25 : 0.25;
@@ -40,6 +40,8 @@ class StructTools {
     return Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
   }
 
+  /// Returns a [base64] encoded image that is cropped and resized to 64x64.
+  /// Input is a [base64] encoded image [base64Image].
   String cropAndResizeImage(String base64Image) {
     // Decode the base64 image into bytes
     Uint8List bytes = base64.decode(base64Image);

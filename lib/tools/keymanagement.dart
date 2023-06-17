@@ -44,6 +44,7 @@ class KeyStruct {
 class KeyManagement {
   final _storage = const FlutterSecureStorage();
 
+  /// Checks if a string [input] is a valid base32 string and if it can be decoded
   bool isValidBase32(String input) {
     RegExp base32RegExp = RegExp(r'^[A-Z2-7]+$');
     if (!base32RegExp.hasMatch(input)) {
@@ -91,6 +92,7 @@ class KeyManagement {
     return true;
   }
 
+  /// Parses a migration URL [key] and gets a list of keys
   Future<bool> migrateData(String key, context) async {
     final itemModel = Provider.of<Keys>(context, listen: false);
     developer.log("Migrating!");
@@ -271,6 +273,8 @@ class KeyManagement {
     return await saveKeys(itemModel.items);
   }
 
+  /// Saves the keys to [FlutterSecureStorage] as json string.
+  /// Input is a List<KeyStruct> [keys]
   Future<bool> saveKeys(List<KeyStruct> keys) async {
     //version.value++;
     // Parse List<KeyStruct> into json string
@@ -300,6 +304,7 @@ class KeyManagement {
     return true;
   }
 
+  /// Encrypts the keys using [password] and saves them to a file
   Future<bool> getEncryptedJson(String password, context) async {
     final itemModel = Provider.of<Keys>(context, listen: false);
     var jsonKeys = List<Map<String, dynamic>>.empty(growable: true);
@@ -368,6 +373,7 @@ class KeyManagement {
     return true;
   }
 
+  /// Decrypts a json file using [password] and saves the keys using [saveKeys]
   Future<bool> getDecryptedJson(String password) async {
     // On mobile filetypes are not supported
     FilePickerResult? filePath;

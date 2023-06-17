@@ -56,12 +56,12 @@ class _AddServiceState extends State<AddService> {
                   },
                 )
               : IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop();
-              currentScreen = 0;
-            },
-          ),
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    currentScreen = 0;
+                  },
+                ),
         ],
       ),
       title: Text(context.loc.add_service_name),
@@ -69,8 +69,7 @@ class _AddServiceState extends State<AddService> {
 
     return Scaffold(
       appBar: appBar,
-      body: (isManual ||
-              (isPlatformWindows() || isPlatformLinux()))
+      body: (isManual || (isPlatformWindows() || isPlatformLinux()))
           ? manualMode(context)
           : mobileView(context),
     );
@@ -88,42 +87,19 @@ class _AddServiceState extends State<AddService> {
           Expanded(
             child: Center(
               child: MobileScanner(
-                onDetect: (BarcodeCapture barcodes) async { 
-                if (scanned) return;
-                    scanned = true;
-                    //debugPrint(barcodes.barcodes[0].rawValue);
-                    if (await KeyManagement()
-                        .addKeyQR(barcodes.barcodes[0].rawValue!, context)) {
-                      if (context.mounted) {
-                        currentScreen = 0;
-                        //widget.onServiceAdded();
-                        Navigator.of(context).pop();
-                      }
+                onDetect: (BarcodeCapture barcodes) async {
+                  if (scanned) return;
+                  scanned = true;
+                  //debugPrint(barcodes.barcodes[0].rawValue);
+                  if (await KeyManagement()
+                      .addKeyQR(barcodes.barcodes[0].rawValue!, context)) {
+                    if (context.mounted) {
+                      currentScreen = 0;
+                      //widget.onServiceAdded();
+                      Navigator.of(context).pop();
                     }
-               },
-                /*formatsAllowed: const [BarcodeFormat.qrcode],
-                overlay: QrScannerOverlayShape(
-                    borderColor: Colors.red,
-                    borderRadius: 10,
-                    borderLength: 30,
-                    borderWidth: 10,
-                    cutOutSize: 300,
-                    overlayColor: Colors.black.withOpacity(0.5)),
-                key: GlobalKey(debugLabel: 'QR'),
-                onQRViewCreated: (QRViewController controller) {
-                  controller.scannedDataStream.listen((scanData) async {
-                    if (scanned || scanData.code == null) return;
-                    scanned = true;
-                    if (await KeyManagement()
-                        .addKeyQR(scanData.code!, context)) {
-                      if (context.mounted) {
-                        currentScreen = 0;
-                        //widget.onServiceAdded();
-                        Navigator.of(context).pop();
-                      }
-                    }
-                  });
-                },*/
+                  }
+                },
               ),
             ),
           ),
