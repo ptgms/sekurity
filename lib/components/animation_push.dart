@@ -25,7 +25,7 @@ class _AnimationPushState extends State<AnimationPush>
       vsync: this,
     );
 
-    _animation = Tween<double>(begin: 1.0, end: 0.95).animate(
+    _animation = Tween<double>(begin: 1.0, end: 0.96).animate(
         _controller); // Customize the begin and end values for the desired push-in effect
   }
 

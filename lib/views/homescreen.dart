@@ -10,13 +10,12 @@ import 'package:reorderable_grid/reorderable_grid.dart';
 import 'package:sekurity/components/animation_push.dart';
 import 'package:sekurity/components/menubar.dart';
 import 'package:sekurity/components/progress_text.dart';
+import 'package:sekurity/homescreen_dialogs.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
 import 'package:sekurity/tools/structtools.dart';
 import 'package:system_tray/system_tray.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:vibration/vibration.dart';
 
 import '../main.dart';
 
@@ -50,40 +49,6 @@ class _HomePageState extends State<HomePage> {
     } else {
       return SingleActivator(key, control: true, includeRepeats: false);
     }
-  }
-
-  void deleteDialog(KeyStruct keyToDelete, int index) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(context.loc.home_delete_confirm(keyToDelete.service)),
-        content: Text(
-            context.loc.home_delete_confirm_description(keyToDelete.service)),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(context.loc.home_delete_confirm_no),
-          ),
-          TextButton(
-            onPressed: () async {
-              final itemModel = Provider.of<Keys>(context, listen: false);
-              // Delete key
-
-              setState(() {
-                itemModel.removeItem(itemModel.items[index]);
-              });
-              await KeyManagement().saveKeys(itemModel.items);
-              if (context.mounted) {
-                Navigator.of(context).pop();
-              }
-            },
-            child: Text(context.loc.home_delete_confirm_yes),
-          ),
-        ],
-      ),
-    );
   }
 
   String generateTOTP(KeyStruct key) {
@@ -191,7 +156,7 @@ class _HomePageState extends State<HomePage> {
                 iconSize: 15.0,
                 icon: Icon(Icons.delete, size: 32.0, color: color),
                 onPressed: () {
-                  deleteDialog(key, index);
+                  deleteDialog(key, index, context);
                 },
               ),
             )
@@ -204,7 +169,10 @@ class _HomePageState extends State<HomePage> {
               : SizedBox(
                   height: 32.0,
                   width: 32.0,
-                  child: Image.memory(base64Decode(key.iconBase64), gaplessPlayback: true,)),
+                  child: Image.memory(
+                    base64Decode(key.iconBase64),
+                    gaplessPlayback: true,
+                  )),
       title: Text(key.service,
           style: TextStyle(
               color: color, fontWeight: bold ? FontWeight.bold : null)),
@@ -212,78 +180,92 @@ class _HomePageState extends State<HomePage> {
           ? Text(key.description,
               style: TextStyle(
                   color: color,
-                  fontSize: 12.0,
+                  fontSize: 10.0,
                   fontWeight: bold ? FontWeight.bold : null))
           : null,
-      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-        // Add space in middle of code
-        SizedBox(
-          child: ValueListenableBuilder(
-              valueListenable: refresher,
-              builder: (context, value, child) {
-                int adjustedTimeMillis =
-                    DateTime.now().millisecondsSinceEpoch + time;
-                var authCode = generateTOTP(key);
-                if (altProgress) {
-                  return key.eightDigits
-                      ? ProgressbarText(
-                          text:
-                              "${authCode.substring(0, 4)} ${authCode.substring(4)}",
-                          progress:
-                              (adjustedTimeMillis % (key.interval * 1000)) /
-                                  (key.interval * 1000),
-                          color: color)
-                      : ProgressbarText(
-                          text:
-                              "${authCode.substring(0, 3)} ${authCode.substring(3)}",
-                          progress:
-                              (adjustedTimeMillis % (key.interval * 1000)) /
-                                  (key.interval * 1000),
-                          color: color);
-                } else {
-                  return key.eightDigits
-                      ? Text(
-                          "${authCode.substring(0, 4)} ${authCode.substring(4)}",
-                          style: TextStyle(
-                              fontSize: 20,
-                              color: color,
-                              fontWeight: FontWeight.bold))
-                      : Text(
-                          "${authCode.substring(0, 3)} ${authCode.substring(3)}",
-                          style: TextStyle(
-                              fontSize: 20,
-                              color: color,
-                              fontWeight: FontWeight.bold));
-                }
-              }),
-        ),
-        // Progress bar of time left before code changes and update it automatically
-        if (!altProgress)
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: ValueListenableBuilder(
-                  valueListenable: refresher,
-                  builder: (context, value, child) {
-                    int adjustedTimeMillis =
-                        DateTime.now().millisecondsSinceEpoch + time;
-                    return CircularProgressIndicator(
-                      // calculate progress seconds left until code changes (taking into account the time difference between device and server) "time" variable
-                      value: (adjustedTimeMillis % (key.interval * 1000)) /
-                          (key.interval * 1000),
-                      strokeWidth: 5,
-                      color: color,
-                    );
-                  },
-                ),
+      trailing: editMode
+          ? SizedBox(
+              height: 32.0,
+              width: 32.0,
+              child: IconButton(
+                padding: const EdgeInsets.all(0.0),
+                iconSize: 15.0,
+                icon: Icon(Icons.edit, size: 32.0, color: color),
+                onPressed: () {
+                  editDialog(key, index, context);
+                },
               ),
-            ),
-          )
-      ]),
+            )
+          : Row(mainAxisSize: MainAxisSize.min, children: [
+              // Add space in middle of code
+              SizedBox(
+                child: ValueListenableBuilder(
+                    valueListenable: refresher,
+                    builder: (context, value, child) {
+                      int adjustedTimeMillis =
+                          DateTime.now().millisecondsSinceEpoch + time;
+                      var authCode = generateTOTP(key);
+                      if (altProgress) {
+                        return key.eightDigits
+                            ? ProgressbarText(
+                                text:
+                                    "${authCode.substring(0, 4)} ${authCode.substring(4)}",
+                                progress: (adjustedTimeMillis %
+                                        (key.interval * 1000)) /
+                                    (key.interval * 1000),
+                                color: color)
+                            : ProgressbarText(
+                                text:
+                                    "${authCode.substring(0, 3)} ${authCode.substring(3)}",
+                                progress: (adjustedTimeMillis %
+                                        (key.interval * 1000)) /
+                                    (key.interval * 1000),
+                                color: color);
+                      } else {
+                        return key.eightDigits
+                            ? Text(
+                                "${authCode.substring(0, 4)} ${authCode.substring(4)}",
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    color: color,
+                                    fontWeight: FontWeight.bold))
+                            : Text(
+                                "${authCode.substring(0, 3)} ${authCode.substring(3)}",
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    color: color,
+                                    fontWeight: FontWeight.bold));
+                      }
+                    }),
+              ),
+              // Progress bar of time left before code changes and update it automatically
+              if (!altProgress)
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: ValueListenableBuilder(
+                        valueListenable: refresher,
+                        builder: (context, value, child) {
+                          int adjustedTimeMillis =
+                              DateTime.now().millisecondsSinceEpoch + time;
+                          return CircularProgressIndicator(
+                            // calculate progress seconds left until code changes (taking into account the time difference between device and server) "time" variable
+                            value:
+                                (adjustedTimeMillis % (key.interval * 1000)) /
+                                    (key.interval * 1000),
+                            strokeWidth: 5,
+                            color: color,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                )
+            ]),
     );
   }
 
@@ -329,171 +311,152 @@ class _HomePageState extends State<HomePage> {
 
     //updateProgress();
     loopRefresh();
-    return Scaffold(
-      appBar: (isPlatformMobile() || forceAppbar.value)
-          ? AppBar(
-              title: editMode ? Text(context.loc.editing) : Text(widget.title),
-              actions: [
-                // 3 dots menu
-                PopupMenuButton(
-                  itemBuilder: (BuildContext context) {
-                    return [
-                      PopupMenuItem(value: 0, child: Text(context.loc.edit)),
-                      PopupMenuItem(
-                          value: 2,
-                          child: Text(context.loc.home_import_export)),
-                      PopupMenuItem(
-                        value: 3,
-                        child: Text(context.loc.home_about),
-                      ),
-                      PopupMenuItem(
-                        value: 1,
-                        child: Text(context.loc.home_settings),
-                      ),
-                    ];
-                  },
-                  onSelected: (int value) async {
-                    switch (value) {
-                      case 0:
-                        setState(() {
-                          editMode = !editMode;
-                        });
-                        break;
-                      case 1:
-                        currentScreen = 2;
-                        Navigator.pushNamed(context, "/settings");
-                        break;
-                      case 2:
-                        currentScreen = 3;
-                        Navigator.pushNamed(context, "/importExport");
-                        break;
-                      case 3:
-                        // Show about dialog
-                        aboutDialog(context);
-                        break;
-                    }
-                  },
-                )
-              ],
-            )
-          : PreferredSize(
-              preferredSize: const Size.fromHeight(40.0),
-              child: MyMenuBar(menuItems: [
-                SubMenuItem(title: "File", items: [
-                  MenuItem(
-                      title: context.loc.home_about,
-                      onPressed: () {
-                        aboutDialog(context);
-                      }),
-                  MenuItem(
-                      title: context.loc.home_import_export,
-                      onPressed: () {
-                        currentScreen = 3;
-                        Navigator.pushNamed(context, "/importExport");
-                      }),
-                  MenuItem(
-                      title: context.loc.quit,
-                      keybind: getShortcut(LogicalKeyboardKey.keyQ, true),
-                      onPressed: () {
-                        exitApp();
-                      })
-                ]),
-                SubMenuItem(title: "Edit", items: [
-                  MenuItem(
-                      title: context.loc.add_service_name,
-                      keybind: getShortcut(LogicalKeyboardKey.keyA, true),
-                      onPressed: () {
-                        if (currentScreen == 0) {
-                          currentScreen = 1;
-                          Navigator.pushNamed(context, "/addService");
-                        }
-                      }),
-                  MenuItem(
-                      title: context.loc.edit,
-                      keybind: getShortcut(LogicalKeyboardKey.keyE, true),
-                      onPressed: () {
-                        setState(() {
-                          editMode = !editMode;
-                        });
-                      }),
-                  MenuItem(
-                      title: context.loc.home_settings,
-                      keybind: isPlatformMacos()
-                          ? getShortcut(LogicalKeyboardKey.comma, true)
-                          : getShortcut(LogicalKeyboardKey.keyS, true),
-                      onPressed: () {
-                        if (currentScreen == 0) {
-                          currentScreen = 2;
-                          Navigator.pushNamed(context, "/settings");
-                        }
-                      }),
-                ])
-              ])),
-      body: Consumer<Keys>(builder: (context, itemModel, _) {
-        initSystemTray();
-        return SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: gridViewBuilder(count, widthCard, heightCard, itemModel.items),
-        );
-      }),
-      floatingActionButton: isPlatformMobile()
-          ? fab
-          : ContextMenuRegion(
-              contextMenu: GenericContextMenu(buttonConfigs: [
-                if (!editMode)
-                  ContextMenuButtonConfig(context.loc.add_service_name,
-                      onPressed: () {
-                    currentScreen = 1;
-                    Navigator.pushNamed(context, "/addService");
-                  }, icon: const Icon(Icons.add)),
-                if (!editMode)
-                  ContextMenuButtonConfig(context.loc.home_import_export,
-                      onPressed: () {
-                    currentScreen = 3;
-                    Navigator.pushNamed(context, "/importExport");
-                  }, icon: const Icon(Icons.import_export)),
-                ContextMenuButtonConfig(context.loc.edit, onPressed: () {
-                  setState(() {
-                    editMode = !editMode;
-                  });
-                }, icon: const Icon(Icons.edit)),
-              ]),
-              child: fab),
-    );
-  }
-
-  void aboutDialog(BuildContext context) {
-    showAboutDialog(
-        context: context,
-        applicationIcon: Image.asset(
-          "assets/app_icon.png",
-          width: 64,
-          height: 64,
-        ),
-        applicationName: "Sekurity",
-        applicationVersion: "1.0.0",
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(children: [
-              Text(context.loc.home_about_description),
-              Row(
-                children: [
-                  // 2 Image buttons
-                  Expanded(
-                    child: TextButton(
-                      child: const Text("ptgms"),
-                      onPressed: () async {
-                        await launchUrl(Uri.parse("https://github.com/ptgms"));
+    return WillPopScope(
+        onWillPop: () {
+          if (editMode) {
+            setState(() {
+              editMode = false;
+            });
+            return Future.value(false);
+          } else {
+            return Future.value(true);
+          }
+        },
+        child: Scaffold(
+          appBar: (isPlatformMobile() || forceAppbar.value)
+              ? AppBar(
+                  title:
+                      editMode ? Text(context.loc.editing) : Text(widget.title),
+                  actions: [
+                    // 3 dots menu
+                    PopupMenuButton(
+                      itemBuilder: (BuildContext context) {
+                        return [
+                          PopupMenuItem(
+                              value: 0, child: Text(context.loc.edit)),
+                          PopupMenuItem(
+                              value: 2,
+                              child: Text(context.loc.home_import_export)),
+                          PopupMenuItem(
+                            value: 3,
+                            child: Text(context.loc.home_about),
+                          ),
+                          PopupMenuItem(
+                            value: 1,
+                            child: Text(context.loc.home_settings),
+                          ),
+                        ];
                       },
-                    ),
-                  )
-                ],
-              ),
-            ]),
-          ),
-        ]);
+                      onSelected: (int value) async {
+                        switch (value) {
+                          case 0:
+                            setState(() {
+                              editMode = !editMode;
+                            });
+                            break;
+                          case 1:
+                            currentScreen = 2;
+                            Navigator.pushNamed(context, "/settings");
+                            break;
+                          case 2:
+                            currentScreen = 3;
+                            Navigator.pushNamed(context, "/importExport");
+                            break;
+                          case 3:
+                            // Show about dialog
+                            aboutDialog(context);
+                            break;
+                        }
+                      },
+                    )
+                  ],
+                )
+              : PreferredSize(
+                  preferredSize: const Size.fromHeight(40.0),
+                  child: MyMenuBar(menuItems: [
+                    SubMenuItem(title: "File", items: [
+                      MenuItem(
+                          title: context.loc.home_about,
+                          onPressed: () {
+                            aboutDialog(context);
+                          }),
+                      MenuItem(
+                          title: context.loc.home_import_export,
+                          onPressed: () {
+                            currentScreen = 3;
+                            Navigator.pushNamed(context, "/importExport");
+                          }),
+                      MenuItem(
+                          title: context.loc.quit,
+                          keybind: getShortcut(LogicalKeyboardKey.keyQ, true),
+                          onPressed: () {
+                            exitApp();
+                          })
+                    ]),
+                    SubMenuItem(title: "Edit", items: [
+                      MenuItem(
+                          title: context.loc.add_service_name,
+                          keybind: getShortcut(LogicalKeyboardKey.keyA, true),
+                          onPressed: () {
+                            if (currentScreen == 0) {
+                              currentScreen = 1;
+                              Navigator.pushNamed(context, "/addService");
+                            }
+                          }),
+                      MenuItem(
+                          title: context.loc.edit,
+                          keybind: getShortcut(LogicalKeyboardKey.keyE, true),
+                          onPressed: () {
+                            setState(() {
+                              editMode = !editMode;
+                            });
+                          }),
+                      MenuItem(
+                          title: context.loc.home_settings,
+                          keybind: isPlatformMacos()
+                              ? getShortcut(LogicalKeyboardKey.comma, true)
+                              : getShortcut(LogicalKeyboardKey.keyS, true),
+                          onPressed: () {
+                            if (currentScreen == 0) {
+                              currentScreen = 2;
+                              Navigator.pushNamed(context, "/settings");
+                            }
+                          }),
+                    ])
+                  ])),
+          body: Consumer<Keys>(builder: (context, itemModel, _) {
+            initSystemTray();
+            return SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: gridViewBuilder(
+                  count, widthCard, heightCard, itemModel.items),
+            );
+          }),
+          floatingActionButton: isPlatformMobile()
+              ? fab
+              : ContextMenuRegion(
+                  contextMenu: GenericContextMenu(buttonConfigs: [
+                    if (!editMode)
+                      ContextMenuButtonConfig(context.loc.add_service_name,
+                          onPressed: () {
+                        currentScreen = 1;
+                        Navigator.pushNamed(context, "/addService");
+                      }, icon: const Icon(Icons.add)),
+                    if (!editMode)
+                      ContextMenuButtonConfig(context.loc.home_import_export,
+                          onPressed: () {
+                        currentScreen = 3;
+                        Navigator.pushNamed(context, "/importExport");
+                      }, icon: const Icon(Icons.import_export)),
+                    ContextMenuButtonConfig(context.loc.edit, onPressed: () {
+                      setState(() {
+                        editMode = !editMode;
+                      });
+                    }, icon: const Icon(Icons.edit))
+                  ]),
+                  child: fab),
+        ));
   }
 
   ReorderableGridView gridViewBuilder(
@@ -523,7 +486,8 @@ class _HomePageState extends State<HomePage> {
                   ? BoxDecoration(
                       gradient: LinearGradient(colors: [
                       snapshot[index].color,
-                      StructTools().getComplimentaryColor(snapshot[index].color),
+                      StructTools()
+                          .getComplimentaryColor(snapshot[index].color),
                     ], begin: Alignment.topLeft, end: Alignment.bottomRight))
                   : BoxDecoration(color: snapshot[index].color),
               child: Center(
@@ -544,18 +508,22 @@ class _HomePageState extends State<HomePage> {
                     });
                   },
             child: isPlatformMobile()
-                ? editMode? card : AnimationPush(onPressed: () async {
-                    await Clipboard.setData(
-                        ClipboardData(text: generateTOTP(snapshot[index])));
-                    // Show snackbar
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(context.loc.copied_to_clipboard),
-                        duration: const Duration(seconds: 1),
-                      ));
-                    }
-                  }, child: card)
+                ? editMode
+                    ? card
+                    : AnimationPush(
+                        onPressed: () async {
+                          await Clipboard.setData(ClipboardData(
+                              text: generateTOTP(snapshot[index])));
+                          // Show snackbar
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(context.loc.copied_to_clipboard),
+                              duration: const Duration(seconds: 1),
+                            ));
+                          }
+                        },
+                        child: card)
                 : ContextMenuRegion(
                     contextMenu: GenericContextMenu(buttonConfigs: [
                       ContextMenuButtonConfig(context.loc.copy, onPressed: () {
@@ -564,21 +532,32 @@ class _HomePageState extends State<HomePage> {
                       }, icon: const Icon(Icons.copy)),
                       ContextMenuButtonConfig(
                           context.loc.home_context_menu_delete, onPressed: () {
-                        deleteDialog(snapshot[index], index);
+                        deleteDialog(snapshot[index], index, context);
                       }, icon: const Icon(Icons.delete)),
+                      ContextMenuButtonConfig(
+                          context.loc.home_context_menu_edit, onPressed: () {
+                        editDialog(snapshot[index], index, context);
+                      }, icon: const Icon(Icons.edit)),
                     ]),
-                    child: editMode? card : AnimationPush(onPressed: () async {
-                    await Clipboard.setData(
-                        ClipboardData(text: generateTOTP(snapshot[index])));
-                    // Show snackbar
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(context.loc.copied_to_clipboard),
-                        duration: const Duration(seconds: 1),
-                      ));
-                    }
-                  }, child: card)));
+                    child: editMode
+                        ? card
+                        : AnimationPush(
+                            onPressed: () async {
+                              await Clipboard.setData(ClipboardData(
+                                  text: generateTOTP(snapshot[index])));
+                              // Show snackbar
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context)
+                                    .hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content:
+                                      Text(context.loc.copied_to_clipboard),
+                                  duration: const Duration(seconds: 1),
+                                ));
+                              }
+                            },
+                            child: card)));
       },
       onReorder: (int oldIndex, int newIndex) {
         if (!editMode) {

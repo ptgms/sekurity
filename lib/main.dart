@@ -1,8 +1,10 @@
+import 'dart:convert';
+
 import 'package:context_menus/context_menus.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sekurity/views/edit_service.dart';
+import 'package:sekurity/tools/decode_migration.dart';
 import 'package:sekurity/views/homescreen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sekurity/views/import_export.dart';
@@ -91,8 +93,7 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
                 )),
             '/addService': (BuildContext context) => const AddService(),
             '/settings': (BuildContext context) => const Settings(),
-            '/importExport': (BuildContext context) => const ImportExport(),
-            '/editService': (BuildContext context) => const EditService(),
+            '/importExport': (BuildContext context) => const ImportExport()
           },
           themeMode: (mode == 0)
               ? ThemeMode.system

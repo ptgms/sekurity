@@ -11,6 +11,7 @@
     "undo": "Undo",
     "home_settings": "Settings",
     "home_about": "About",
+    "save": "Save",
 
     "restart": "Restart",
     "restart_prompt": "You need to restart the app for the changes to take effect.",
@@ -29,6 +30,17 @@
             }
         }
     },
+
+    "editing_dialog": "Editing {keyName}",
+    "@editing_dialog": {
+        "placeholders": {
+            "keyName": {
+                "type": "String",
+                "example": "Service"
+            }
+        }
+    },
+
     "home_delete_confirm_description": "Are you sure you want to delete your {keyName} key? You can't undo this action and you may not be able to log in to your account anymore.",
     "@home_delete_confirm_description": {
         "placeholders": {

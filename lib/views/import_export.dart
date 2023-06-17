@@ -170,8 +170,8 @@ class _ImportExportState extends State<ImportExport> {
                             return AlertDialog(
                               title: Text(context.loc.import_export_export_qr),
                               content: SizedBox(
-                                  height: 200,
-                                  width: 200,
+                                  height: 300,
+                                  width: 300,
                                   child: Center(child: value)),
                               actions: [
                                 TextButton(

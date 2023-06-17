@@ -161,14 +161,13 @@ class KeyManagement {
     final itemModel = Provider.of<Keys>(context, listen: false);
     developer.log("Transfering!");
     var encodedKeys = await parseTransferURL(itemModel.items);
-    var url = "otpauth-migration://offline?$encodedKeys";
+    var url = "otpauth-migration://offline?data=$encodedKeys";
 
     // generate QR code from url
     var qr = QrImageView(
       backgroundColor: Colors.white,
       data: url,
       version: QrVersions.auto,
-      size: 200.0,
     );
     return qr;
   }
