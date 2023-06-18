@@ -1,8 +1,9 @@
-
 import 'package:context_menus/context_menus.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:sekurity/views/authenticationfailed.dart';
 import 'package:sekurity/views/homescreen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:sekurity/views/import_export.dart';
@@ -19,6 +20,7 @@ import 'views/add_service.dart';
 void loadSettings() {
   SharedPreferences.getInstance().then((prefs) {
     appTheme.value = prefs.getInt('theme') ?? 0;
+    //authentication = prefs.getInt('authentication') ?? 1;
     bold = prefs.getBool('bold') ?? false;
     time = prefs.getInt('time') ?? 0;
     if (prefs.getBool('hidden') ?? false) {
@@ -31,6 +33,12 @@ void loadSettings() {
 }
 
 Future<void> main() async {
+  // TODO: Move this into secure storage to prevent tampering
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  authentication = prefs.getInt('authentication') ?? 0;
+  debugPrint(
+      "Startup verification is${authentication == 2 ? "" : " not"} enabled!");
+
   runApp(ChangeNotifierProvider(
       create: (context) => Keys(), child: const SekurityApp()));
 
@@ -68,59 +76,97 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    KeyManagement()
-        .getSavedKeys(context)
-        .then((value) => debugPrint("Success!"));
+    if (!appAuthenticationFailed.value) {
+      try {
+        final LocalAuthentication auth = LocalAuthentication();
+        auth.isDeviceSupported().then((value) {
+          authenticationSupported = value;
+          KeyManagement()
+              .getSavedKeysFirstStart(context,
+                  reason:
+                      "You selected to be authenticated on startup. Please authenticate to continue.")
+              .then((value) {
+            if (value == -1) {
+              setState(() {
+                appAuthenticationFailed.value = true;
+              });
+            }
+          });
+        });
+      } catch (e) {
+        KeyManagement()
+            .getSavedKeys(context)
+            .then((value) => debugPrint("Success!"));
+      }
+    }
     return ValueListenableBuilder(
       valueListenable: appTheme,
       builder: (_, mode, __) {
-        return DynamicColorBuilder(builder: ((lightDynamic, darkDynamic) {
-          return MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: const [
-            Locale('en', ''),
-            Locale('de', ''),
-          ],
-          debugShowCheckedModeBanner: false,
-          title: 'Sekurity',
-          initialRoute: '/',
-          routes: {
-            '/': (BuildContext context) => ContextMenuOverlay(
-                    child: const HomePage(
-                  title: "Sekurity",
-                )),
-            '/addService': (BuildContext context) => const AddService(),
-            '/settings': (BuildContext context) => const Settings(),
-            '/importExport': (BuildContext context) => const ImportExport()
-          },
-          themeMode: (mode == 0)
-              ? ThemeMode.system
-              : (mode == 1)
-                  ? ThemeMode.light
-                  : ThemeMode.dark,
-          theme: ThemeData(
-            //primarySwatch: Colors.blue,
-            colorScheme: lightDynamic,
-            useMaterial3: true,
-          ),
-          darkTheme: ThemeData(
-            brightness: Brightness.dark,
-            colorScheme: darkDynamic,
-            useMaterial3: true,
-          ),
+        return DynamicColorBuilder(
+          builder: ((lightDynamic, darkDynamic) {
+            return MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: const [
+                Locale('en', ''),
+                Locale('de', ''),
+              ],
+              debugShowCheckedModeBanner: false,
+              title: 'Sekurity',
+              initialRoute: '/',
+              routes: {
+                '/': (BuildContext context) => appAuthenticationFailed.value
+                    ? const AuthenticationFailed()
+                    : ContextMenuOverlay(
+                        child: const HomePage(
+                        title: "Sekurity",
+                      )),
+                '/addService': (BuildContext context) =>
+                    appAuthenticationFailed.value
+                        ? const AuthenticationFailed()
+                        : const AddService(),
+                '/settings': (BuildContext context) =>
+                    appAuthenticationFailed.value
+                        ? const AuthenticationFailed()
+                        : const Settings(),
+                '/importExport': (BuildContext context) =>
+                    appAuthenticationFailed.value
+                        ? const AuthenticationFailed()
+                        : const ImportExport()
+              },
+              themeMode: (mode == 0)
+                  ? ThemeMode.system
+                  : (mode == 1)
+                      ? ThemeMode.light
+                      : ThemeMode.dark,
+              theme: ThemeData(
+                //primarySwatch: Colors.blue,
+                colorScheme: lightDynamic,
+                useMaterial3: true,
+              ),
+              darkTheme: ThemeData(
+                brightness: Brightness.dark,
+                colorScheme: darkDynamic,
+                useMaterial3: true,
+              ),
+            );
+          }),
         );
-        }));
       },
     );
   }
 }
 
 var appTheme = ValueNotifier(0);
+var authentication = 0;
 var bold = false;
 var time = 0;
 var altProgress = false;
 var forceAppbar = ValueNotifier(false);
 var gradientBackground = true;
+
+var appAuthenticationFailed = ValueNotifier(false);
+
+var authenticationSupported = false;
 
 extension LocalizedBuildContext on BuildContext {
   AppLocalizations get loc => AppLocalizations.of(this);

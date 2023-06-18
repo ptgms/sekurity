@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:dart_dash_otp/dart_dash_otp.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:sekurity/main.dart';
 import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/otp-migration.pbenum.dart';
 import 'package:sekurity/tools/structtools.dart';
@@ -55,6 +57,42 @@ class KeyManagement {
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<bool> didSetRestorePassword() async {
+    // get secure storage
+    const storage = FlutterSecureStorage();
+    var password = await storage.read(key: "restorePassword");
+    return password != null && password != "";
+  }
+
+  Future<void> setRestorePassword(String password) async {
+    // get secure storage
+    const storage = FlutterSecureStorage();
+    await storage.write(key: "restorePassword", value: password);
+  }
+
+  Future<bool> verifyRestorePassword(String password) async {
+    // get secure storage
+    const storage = FlutterSecureStorage();
+    var passwordSaved = await storage.read(key: "restorePassword");
+    return passwordSaved == password;
+  }
+
+  Future<int> getSavedKeysFirstStart(context, {reason = ""}) async {
+    // before we give the user keys, they must authenticate if they chose that option
+    if (authentication == 2 && authenticationSupported) {
+      var didAuthenticate = await LocalAuthentication().authenticate(
+          localizedReason: reason,
+          options: const AuthenticationOptions(stickyAuth: true));
+      if (!didAuthenticate) {
+        return -1;
+      } else {
+        return await getSavedKeys(context)? 0 : 1;
+      }
+    } else {
+      return await getSavedKeys(context)? 0 : 1;
     }
   }
 

@@ -115,6 +115,35 @@
     "settings_sync_choose_apple": "Apple",
     "settings_sync_choose_ntppool": "NTP Pool",
 
+    "settings_authentication_strictness": "Authentication Strictness",
+    "settings_authentication_strictness_description": "Choose how often (biometric) authentication should occur. The recommended option is \"Exports only\".",
+    "settings_authentication_strictness_always": "Always",
+    "settings_authentication_strictness_exports": "Exports only",
+    "settings_authentication_strictness_never": "Never",
+    "settings_authentication_strictness_verify": "Please authenticate to change this setting.",
+
+    "settings_emergency_password": "Emergency Password",
+    "settings_emergency_password_description": "Before you change this setting - Set a password that can be used to access your keys in case you fail your authentication frequently. Please make sure it is very secure as this is the text between you and your accounts getting into wrong hands!",
+    "settings_emergency_password_reset": "Reset Emergency Password",
+    "settings_emergency_password_reset_description": "Allows you to reset your emergency password. Authentication Strictness needs to be set to \"Never\" to use this feature.",
+    "settings_emergency_password_reset_success": "Emergency password reset successfully!",
+    
+    "use_emergency_password": "Use Emergency Password",
+    "use_emergency_password_description": "You have failed your authentication. Please enter your emergency password to continue or restart your app to try again.",
+    "use_emergency_password_error": "Error",
+    "use_emergency_password_error_description": "Incorrect password! {attempts} attempts left.",
+    "@use_emergency_password_error_description": {
+        "placeholders": {
+            "attempts": {
+                "type": "int",
+                "example": "3"
+            }
+        }
+    },
+    "use_emergency_password_success": "Your Authentication Strictness has been set to \"Never\". You can now change your settings & emergency password. Restart the app to enable authentication again.",
+    "ok": "OK",
+    "exit": "Exit",
+
     "settings_sync_success": "Time synced successfully!",
     "settings_sync_error": "Error syncing time!",
 

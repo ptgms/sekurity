@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:sekurity/tools/keymanagement.dart';
@@ -157,19 +156,20 @@ class _ImportExportState extends State<ImportExport> {
                   child: Text(context.loc.import_export_export_qr),
                   onPressed: () async {
                     var didAuthenticate = false;
-                    try {
-                      final LocalAuthentication auth = LocalAuthentication();
-                      didAuthenticate =
-                          isPlatformMobile() || isPlatformWindows()
-                              ? await auth.authenticate(
-                                  localizedReason: context.loc.authentication,
-                                  options: const AuthenticationOptions(
-                                      biometricOnly: true))
-                              : true;
-                    } catch (e) {
-                      debugPrint(e.toString());
+                    if (authentication >= 1) {
+                      if (authenticationSupported) {
+                        didAuthenticate = await LocalAuthentication()
+                            .authenticate(
+                                localizedReason: context.loc.authentication,
+                                options: const AuthenticationOptions(
+                                    stickyAuth: true));
+                      } else {
+                        didAuthenticate = true;
+                      }
+                    } else {
                       didAuthenticate = true;
                     }
+
                     if (!didAuthenticate) {
                       return;
                     }
