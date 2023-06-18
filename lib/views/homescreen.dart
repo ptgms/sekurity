@@ -73,6 +73,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> initSystemTray() async {
+    if (isPlatformMobile()) {
+      return;
+    }
     String path =
         isPlatformWindows() ? 'assets/app_icon.ico' : 'assets/app_icon.png';
 
