@@ -31,6 +31,8 @@
         }
     },
 
+    "authentication": "Please authenticate to export your keys.",
+
     "editing_dialog": "Editing {keyName}",
     "@editing_dialog": {
         "placeholders": {

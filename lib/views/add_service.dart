@@ -69,7 +69,7 @@ class _AddServiceState extends State<AddService> {
 
     return Scaffold(
       appBar: appBar,
-      body: (isManual || (isPlatformWindows() || isPlatformLinux()))
+      body: (isManual || (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()))
           ? manualMode(context)
           : mobileView(context),
     );
@@ -89,16 +89,16 @@ class _AddServiceState extends State<AddService> {
               child: MobileScanner(
                 onDetect: (BarcodeCapture barcodes) async {
                   if (scanned) return;
-                  scanned = true;
+                    scanned = true;
                   //debugPrint(barcodes.barcodes[0].rawValue);
-                  if (await KeyManagement()
+                    if (await KeyManagement()
                       .addKeyQR(barcodes.barcodes[0].rawValue!, context)) {
-                    if (context.mounted) {
-                      currentScreen = 0;
-                      //widget.onServiceAdded();
-                      Navigator.of(context).pop();
+                      if (context.mounted) {
+                        currentScreen = 0;
+                        //widget.onServiceAdded();
+                        Navigator.of(context).pop();
+                      }
                     }
-                  }
                 },
               ),
             ),

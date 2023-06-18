@@ -37,8 +37,10 @@ class _AnimationPushState extends State<AnimationPush>
 
   @override
   Widget build(BuildContext context) {
+    bool isPressed = false;
+    bool animationFinished = false;
     _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
+      if (status == AnimationStatus.completed && !isPressed) {
         _controller.reverse();
         vibrate(10);
       }
@@ -49,11 +51,21 @@ class _AnimationPushState extends State<AnimationPush>
       hoverColor: Colors.transparent,
       splashColor: Colors.transparent,
       onTapDown: (details) {
+        isPressed = true;
         _controller.forward(from: 0.0); // Start the animation on tap
-        widget.onPressed();
+        //widget.onPressed();
         // vibrate
         vibrate(5);
       },
+      onTapUp: ((details) {
+          widget.onPressed();
+          if (animationFinished) {
+            _controller.reverse();
+            vibrate(10);
+            animationFinished = false;
+          }
+          isPressed = false;
+        }),
       child: AnimatedBuilder(
         animation: _animation,
         builder: ((context, child) {

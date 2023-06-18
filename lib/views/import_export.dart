@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
@@ -154,6 +156,22 @@ class _ImportExportState extends State<ImportExport> {
                 child: TextButton(
                   child: Text(context.loc.import_export_export_qr),
                   onPressed: () async {
+                    var didAuthenticate = false;
+                    try {
+                      final LocalAuthentication auth = LocalAuthentication();
+                      didAuthenticate =
+                          isPlatformMobile() || isPlatformWindows()
+                              ? await auth.authenticate(
+                                  localizedReason: context.loc.authentication,
+                                  options: const AuthenticationOptions(
+                                      biometricOnly: true))
+                              : true;
+                    } on PlatformException {
+                      didAuthenticate = true;
+                    }
+                    if (!didAuthenticate) {
+                      return;
+                    }
                     if (itemModel.items.isEmpty) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).hideCurrentSnackBar();

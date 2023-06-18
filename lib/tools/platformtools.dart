@@ -35,6 +35,20 @@ bool isPlatformMobile() {
   return Platform.isAndroid || Platform.isIOS;
 }
 
+bool isPlatformIOS() {
+  if (kIsWeb) {
+    return false;
+  }
+  return Platform.isIOS;
+}
+
+bool isPlatformAndroid() {
+  if (kIsWeb) {
+    return false;
+  }
+  return Platform.isAndroid;
+}
+
 void vibrate(int duration) {
   if (!isPlatformMobile()) {
     return;

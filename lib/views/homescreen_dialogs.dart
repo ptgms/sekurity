@@ -38,9 +38,12 @@ void editDialog(KeyStruct keyToEdit, int index, BuildContext context) {
                   children: [
                     ValueListenableBuilder(
                       valueListenable: serviceName,
-                      builder: (context, value, child) => Text(
-                        context.loc.editing_dialog(value),
-                        style: const TextStyle(fontSize: 24.0),
+                      builder: (context, value, child) => Padding(
+                        padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
+                        child: Text(
+                          context.loc.editing_dialog(value),
+                          style: const TextStyle(fontSize: 24.0),
+                        ),
                       ),
                     )
                   ],

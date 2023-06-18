@@ -10,7 +10,7 @@ import 'package:reorderable_grid/reorderable_grid.dart';
 import 'package:sekurity/components/animation_push.dart';
 import 'package:sekurity/components/menubar.dart';
 import 'package:sekurity/components/progress_text.dart';
-import 'package:sekurity/homescreen_dialogs.dart';
+import 'package:sekurity/views/homescreen_dialogs.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
@@ -286,7 +286,7 @@ class _HomePageState extends State<HomePage> {
     double width = MediaQuery.of(context).size.width;
     int widthCard = 290;
 
-    int heightCard = 70;
+    int heightCard = isPlatformIOS()? 80: 70;
 
     if (width < widthCard) {
       widthCard = width.toInt() - 1;
@@ -481,7 +481,7 @@ class _HomePageState extends State<HomePage> {
             shadowColor: snapshot[index].color.withOpacity(0.5),
             elevation: 2,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30.0),
+              borderRadius: BorderRadius.circular(heightCard/2),
             ),
             color: Colors.white,
             child: Container(
@@ -518,7 +518,7 @@ class _HomePageState extends State<HomePage> {
                           await Clipboard.setData(ClipboardData(
                               text: generateTOTP(snapshot[index])));
                           // Show snackbar
-                          if (context.mounted) {
+                          if (context.mounted && !isPlatformAndroid()) {
                             ScaffoldMessenger.of(context).hideCurrentSnackBar();
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(context.loc.copied_to_clipboard),
