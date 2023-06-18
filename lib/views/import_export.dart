@@ -166,7 +166,8 @@ class _ImportExportState extends State<ImportExport> {
                                   options: const AuthenticationOptions(
                                       biometricOnly: true))
                               : true;
-                    } on PlatformException {
+                    } catch (e) {
+                      debugPrint(e.toString());
                       didAuthenticate = true;
                     }
                     if (!didAuthenticate) {
