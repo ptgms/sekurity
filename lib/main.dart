@@ -1,7 +1,8 @@
 import 'package:context_menus/context_menus.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:fluent_ui/fluent_ui.dart' as fui;
+import 'package:flutter_acrylic/flutter_acrylic.dart' as flutter_acrylic;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
@@ -35,10 +36,9 @@ void loadSettings() {
 }
 
 Future<void> main() async {
-  // TODO: Move this into secure storage to prevent tampering
   WidgetsFlutterBinding.ensureInitialized();
   const storage = FlutterSecureStorage();
-  authentication = int.parse(await storage.read(key: 'authentication')??"0");
+  authentication = int.parse(await storage.read(key: 'authentication') ?? "0");
   debugPrint(
       "Startup verification is${authentication == 2 ? "" : " not"} enabled!");
 
@@ -48,6 +48,12 @@ Future<void> main() async {
   loadSettings();
 
   if (isPlatformMacos() || isPlatformLinux() || isPlatformWindows()) {
+    if (isPlatformWindows()) {
+      await flutter_acrylic.Window.initialize();
+      await flutter_acrylic.Window.hideWindowControls();
+      await flutter_acrylic.Window.setEffect(
+           effect: flutter_acrylic.WindowEffect.mica);
+    }
     // Set the window title
     setWindowTitle('Sekurity');
     setWindowMinSize(const Size(400, 450));
@@ -114,8 +120,11 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
       builder: (_, mode, __) {
         return DynamicColorBuilder(
           builder: ((lightDynamic, darkDynamic) {
-            return MaterialApp(
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
+            var app = MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates +
+                  [
+                    fui.FluentLocalizations.delegate,
+                  ],
               supportedLocales: const [
                 Locale('en', ''),
                 Locale('de', ''),
@@ -159,6 +168,10 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
                 useMaterial3: true,
               ),
             );
+            if (isPlatformMacos() || isPlatformWindows()) {
+              return fui.FluentTheme(data: fui.FluentThemeData(), child: app);
+            }
+            return app;
           }),
         );
       },

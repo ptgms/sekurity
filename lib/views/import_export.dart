@@ -2,6 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:sekurity/components/platform/platform_alert.dart';
+import 'package:sekurity/components/platform/platform_appbar.dart';
+import 'package:sekurity/components/platform/platform_button.dart';
+import 'package:sekurity/components/platform/platform_scaffold.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
@@ -23,7 +27,7 @@ class _ImportExportState extends State<ImportExport> {
     final itemModel = Provider.of<Keys>(context, listen: false);
     String password = "";
 
-    var appBar = AppBar(
+    var appBar = PlatformAppBar(
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -43,10 +47,10 @@ class _ImportExportState extends State<ImportExport> {
                 ),
         ],
       ),
-      title: Text(context.loc.home_import_export),
+      title: context.loc.home_import_export,
     );
 
-    return Scaffold(
+    return PlatformScaffold(
       appBar: appBar,
       body: ListView(children: [
         ListTile(
@@ -76,8 +80,8 @@ class _ImportExportState extends State<ImportExport> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: TextButton(
-                  child: Text(context.loc.import_export_import),
+                child: PlatformTextButton(
+                  text: context.loc.import_export_import,
                   onPressed: () async {
                     if (password == "") {
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -113,8 +117,8 @@ class _ImportExportState extends State<ImportExport> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: TextButton(
-                  child: Text(context.loc.import_export_export),
+                child: PlatformTextButton(
+                  text: context.loc.import_export_export,
                   onPressed: () async {
                     if (itemModel.items.isEmpty) {
                       if (context.mounted) {
@@ -152,8 +156,8 @@ class _ImportExportState extends State<ImportExport> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: TextButton(
-                  child: Text(context.loc.import_export_export_qr),
+                child: PlatformTextButton(
+                  text: context.loc.import_export_export_qr,
                   onPressed: () async {
                     var didAuthenticate = false;
                     if (authentication >= 1) {
@@ -182,8 +186,22 @@ class _ImportExportState extends State<ImportExport> {
                       return;
                     }
                     // Show dialog
-                    KeyManagement().parseTransferQR(context).then((value) {
-                      showDialog(
+                    if (context.mounted) {
+                      KeyManagement().parseTransferQR(context).then((value) {
+                        showPlatformDialog(context,
+                            title: Text(context.loc.import_export_export_qr),
+                            content: SizedBox(
+                                height: 300,
+                                width: 300,
+                                child: Center(child: value)),
+                            buttons: [
+                              PlatformAlertButtons(
+                                  text: context.loc.dialog_close,
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  })
+                            ]);
+                        /*showDialog(
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
@@ -202,7 +220,9 @@ class _ImportExportState extends State<ImportExport> {
                               ],
                             );
                           });
-                    });
+                    });*/
+                      });
+                    }
                   },
                 ),
               ),

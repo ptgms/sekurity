@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:sekurity/components/platform/platform_appbar.dart';
+import 'package:sekurity/components/platform/platform_scaffold.dart';
 import 'package:sekurity/main.dart';
 import 'package:sekurity/tools/platformtools.dart';
 import 'package:sekurity/tools/structtools.dart';
@@ -44,7 +46,7 @@ class _AddServiceState extends State<AddService> {
       }
     });
 
-    var appBar = AppBar(
+    var appBar = PlatformAppBar(
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -64,10 +66,10 @@ class _AddServiceState extends State<AddService> {
                 ),
         ],
       ),
-      title: Text(context.loc.add_service_name),
+      title: context.loc.add_service_name,
     );
 
-    return Scaffold(
+    return PlatformScaffold(
       appBar: appBar,
       body: (isManual || (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()))
           ? manualMode(context)

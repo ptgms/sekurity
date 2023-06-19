@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:sekurity/tools/platforms.dart';
 import 'package:vibration/vibration.dart';
 
 bool isPlatformWindows() {
@@ -47,6 +48,24 @@ bool isPlatformAndroid() {
     return false;
   }
   return Platform.isAndroid;
+}
+
+Platforms getPlatform() {
+  if (isPlatformWindows()) {
+    return Platforms.windows;
+  } else if (isPlatformLinux()) {
+    return Platforms.linux;
+  } else if (isPlatformMacos()) {
+    return Platforms.macos;
+  } else if (isPlatformWeb()) {
+    return Platforms.web;
+  } else if (isPlatformAndroid()) {
+    return Platforms.android;
+  } else if (isPlatformIOS()) {
+    return Platforms.ios;
+  } else {
+    return Platforms.unknown;
+  }
 }
 
 void vibrate(int duration) {

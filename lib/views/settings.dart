@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:sekurity/components/platform/platform_alert.dart';
+import 'package:sekurity/components/platform/platform_appbar.dart';
+import 'package:sekurity/components/platform/platform_scaffold.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
@@ -61,44 +64,41 @@ class _SettingsState extends State<Settings> {
   }
 
   void clearDialog(BuildContext context) {
-    var dialog = AlertDialog(
-      title: Text(context.loc.home_clear),
-      content: Text(context.loc.home_clear_confirm),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text(context.loc.cancel),
-        ),
-        TextButton(
-          onPressed: () {
-            final itemModel = Provider.of<Keys>(context, listen: false);
-            var backup = itemModel.items;
-            itemModel.clear();
-            KeyManagement().saveKeys([]);
-            // show snackbar to undo
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(context.loc.home_clear_success),
-              duration: const Duration(seconds: 2),
-              action: SnackBarAction(
-                label: context.loc.undo,
-                onPressed: () {
-                  itemModel.clear();
-                  for (var i = 0; i < backup.length; i++) {
-                    itemModel.addItem(backup[i]);
-                  }
-                  KeyManagement().saveKeys(backup);
-                },
-              ),
-            ));
-            Navigator.of(context).pop();
-          },
-          child: Text(context.loc.home_clear),
-        ),
-      ],
-    );
-    showDialog(context: context, builder: (context) => dialog);
+    showPlatformDialog(context,
+        title: Text(context.loc.home_clear),
+        content: Text(context.loc.home_clear_confirm),
+        buttons: [
+          PlatformAlertButtons(
+              text: context.loc.cancel,
+              onPressed: () {
+                Navigator.of(context).pop();
+              }),
+          PlatformAlertButtons(
+              text: context.loc.home_clear,
+              destructive: true,
+              onPressed: () {
+                final itemModel = Provider.of<Keys>(context, listen: false);
+                var backup = itemModel.items;
+                itemModel.clear();
+                KeyManagement().saveKeys([]);
+                // show snackbar to undo
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(context.loc.home_clear_success),
+                  duration: const Duration(seconds: 2),
+                  action: SnackBarAction(
+                    label: context.loc.undo,
+                    onPressed: () {
+                      itemModel.clear();
+                      for (var i = 0; i < backup.length; i++) {
+                        itemModel.addItem(backup[i]);
+                      }
+                      KeyManagement().saveKeys(backup);
+                    },
+                  ),
+                ));
+                Navigator.of(context).pop();
+              }),
+        ]);
   }
 
   void chooseNTPDialog(BuildContext context) {
@@ -229,7 +229,7 @@ class _SettingsState extends State<Settings> {
     GlobalKey dropdownTheme = GlobalKey();
     GlobalKey dropdownAuth = GlobalKey();
 
-    var appBar = AppBar(
+    var appBar = PlatformAppBar(
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -249,7 +249,7 @@ class _SettingsState extends State<Settings> {
                 ),
         ],
       ),
-      title: Text(context.loc.settings),
+      title: context.loc.settings,
     );
 
     var platform = PlatformUtils.detectPlatform(context);
@@ -258,7 +258,7 @@ class _SettingsState extends State<Settings> {
       platform = DevicePlatform.android;
     }
 
-    return Scaffold(
+    return PlatformScaffold(
         appBar: appBar,
         body: SettingsList(
           platform: platform,
@@ -304,7 +304,8 @@ class _SettingsState extends State<Settings> {
                                         }
                                         try {
                                           var authenticated = await auth.authenticate(
-                                              localizedReason: context.loc.settings_authentication_strictness_verify,
+                                              localizedReason: context.loc
+                                                  .settings_authentication_strictness_verify,
                                               options:
                                                   const AuthenticationOptions(
                                                       stickyAuth: true));
@@ -342,13 +343,14 @@ class _SettingsState extends State<Settings> {
                                                 obscureText: true,
                                                 onChanged: (password) async {
                                                   if (await KeyManagement()
-                                                          .verifyRestorePassword(password)) {
+                                                      .verifyRestorePassword(
+                                                          password)) {
                                                     setState(() {
-                                                      authentication = value ?? 1;
+                                                      authentication =
+                                                          value ?? 1;
                                                     });
                                                     saveSettings();
-                                                    Navigator.of(context)
-                                                        .pop();
+                                                    Navigator.of(context).pop();
                                                   }
                                                 },
                                               ),

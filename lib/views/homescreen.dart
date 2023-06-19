@@ -9,6 +9,10 @@ import 'package:provider/provider.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
 import 'package:sekurity/components/animation_push.dart';
 import 'package:sekurity/components/menubar.dart';
+import 'package:sekurity/components/platform/platform_appbar.dart';
+import 'package:sekurity/components/platform/platform_fab.dart';
+import 'package:sekurity/components/platform/platform_popup_button.dart';
+import 'package:sekurity/components/platform/platform_scaffold.dart';
 import 'package:sekurity/components/progress_text.dart';
 import 'package:sekurity/views/homescreen_dialogs.dart';
 import 'package:sekurity/tools/keymanagement.dart';
@@ -286,7 +290,7 @@ class _HomePageState extends State<HomePage> {
     double width = MediaQuery.of(context).size.width;
     int widthCard = 290;
 
-    int heightCard = isPlatformIOS()? 80: 70;
+    int heightCard = isPlatformIOS() ? 80 : 70;
 
     if (width < widthCard) {
       widthCard = width.toInt() - 1;
@@ -296,7 +300,7 @@ class _HomePageState extends State<HomePage> {
 
     widthCard = width ~/ count;
 
-    FloatingActionButton fab = FloatingActionButton(
+    Widget fab = PlatformFloatingActionButton(
       mini: (isPlatformMacos() || isPlatformWindows() || isPlatformLinux()),
       onPressed: () {
         if (!editMode) {
@@ -309,7 +313,7 @@ class _HomePageState extends State<HomePage> {
         }
       },
       tooltip: editMode ? context.loc.edit : context.loc.add_service_name,
-      child: editMode ? const Icon(Icons.done) : const Icon(Icons.add),
+      icon: editMode ? const Icon(Icons.done) : const Icon(Icons.add),
     );
 
     //updateProgress();
@@ -325,108 +329,86 @@ class _HomePageState extends State<HomePage> {
             return Future.value(true);
           }
         },
-        child: Scaffold(
-          appBar: (isPlatformMobile() || forceAppbar.value)
-              ? AppBar(
-                  title:
-                      editMode ? Text(context.loc.editing) : Text(widget.title),
-                  actions: [
-                    // 3 dots menu
-                    PopupMenuButton(
-                      itemBuilder: (BuildContext context) {
-                        return [
-                          PopupMenuItem(
-                              value: 0, child: Text(context.loc.edit)),
-                          PopupMenuItem(
-                              value: 2,
-                              child: Text(context.loc.home_import_export)),
-                          PopupMenuItem(
-                            value: 3,
-                            child: Text(context.loc.home_about),
-                          ),
-                          PopupMenuItem(
-                            value: 1,
-                            child: Text(context.loc.home_settings),
-                          ),
-                        ];
-                      },
-                      onSelected: (int value) async {
-                        switch (value) {
-                          case 0:
-                            setState(() {
-                              editMode = !editMode;
-                            });
-                            break;
-                          case 1:
-                            currentScreen = 2;
-                            Navigator.pushNamed(context, "/settings");
-                            break;
-                          case 2:
-                            currentScreen = 3;
-                            Navigator.pushNamed(context, "/importExport");
-                            break;
-                          case 3:
-                            // Show about dialog
-                            aboutDialog(context);
-                            break;
+        child: PlatformScaffold(
+          appBar: PlatformAppBar(
+              title: editMode ? context.loc.editing : widget.title,
+              actions: [
+                PlatformPopupMenuButton(items: [
+                  PlatformButton(
+                      text: context.loc.edit,
+                      onPressed: () {
+                        setState(() {
+                          editMode = !editMode;
+                        });
+                      }),
+                  PlatformButton(
+                      text: context.loc.home_import_export,
+                      onPressed: () {
+                        currentScreen = 3;
+                        Navigator.pushNamed(context, "/importExport");
+                      }),
+                  PlatformButton(
+                      text: context.loc.home_about,
+                      onPressed: () => aboutDialog(context)),
+                  PlatformButton(
+                      text: context.loc.home_settings,
+                      onPressed: () {
+                        currentScreen = 2;
+                        Navigator.pushNamed(context, "/settings");
+                      }),
+                ]),
+              ],
+              menuItems: [
+                SubMenuItem(title: "File", items: [
+                  MenuItem(
+                      title: context.loc.home_about,
+                      onPressed: () {
+                        aboutDialog(context);
+                      }),
+                  MenuItem(
+                      title: context.loc.home_import_export,
+                      onPressed: () {
+                        currentScreen = 3;
+                        Navigator.pushNamed(context, "/importExport");
+                      }),
+                  MenuItem(
+                      title: context.loc.quit,
+                      keybind: getShortcut(LogicalKeyboardKey.keyQ, true),
+                      onPressed: () {
+                        exitApp();
+                      })
+                ]),
+                SubMenuItem(title: "Edit", items: [
+                  MenuItem(
+                      title: context.loc.add_service_name,
+                      keybind: getShortcut(LogicalKeyboardKey.keyA, true),
+                      onPressed: () {
+                        if (currentScreen == 0) {
+                          currentScreen = 1;
+                          Navigator.pushNamed(context, "/addService");
                         }
-                      },
-                    )
-                  ],
-                )
-              : PreferredSize(
-                  preferredSize: const Size.fromHeight(40.0),
-                  child: MyMenuBar(menuItems: [
-                    SubMenuItem(title: "File", items: [
-                      MenuItem(
-                          title: context.loc.home_about,
-                          onPressed: () {
-                            aboutDialog(context);
-                          }),
-                      MenuItem(
-                          title: context.loc.home_import_export,
-                          onPressed: () {
-                            currentScreen = 3;
-                            Navigator.pushNamed(context, "/importExport");
-                          }),
-                      MenuItem(
-                          title: context.loc.quit,
-                          keybind: getShortcut(LogicalKeyboardKey.keyQ, true),
-                          onPressed: () {
-                            exitApp();
-                          })
-                    ]),
-                    SubMenuItem(title: "Edit", items: [
-                      MenuItem(
-                          title: context.loc.add_service_name,
-                          keybind: getShortcut(LogicalKeyboardKey.keyA, true),
-                          onPressed: () {
-                            if (currentScreen == 0) {
-                              currentScreen = 1;
-                              Navigator.pushNamed(context, "/addService");
-                            }
-                          }),
-                      MenuItem(
-                          title: context.loc.edit,
-                          keybind: getShortcut(LogicalKeyboardKey.keyE, true),
-                          onPressed: () {
-                            setState(() {
-                              editMode = !editMode;
-                            });
-                          }),
-                      MenuItem(
-                          title: context.loc.home_settings,
-                          keybind: isPlatformMacos()
-                              ? getShortcut(LogicalKeyboardKey.comma, true)
-                              : getShortcut(LogicalKeyboardKey.keyS, true),
-                          onPressed: () {
-                            if (currentScreen == 0) {
-                              currentScreen = 2;
-                              Navigator.pushNamed(context, "/settings");
-                            }
-                          }),
-                    ])
-                  ])),
+                      }),
+                  MenuItem(
+                      title: context.loc.edit,
+                      keybind: getShortcut(LogicalKeyboardKey.keyE, true),
+                      onPressed: () {
+                        setState(() {
+                          editMode = !editMode;
+                        });
+                      }),
+                  MenuItem(
+                      title: context.loc.home_settings,
+                      keybind: isPlatformMacos()
+                          ? getShortcut(LogicalKeyboardKey.comma, true)
+                          : getShortcut(LogicalKeyboardKey.keyS, true),
+                      onPressed: () {
+                        if (currentScreen == 0) {
+                          currentScreen = 2;
+                          Navigator.pushNamed(context, "/settings");
+                        }
+                      }),
+                ])
+              ]),
           body: Consumer<Keys>(builder: (context, itemModel, _) {
             initSystemTray();
             return SizedBox(
@@ -481,7 +463,7 @@ class _HomePageState extends State<HomePage> {
             shadowColor: snapshot[index].color.withOpacity(0.5),
             elevation: 2,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(heightCard/2),
+              borderRadius: BorderRadius.circular(heightCard / 2),
             ),
             color: Colors.white,
             child: Container(
