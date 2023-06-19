@@ -167,59 +167,59 @@ class _SettingsState extends State<Settings> {
   void setEmergencyPasswordDialog() {
     TextEditingController textfield = TextEditingController();
     showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          // Set shape for the dialog
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(32.0),
-          ),
-          // Set padding for the dialog content
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  context.loc.settings_emergency_password,
-                  style: const TextStyle(
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 16.0),
-                Text(
-                  context.loc.settings_emergency_password_description,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                  ),
-                ),
-                const SizedBox(height: 24.0),
-                TextField(
-                  controller: textfield,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText: context.loc.settings_emergency_password,
-                  ),
-                ),
-                const SizedBox(height: 24.0),
-                ElevatedButton(
-                  onPressed: () {
-                    if (textfield.text.isNotEmpty) {
-                      KeyManagement().setRestorePassword(textfield.text);
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Text(context.loc.save),
-                ),
-              ],
+        context: context,
+        builder: (context) {
+          return Dialog(
+            // Set shape for the dialog
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(32.0),
             ),
-          ),
-        );
-      });
+            // Set padding for the dialog content
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    context.loc.settings_emergency_password,
+                    style: const TextStyle(
+                      fontSize: 24.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 16.0),
+                  Text(
+                    context.loc.settings_emergency_password_description,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16.0,
+                    ),
+                  ),
+                  const SizedBox(height: 24.0),
+                  TextField(
+                    controller: textfield,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: context.loc.settings_emergency_password,
+                    ),
+                  ),
+                  const SizedBox(height: 24.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (textfield.text.isNotEmpty) {
+                        KeyManagement().setRestorePassword(textfield.text);
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    child: Text(context.loc.save),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   @override
@@ -272,8 +272,7 @@ class _SettingsState extends State<Settings> {
                   chooseNTPDialog(context);
                 },
               ),
-              if ((isPlatformMobile() || isPlatformWindows()) &&
-                  authenticationSupported)
+              if (authenticationSupported)
                 SettingsTile.navigation(
                   leading: const Icon(Icons.lock_rounded),
                   trailing: DropdownButton<int>(
@@ -285,36 +284,81 @@ class _SettingsState extends State<Settings> {
                       value: authentication,
                       onChanged: (value) async {
                         // lets authenticate the user before changing
-                        final LocalAuthentication auth = LocalAuthentication();
-                        if (authenticationSupported) {
-                          if (!await KeyManagement().didSetRestorePassword()) {
-                            setEmergencyPasswordDialog();
-                            return;
-                          }
-                          try {
-                            var authenticated = await auth.authenticate(
-                                localizedReason: context.loc
-                                    .settings_authentication_strictness_verify,
-                                options: const AuthenticationOptions(
-                                    stickyAuth: true));
-                            if (!authenticated) {
-                              setState(() {
-                                authentication = authentication;
-                              });
-                              return;
-                            } else {
-                              setState(() {
-                                authentication = value ?? 1;
-                              });
-                              saveSettings();
-                            }
-                          } catch (e) {
-                            setState(() {
-                              authentication = value ?? 1;
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text(context.loc.authentication_method),
+                                actions: [
+                                  TextButton(
+                                    child: Text(context
+                                        .loc.authentication_method_biometric),
+                                    onPressed: () async {
+                                      final LocalAuthentication auth =
+                                          LocalAuthentication();
+                                      if (authenticationSupported) {
+                                        if (!await KeyManagement()
+                                            .didSetRestorePassword()) {
+                                          setEmergencyPasswordDialog();
+                                          return;
+                                        }
+                                        try {
+                                          var authenticated = await auth.authenticate(
+                                              localizedReason: context.loc.settings_authentication_strictness_verify,
+                                              options:
+                                                  const AuthenticationOptions(
+                                                      stickyAuth: true));
+                                          if (!authenticated) {
+                                            setState(() {
+                                              authentication = authentication;
+                                            });
+                                            return;
+                                          } else {
+                                            setState(() {
+                                              authentication = value ?? 1;
+                                            });
+                                            saveSettings();
+                                          }
+                                        } catch (e) {
+                                          setState(() {
+                                            authentication = value ?? 1;
+                                          });
+                                          saveSettings();
+                                        }
+                                      }
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: Text(
+                                        context.loc.use_emergency_password),
+                                    onPressed: () {
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: Text(context
+                                                  .loc.use_emergency_password),
+                                              content: TextField(
+                                                obscureText: true,
+                                                onChanged: (password) async {
+                                                  if (await KeyManagement()
+                                                          .verifyRestorePassword(password)) {
+                                                    setState(() {
+                                                      authentication = value ?? 1;
+                                                    });
+                                                    saveSettings();
+                                                    Navigator.of(context)
+                                                        .pop();
+                                                  }
+                                                },
+                                              ),
+                                            );
+                                          });
+                                    },
+                                  ),
+                                ],
+                              );
                             });
-                            saveSettings();
-                          }
-                        }
                       },
                       items: [
                         DropdownMenuItem(
@@ -487,24 +531,26 @@ class _SettingsState extends State<Settings> {
                     clearDialog(context);
                   },
                 ),
-                SettingsTile.navigation(
-                  enabled: (authentication == 0),
-                  title: Text(context.loc.settings_emergency_password_reset),
-                  description: Text(
-                      context.loc.settings_emergency_password_reset_description),
-                  leading: const Icon(Icons.key_off_rounded),
-                  onPressed: (context) {
-                    if (authentication != 0) {
-                      return;
-                    }
-                    KeyManagement().setRestorePassword("").then((value) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(context.loc.settings_emergency_password_reset_success),
-                        duration: const Duration(seconds: 2),
-                      ));
-                    });
-                  },
-                ),
+                if (authenticationSupported)
+                  SettingsTile.navigation(
+                    enabled: (authentication == 0),
+                    title: Text(context.loc.settings_emergency_password_reset),
+                    description: Text(context
+                        .loc.settings_emergency_password_reset_description),
+                    leading: const Icon(Icons.key_off_rounded),
+                    onPressed: (context) {
+                      if (authentication != 0) {
+                        return;
+                      }
+                      KeyManagement().setRestorePassword("").then((value) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(context
+                              .loc.settings_emergency_password_reset_success),
+                          duration: const Duration(seconds: 2),
+                        ));
+                      });
+                    },
+                  ),
               ],
             )
           ],

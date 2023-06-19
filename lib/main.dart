@@ -1,6 +1,8 @@
 import 'package:context_menus/context_menus.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:sekurity/views/authenticationfailed.dart';
@@ -34,8 +36,9 @@ void loadSettings() {
 
 Future<void> main() async {
   // TODO: Move this into secure storage to prevent tampering
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  authentication = prefs.getInt('authentication') ?? 0;
+  WidgetsFlutterBinding.ensureInitialized();
+  const storage = FlutterSecureStorage();
+  authentication = int.parse(await storage.read(key: 'authentication')??"0");
   debugPrint(
       "Startup verification is${authentication == 2 ? "" : " not"} enabled!");
 
@@ -76,7 +79,7 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    if (!appAuthenticationFailed.value) {
+    if (!appAuthenticationFailed.value && authentication == 2) {
       try {
         final LocalAuthentication auth = LocalAuthentication();
         auth.isDeviceSupported().then((value) {
@@ -88,7 +91,10 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
               .then((value) {
             if (value == -1) {
               setState(() {
-                appAuthenticationFailed.value = true;
+                biometricCount++;
+                if (biometricCount > 2) {
+                  appAuthenticationFailed.value = true;
+                }
               });
             }
           });
@@ -98,6 +104,10 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
             .getSavedKeys(context)
             .then((value) => debugPrint("Success!"));
       }
+    } else if (!appAuthenticationFailed.value) {
+      KeyManagement()
+          .getSavedKeys(context)
+          .then((value) => debugPrint("Success!"));
     }
     return ValueListenableBuilder(
       valueListenable: appTheme,
@@ -163,7 +173,7 @@ var time = 0;
 var altProgress = false;
 var forceAppbar = ValueNotifier(false);
 var gradientBackground = true;
-
+var biometricCount = 0;
 var appAuthenticationFailed = ValueNotifier(false);
 
 var authenticationSupported = false;

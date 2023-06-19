@@ -144,6 +144,9 @@
     "ok": "OK",
     "exit": "Exit",
 
+    "authentication_method": "How do you want to authenticate to proceed?",
+    "authentication_method_biometric": "System Authentication",
+
     "settings_sync_success": "Time synced successfully!",
     "settings_sync_error": "Error syncing time!",
 
