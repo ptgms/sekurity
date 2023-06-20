@@ -444,7 +444,7 @@ class _HomePageState extends State<HomePage> {
         ));
   }
 
-  ReorderableGridView gridViewBuilder(
+  Widget gridViewBuilder(
       int count, int widthCard, int heightCard, List<KeyStruct> snapshot) {
     return ReorderableGridView.builder(
       //scrollDirection: Axis.vertical,

@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sekurity/tools/platforms.dart';
 import 'package:sekurity/tools/platformtools.dart';
-import 'package:fluent_ui/fluent_ui.dart' as fui;
 
 class PlatformAlertButtons {
   String text = "";
@@ -19,7 +18,7 @@ void showPlatformDialog(BuildContext context,
     required List<PlatformAlertButtons> buttons}) {
   switch (getPlatform()) {
     case Platforms.ios:
-    case Platforms.windows:
+    case Platforms.macos:
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
@@ -34,22 +33,6 @@ void showPlatformDialog(BuildContext context,
               .toList(),
         ),
       );
-      break;
-    case Platforms.macos:
-      fui.showDialog(context: context, builder: (context) => fui.ContentDialog(
-        title: title,
-        content: content,
-        actions: buttons
-            .map((e) => e.destructive? fui.FilledButton(
-                  onPressed: () => e.onPressed.call(),
-                  style: fui.ButtonStyle(backgroundColor: fui.ButtonState.all(fui.Colors.red)),
-                  child: Text(e.text, style: const TextStyle(color: Colors.white)),
-                ) : fui.Button(
-                  onPressed: () => e.onPressed.call(),
-                  child: Text(e.text),
-                ))
-            .toList(),
-      ));
       break;
     case Platforms.web:
     case Platforms.linux:

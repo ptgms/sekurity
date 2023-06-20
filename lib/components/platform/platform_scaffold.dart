@@ -1,11 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:sekurity/components/menubar.dart';
 import 'package:sekurity/components/platform/platform_appbar.dart';
+import 'package:sekurity/components/popup_submenuitem.dart';
 import 'package:sekurity/main.dart';
 import 'package:sekurity/tools/platforms.dart';
-import 'package:fluent_ui/fluent_ui.dart' as fui;
 import 'package:sekurity/tools/platformtools.dart';
+import 'package:window_manager/window_manager.dart';
 
 class PlatformScaffold extends StatefulWidget {
   const PlatformScaffold(
@@ -58,20 +60,66 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
           );
         }
       case Platforms.windows:
-        return fui.ScaffoldPage(
-            content: Scaffold(
+        Window.setEffect(
+          effect: WindowEffect.acrylic,
+          dark: Theme.of(context).brightness == Brightness.dark,
+        );
+        return Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: (isPlatformMobile() || forceAppbar.value)
-              ? AppBar(
-                  leading: widget.appBar.leading,
-                  title: Text(widget.appBar.title),
-                  actions: widget.appBar.actions ?? [])
-              : PreferredSize(
-                  preferredSize: const Size.fromHeight(40.0),
-                  child: MyMenuBar(menuItems: widget.appBar.menuItems ?? [])),
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(50.0),
+            child: Column(
+              children: [
+                PreferredSize(
+                  preferredSize: const Size.fromHeight(50.0),
+                  child: Row(
+                    children: [
+                      if (widget.appBar.leading != null) widget.appBar.leading!,
+                      if (widget.appBar.menuItems != null ||
+                          (widget.appBar.menuItems??[]).isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+                          child: PopupMenuButton(
+                            tooltip: "",
+                            child: const Icon(Icons.menu_rounded),
+                            itemBuilder: (_) {
+                              return [
+                                for (SubMenuItem item in widget.appBar.menuItems ?? [])
+                                PopupSubMenuItem(title: item.title, items: [
+                                  for (MenuItem subitem in item.items)
+                                    PopupMenuItem(
+                                      value: subitem,
+                                      child: Text(subitem.title),
+                                    )
+                                ], onSelected: (value) {
+                                  value.onPressed.call();
+                                })
+                              ];
+                            },
+                          ),
+                        ),
+
+                      // weight
+                      Expanded(
+                        child: DragToMoveArea(
+                            child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 0, 20, 3),
+                            child: Text(widget.appBar.title),
+                          ),
+                        )),
+                      ),
+                      const WindowButtons()
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
           body: widget.body,
           floatingActionButton: widget.floatingActionButton,
-        ));
+        );
       case Platforms.linux:
       case Platforms.web:
       case Platforms.android:
@@ -89,5 +137,21 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
           floatingActionButton: widget.floatingActionButton,
         );
     }
+  }
+}
+
+class WindowButtons extends StatelessWidget {
+  const WindowButtons({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 138,
+      height: 50,
+      child: WindowCaption(
+        brightness: Theme.of(context).brightness,
+        backgroundColor: Colors.transparent,
+      ),
+    );
   }
 }

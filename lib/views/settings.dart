@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:sekurity/components/platform/platform_alert.dart';
@@ -315,16 +316,28 @@ class _SettingsState extends State<Settings> {
                                             });
                                             return;
                                           } else {
+                                            const storage = FlutterSecureStorage();
+                                            setState(() async {
+                                              authentication = value ?? 1;
+                                              await storage.write(
+                                                  key: 'authentication',
+                                                  value: authentication
+                                                      .toString());
+                                            });
+                                            saveSettings();
+                                            if (context.mounted) Navigator.of(context).pop();
+                                          }
+                                        } catch (e) {
+                                          const storage = FlutterSecureStorage();
                                             setState(() {
                                               authentication = value ?? 1;
                                             });
-                                            saveSettings();
-                                          }
-                                        } catch (e) {
-                                          setState(() {
-                                            authentication = value ?? 1;
-                                          });
+                                            await storage.write(
+                                                  key: 'authentication',
+                                                  value: authentication
+                                                      .toString());
                                           saveSettings();
+                                          if (context.mounted) Navigator.of(context).pop();
                                         }
                                       }
                                     },
@@ -345,12 +358,17 @@ class _SettingsState extends State<Settings> {
                                                   if (await KeyManagement()
                                                       .verifyRestorePassword(
                                                           password)) {
+                                                    const storage = FlutterSecureStorage();
                                                     setState(() {
                                                       authentication =
                                                           value ?? 1;
                                                     });
+                                                    await storage.write(
+                                                        key: 'authentication',
+                                                        value: authentication
+                                                            .toString());
                                                     saveSettings();
-                                                    Navigator.of(context).pop();
+                                                    if (context.mounted) Navigator.of(context).pop();
                                                   }
                                                 },
                                               ),
@@ -460,7 +478,7 @@ class _SettingsState extends State<Settings> {
                   description:
                       Text(context.loc.settings_alt_progress_description),
                 ),
-                if (!isPlatformMobile())
+                if (!isPlatformMobile() || !isPlatformWindows())
                   SettingsTile.switchTile(
                     leading: const Icon(Icons.menu),
                     initialValue: forceAppbar.value,

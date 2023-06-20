@@ -3,7 +3,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sekurity/main.dart';
 import 'package:sekurity/tools/keymanagement.dart';
 import 'package:sekurity/tools/platformtools.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthenticationFailed extends StatefulWidget {
   const AuthenticationFailed({super.key});
@@ -57,11 +56,10 @@ class _AuthenticationFailedState extends State<AuthenticationFailed> {
                     children: [
                     TextButton(
                     onPressed: () async {
-                      var prefs = await SharedPreferences.getInstance();
                       if (textfield.text.isNotEmpty) {
                         if (await KeyManagement().verifyRestorePassword(textfield.text)) {
                           authentication = 0;
-                          await prefs.setInt('authentication', 0);
+                          await storage.write(key: 'authentication',value: 0.toString());
                           await storage.write(key: 'attemptsLeft', value: "3");
                           
                           setState(() {
@@ -74,7 +72,6 @@ class _AuthenticationFailedState extends State<AuthenticationFailed> {
                           if (attemptsLeft < 0) {
                             // resetting app
                             await storage.deleteAll();
-                            await prefs.clear();
                             exitApp();
                           }
                           await storage.write(key: "attemptsLeft", value: attemptsLeft.toString());

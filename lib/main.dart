@@ -1,8 +1,7 @@
 import 'package:context_menus/context_menus.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:fluent_ui/fluent_ui.dart' as fui;
-import 'package:flutter_acrylic/flutter_acrylic.dart' as flutter_acrylic;
 import 'package:flutter/material.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
@@ -16,8 +15,7 @@ import 'package:sekurity/tools/keys.dart';
 import 'package:sekurity/tools/platformtools.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_tray/system_tray.dart';
-import 'package:window_size/window_size.dart';
-
+import 'package:window_manager/window_manager.dart';
 import 'views/add_service.dart';
 
 void loadSettings() {
@@ -37,6 +35,7 @@ void loadSettings() {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Window.initialize();
   const storage = FlutterSecureStorage();
   authentication = int.parse(await storage.read(key: 'authentication') ?? "0");
   debugPrint(
@@ -49,15 +48,19 @@ Future<void> main() async {
 
   if (isPlatformMacos() || isPlatformLinux() || isPlatformWindows()) {
     if (isPlatformWindows()) {
-      await flutter_acrylic.Window.initialize();
-      await flutter_acrylic.Window.hideWindowControls();
-      await flutter_acrylic.Window.setEffect(
-           effect: flutter_acrylic.WindowEffect.mica);
+      await WindowManager.instance.ensureInitialized();
+      windowManager.waitUntilReadyToShow().then((_) async {
+        await windowManager.setTitleBarStyle(
+          TitleBarStyle.hidden,
+          windowButtonVisibility: false,
+        );
+        await windowManager.show();
+      });
     }
     // Set the window title
-    setWindowTitle('Sekurity');
-    setWindowMinSize(const Size(400, 450));
-    setWindowMaxSize(const Size(650, 900));
+    await windowManager.setTitle("Sekurity");
+    await windowManager.setMinimumSize(const Size(400, 450));
+    await windowManager.setMaximumSize(const Size(650, 900));
   }
 }
 
@@ -85,6 +88,10 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    try {
+      final LocalAuthentication auth = LocalAuthentication();
+        auth.isDeviceSupported().then((value) {
+          authenticationSupported = value;});} catch (e) {}
     if (!appAuthenticationFailed.value && authentication == 2) {
       try {
         final LocalAuthentication auth = LocalAuthentication();
@@ -121,10 +128,7 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
         return DynamicColorBuilder(
           builder: ((lightDynamic, darkDynamic) {
             var app = MaterialApp(
-              localizationsDelegates: AppLocalizations.localizationsDelegates +
-                  [
-                    fui.FluentLocalizations.delegate,
-                  ],
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: const [
                 Locale('en', ''),
                 Locale('de', ''),
@@ -168,9 +172,6 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
                 useMaterial3: true,
               ),
             );
-            if (isPlatformMacos() || isPlatformWindows()) {
-              return fui.FluentTheme(data: fui.FluentThemeData(), child: app);
-            }
             return app;
           }),
         );

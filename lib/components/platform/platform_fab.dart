@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sekurity/tools/platforms.dart';
 import 'package:sekurity/tools/platformtools.dart';
-import 'package:fluent_ui/fluent_ui.dart' as fui;
 
 class PlatformFloatingActionButton extends StatefulWidget {
   const PlatformFloatingActionButton(
@@ -27,11 +26,12 @@ class _PlatformFloatingActionButtonState extends State<PlatformFloatingActionBut
           onPressed: () => widget.onPressed.call(),
           child: widget.icon,
         ));
-      case Platforms.windows:
+      /*case Platforms.windows:
         return fui.Button(
+          style: fui.ButtonStyle(padding: fui.ButtonState.all(EdgeInsets.all(10))),
           onPressed: () => widget.onPressed.call(),
           child: widget.icon,
-        );
+        );*/
       default:
         return FloatingActionButton(
             onPressed: () => widget.onPressed.call(), mini: widget.mini??false, tooltip: widget.tooltip, child: widget.icon);
