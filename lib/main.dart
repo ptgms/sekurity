@@ -43,7 +43,7 @@ Future<void> main() async {
   if (isPlatformAndroid()) {
     //Setting SysemUIOverlay
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        systemStatusBarContrastEnforced: true,
+        systemStatusBarContrastEnforced: false,
         systemNavigationBarColor: Colors.transparent,
         systemNavigationBarDividerColor: Colors.transparent,
         systemNavigationBarIconBrightness: Brightness.dark,
@@ -51,7 +51,7 @@ Future<void> main() async {
 
 //Setting SystmeUIMode
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,
-        overlays: [SystemUiOverlay.top]);
+        overlays: []);
   }
 
   const storage = FlutterSecureStorage();
