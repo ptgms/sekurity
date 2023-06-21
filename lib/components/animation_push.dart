@@ -3,7 +3,8 @@ import 'package:sekurity/tools/platformtools.dart';
 
 // animation controller for a push in effect on click
 class AnimationPush extends StatefulWidget {
-  const AnimationPush({super.key, required this.child, required this.onPressed});
+  const AnimationPush(
+      {super.key, required this.child, required this.onPressed});
   // input widget to be animated
   final Widget child;
   final Function() onPressed;
@@ -35,37 +36,34 @@ class _AnimationPushState extends State<AnimationPush>
     super.dispose();
   }
 
+  bool isPressed = false;
+
   @override
   Widget build(BuildContext context) {
-    bool isPressed = false;
-    bool animationFinished = false;
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && !isPressed) {
         _controller.reverse();
         vibrate(10);
       }
     });
-    return InkWell(
-      focusColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      hoverColor: Colors.transparent,
-      splashColor: Colors.transparent,
+    return GestureDetector(
       onTapDown: (details) {
         isPressed = true;
         _controller.forward(from: 0.0); // Start the animation on tap
-        //widget.onPressed();
+        // widget.onPressed();
         // vibrate
         vibrate(5);
       },
+      // when the tap is released, reverse the animation
       onTapUp: ((details) {
-          widget.onPressed();
-          if (animationFinished) {
-            _controller.reverse();
-            vibrate(10);
-            animationFinished = false;
+        isPressed = false;
+        widget.onPressed();
+        if (!_controller.isAnimating) {
+          _controller.reverse();
+          vibrate(10);
           }
           isPressed = false;
-        }),
+      }),
       child: AnimatedBuilder(
         animation: _animation,
         builder: ((context, child) {

@@ -510,6 +510,7 @@ class _HomePageState extends State<HomePage> {
                         },
                         child: card)
                 : ContextMenuRegion(
+                  enableLongPress: false,
                     contextMenu: GenericContextMenu(buttonConfigs: [
                       ContextMenuButtonConfig(context.loc.copy, onPressed: () {
                         Clipboard.setData(
