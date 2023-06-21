@@ -64,6 +64,15 @@ class _AnimationPushState extends State<AnimationPush>
           }
           isPressed = false;
       }),
+      // when u tap and drag away, reverse the animation
+      onTapCancel: () {
+        isPressed = false;
+        if (!_controller.isAnimating) {
+          _controller.reverse();
+          vibrate(10);
+          }
+          isPressed = false;
+      },
       child: AnimatedBuilder(
         animation: _animation,
         builder: ((context, child) {

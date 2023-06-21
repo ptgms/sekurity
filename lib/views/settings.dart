@@ -33,6 +33,7 @@ class _SettingsState extends State<Settings> {
     prefs.setBool("forceAppbar", forceAppbar.value);
     prefs.setBool("gradientBackground", gradientBackground);
     prefs.setInt("authentication", authentication);
+    prefs.setBool("bigcards", bigCards);
     return;
   }
 
@@ -316,7 +317,8 @@ class _SettingsState extends State<Settings> {
                                             });
                                             return;
                                           } else {
-                                            const storage = FlutterSecureStorage();
+                                            const storage =
+                                                FlutterSecureStorage();
                                             setState(() async {
                                               authentication = value ?? 1;
                                               await storage.write(
@@ -325,19 +327,21 @@ class _SettingsState extends State<Settings> {
                                                       .toString());
                                             });
                                             saveSettings();
-                                            if (context.mounted) Navigator.of(context).pop();
+                                            if (context.mounted)
+                                              Navigator.of(context).pop();
                                           }
                                         } catch (e) {
-                                          const storage = FlutterSecureStorage();
-                                            setState(() {
-                                              authentication = value ?? 1;
-                                            });
-                                            await storage.write(
-                                                  key: 'authentication',
-                                                  value: authentication
-                                                      .toString());
+                                          const storage =
+                                              FlutterSecureStorage();
+                                          setState(() {
+                                            authentication = value ?? 1;
+                                          });
+                                          await storage.write(
+                                              key: 'authentication',
+                                              value: authentication.toString());
                                           saveSettings();
-                                          if (context.mounted) Navigator.of(context).pop();
+                                          if (context.mounted)
+                                            Navigator.of(context).pop();
                                         }
                                       }
                                     },
@@ -358,7 +362,8 @@ class _SettingsState extends State<Settings> {
                                                   if (await KeyManagement()
                                                       .verifyRestorePassword(
                                                           password)) {
-                                                    const storage = FlutterSecureStorage();
+                                                    const storage =
+                                                        FlutterSecureStorage();
                                                     setState(() {
                                                       authentication =
                                                           value ?? 1;
@@ -368,7 +373,9 @@ class _SettingsState extends State<Settings> {
                                                         value: authentication
                                                             .toString());
                                                     saveSettings();
-                                                    if (context.mounted) Navigator.of(context).pop();
+                                                    if (context.mounted)
+                                                      Navigator.of(context)
+                                                          .pop();
                                                   }
                                                 },
                                               ),
@@ -478,7 +485,7 @@ class _SettingsState extends State<Settings> {
                   description:
                       Text(context.loc.settings_alt_progress_description),
                 ),
-                if (!isPlatformMobile() || !isPlatformWindows())
+                if (!isPlatformMobile() && !isPlatformWindows())
                   SettingsTile.switchTile(
                     leading: const Icon(Icons.menu),
                     initialValue: forceAppbar.value,
@@ -540,6 +547,22 @@ class _SettingsState extends State<Settings> {
                     },
                     initialValue: bold,
                   ),
+                  SettingsTile.switchTile(
+                    initialValue: bigCards,
+                    leading: const Icon(Icons.crop_square_rounded),
+                    onToggle: (value) {
+                      setState(() {
+                        bigCards = value;
+                      });
+                      final itemModel =
+                          Provider.of<Keys>(context, listen: false);
+                      itemModel.uiUpdate();
+                      saveSettings();
+                    },
+                    title: Text(context.loc.settings_big_cards),
+                    description:
+                        Text(context.loc.settings_big_cards_description),
+                  )
                 ]),
             SettingsSection(
               title: Text(context.loc.settings_reset),

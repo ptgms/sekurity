@@ -7,6 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_linux
   flutter_acrylic
   flutter_secure_storage_linux
+  native_context_menu
   screen_retriever
   system_tray
   url_launcher_linux

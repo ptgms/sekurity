@@ -1,6 +1,6 @@
-import 'package:context_menus/context_menus.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
@@ -28,6 +28,7 @@ void loadSettings() {
       AppWindow().hide();
     }
     altProgress = prefs.getBool('altProgress') ?? false;
+    bigCards = prefs.getBool('bigcards') ?? false;
     forceAppbar.value = prefs.getBool('forceAppbar') ?? false;
     gradientBackground = prefs.getBool('gradientBackground') ?? true;
   });
@@ -38,6 +39,21 @@ Future<void> main() async {
   if (!isPlatformMobile()) {
     await Window.initialize();
   }
+
+  if (isPlatformAndroid()) {
+    //Setting SysemUIOverlay
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        systemStatusBarContrastEnforced: true,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
+        statusBarIconBrightness: Brightness.dark));
+
+//Setting SystmeUIMode
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,
+        overlays: [SystemUiOverlay.top]);
+  }
+
   const storage = FlutterSecureStorage();
   authentication = int.parse(await storage.read(key: 'authentication') ?? "0");
   debugPrint(
@@ -97,7 +113,7 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
           authenticationSupported = value;
         });
       }
-    // ignore: empty_catches
+      // ignore: empty_catches
     } catch (e) {}
     if (!appAuthenticationFailed.value && authentication == 2) {
       try {
@@ -146,10 +162,9 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
               routes: {
                 '/': (BuildContext context) => appAuthenticationFailed.value
                     ? const AuthenticationFailed()
-                    : ContextMenuOverlay(
-                        child: const HomePage(
+                    : const HomePage(
                         title: "Sekurity",
-                      )),
+                      ),
                 '/addService': (BuildContext context) =>
                     appAuthenticationFailed.value
                         ? const AuthenticationFailed()
@@ -196,6 +211,7 @@ var forceAppbar = ValueNotifier(false);
 var gradientBackground = true;
 var biometricCount = 0;
 var appAuthenticationFailed = ValueNotifier(false);
+var bigCards = false;
 
 var authenticationSupported = false;
 

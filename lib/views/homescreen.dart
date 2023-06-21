@@ -1,10 +1,11 @@
 import 'dart:convert';
 
-import 'package:context_menus/context_menus.dart';
 import 'package:dart_dash_otp/dart_dash_otp.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:native_context_menu/native_context_menu.dart' as ctx;
 import 'package:provider/provider.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
 import 'package:sekurity/components/animation_push.dart';
@@ -181,10 +182,12 @@ class _HomePageState extends State<HomePage> {
                     gaplessPlayback: true,
                   )),
       title: Text(key.service,
+      maxLines: 1,
           style: TextStyle(
               color: color, fontWeight: bold ? FontWeight.bold : null)),
       subtitle: (key.description != "")
           ? Text(key.description,
+              maxLines: 1,
               style: TextStyle(
                   color: color,
                   fontSize: 10.0,
@@ -290,7 +293,7 @@ class _HomePageState extends State<HomePage> {
     double width = MediaQuery.of(context).size.width;
     int widthCard = 290;
 
-    int heightCard = isPlatformIOS() ? 80 : 70;
+    int heightCard = (isPlatformIOS() ? 80 : 70);
 
     if (width < widthCard) {
       widthCard = width.toInt() - 1;
@@ -315,6 +318,26 @@ class _HomePageState extends State<HomePage> {
       tooltip: editMode ? context.loc.edit : context.loc.add_service_name,
       icon: editMode ? const Icon(Icons.done) : const Icon(Icons.add),
     );
+
+    ScrollController controller = ScrollController();
+    bool fabVisible = true;
+
+    controller.addListener((){
+      if(controller.position.userScrollDirection == ScrollDirection.reverse){
+        if(fabVisible == true) {
+            setState((){
+              fabVisible = false;
+            });
+        }
+      } else {
+        if(controller.position.userScrollDirection == ScrollDirection.forward){
+          if(fabVisible == false) {
+               setState((){
+                 fabVisible = true;
+               });
+           }
+        }
+    }});
 
     //updateProgress();
     loopRefresh();
@@ -415,43 +438,54 @@ class _HomePageState extends State<HomePage> {
               width: double.infinity,
               height: double.infinity,
               child: gridViewBuilder(
-                  count, widthCard, heightCard, itemModel.items),
+                  count, widthCard, heightCard, itemModel.items, controller),
             );
           }),
-          floatingActionButton: isPlatformMobile()
+          floatingActionButton: Visibility(
+            visible: fabVisible,
+            child: isPlatformMobile()
               ? fab
-              : ContextMenuRegion(
-                  contextMenu: GenericContextMenu(buttonConfigs: [
+              : ctx.ContextMenuRegion(
+                  onItemSelected: (item) {
+                    item.onSelected?.call();
+                  },
+                  menuItems: [
                     if (!editMode)
-                      ContextMenuButtonConfig(context.loc.add_service_name,
-                          onPressed: () {
-                        currentScreen = 1;
-                        Navigator.pushNamed(context, "/addService");
-                      }, icon: const Icon(Icons.add)),
+                      ctx.MenuItem(
+                          title: context.loc.add_service_name,
+                          onSelected: () {
+                            currentScreen = 1;
+                            Navigator.pushNamed(context, "/addService");
+                          }),
                     if (!editMode)
-                      ContextMenuButtonConfig(context.loc.home_import_export,
-                          onPressed: () {
-                        currentScreen = 3;
-                        Navigator.pushNamed(context, "/importExport");
-                      }, icon: const Icon(Icons.import_export)),
-                    ContextMenuButtonConfig(context.loc.edit, onPressed: () {
-                      setState(() {
-                        editMode = !editMode;
-                      });
-                    }, icon: const Icon(Icons.edit))
-                  ]),
+                      ctx.MenuItem(
+                          title: context.loc.home_import_export,
+                          onSelected: () {
+                            currentScreen = 3;
+                            Navigator.pushNamed(context, "/importExport");
+                          }),
+                    ctx.MenuItem(
+                        title: context.loc.edit,
+                        onSelected: () {
+                          setState(() {
+                            editMode = !editMode;
+                          });
+                        }),
+                  ],
                   child: fab),
+          )
         ));
   }
 
   Widget gridViewBuilder(
-      int count, int widthCard, int heightCard, List<KeyStruct> snapshot) {
+      int count, int widthCard, int heightCard, List<KeyStruct> snapshot, ScrollController controller) {
     return ReorderableGridView.builder(
+      controller: controller,
       //scrollDirection: Axis.vertical,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: count,
         //crossAxisSpacing: 8,
-        childAspectRatio: (widthCard / heightCard),
+        childAspectRatio: (widthCard / (heightCard * (bigCards? 1.3 : 1))),
       ),
       itemCount: snapshot.length,
       itemBuilder: (BuildContext context, int index) {
@@ -463,7 +497,7 @@ class _HomePageState extends State<HomePage> {
             shadowColor: snapshot[index].color.withOpacity(0.5),
             elevation: 2,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(heightCard / 2),
+              borderRadius: BorderRadius.circular((heightCard * (bigCards? 1.3 : 1)) / 2),
             ),
             color: Colors.white,
             child: Container(
@@ -509,22 +543,28 @@ class _HomePageState extends State<HomePage> {
                           }
                         },
                         child: card)
-                : ContextMenuRegion(
-                  enableLongPress: false,
-                    contextMenu: GenericContextMenu(buttonConfigs: [
-                      ContextMenuButtonConfig(context.loc.copy, onPressed: () {
-                        Clipboard.setData(
-                            ClipboardData(text: generateTOTP(snapshot[index])));
-                      }, icon: const Icon(Icons.copy)),
-                      ContextMenuButtonConfig(
-                          context.loc.home_context_menu_delete, onPressed: () {
-                        deleteDialog(snapshot[index], index, context);
-                      }, icon: const Icon(Icons.delete)),
-                      ContextMenuButtonConfig(
-                          context.loc.home_context_menu_edit, onPressed: () {
-                        editDialog(snapshot[index], index, context);
-                      }, icon: const Icon(Icons.edit)),
-                    ]),
+                : ctx.ContextMenuRegion(
+                  onItemSelected: (item) {
+                    item.onSelected?.call();
+                  },
+                    menuItems: [
+                        ctx.MenuItem(
+                            title: context.loc.copy,
+                            onSelected: () {
+                              Clipboard.setData(ClipboardData(
+                                  text: generateTOTP(snapshot[index])));
+                            }),
+                        ctx.MenuItem(
+                            title: context.loc.home_context_menu_delete,
+                            onSelected: () {
+                              deleteDialog(snapshot[index], index, context);
+                            }),
+                        ctx.MenuItem(
+                            title: context.loc.home_context_menu_edit,
+                            onSelected: () {
+                              editDialog(snapshot[index], index, context);
+                            }),
+                      ],
                     child: editMode
                         ? card
                         : AnimationPush(
