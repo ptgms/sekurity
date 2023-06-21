@@ -51,6 +51,7 @@ class _ImportExportState extends State<ImportExport> {
     );
 
     return PlatformScaffold(
+      nonTransparent: true,
       appBar: appBar,
       body: ListView(children: [
         ListTile(

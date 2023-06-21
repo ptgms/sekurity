@@ -70,6 +70,7 @@ class _AddServiceState extends State<AddService> {
     );
 
     return PlatformScaffold(
+      nonTransparent: true,
       appBar: appBar,
       body: (isManual || (isPlatformWindows() || isPlatformLinux() || isPlatformMacos()))
           ? manualMode(context)

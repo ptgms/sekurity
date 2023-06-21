@@ -14,10 +14,12 @@ class PlatformScaffold extends StatefulWidget {
       {super.key,
       required this.appBar,
       required this.body,
-      this.floatingActionButton});
+      this.floatingActionButton,
+      this.nonTransparent = false});
   final PlatformAppBar appBar;
   final Widget body;
   final Widget? floatingActionButton;
+  final bool nonTransparent;
 
   @override
   State<PlatformScaffold> createState() => _PlatformScaffoldState();
@@ -30,10 +32,17 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
     switch (getPlatform()) {
       case Platforms.macos:
       case Platforms.ios:
+        if (isPlatformMacos()) {
+          Window.setEffect(
+            effect: WindowEffect.windowBackground,
+            dark: Theme.of(context).brightness == Brightness.dark,
+          );
+        }
         if (isPlatformMobile() ||
             forceAppbar.value ||
             widget.appBar.menuItems == null) {
           return CupertinoPageScaffold(
+            backgroundColor: (isPlatformMacos()&&!widget.nonTransparent)? Colors.transparent : null,
             navigationBar: CupertinoNavigationBar(
               leading: widget.appBar.leading,
               middle: Text(widget.appBar.title),
@@ -46,6 +55,7 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
             ),
             child: SafeArea(
                 child: Scaffold(
+            backgroundColor: (isPlatformMacos()&&!widget.nonTransparent)? Colors.transparent : null,
               body: widget.body,
               floatingActionButton: widget.floatingActionButton,
             )),
@@ -61,11 +71,11 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
         }
       case Platforms.windows:
         Window.setEffect(
-          effect: WindowEffect.acrylic,
+          effect: WindowEffect.mica,
           dark: Theme.of(context).brightness == Brightness.dark,
         );
         return Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor: widget.nonTransparent? null : Colors.transparent,
           appBar: PreferredSize(
             preferredSize: const Size.fromHeight(50.0),
             child: Column(

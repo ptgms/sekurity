@@ -35,7 +35,9 @@ void loadSettings() {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Window.initialize();
+  if (!isPlatformMobile()) {
+    await Window.initialize();
+  }
   const storage = FlutterSecureStorage();
   authentication = int.parse(await storage.read(key: 'authentication') ?? "0");
   debugPrint(
@@ -47,8 +49,8 @@ Future<void> main() async {
   loadSettings();
 
   if (isPlatformMacos() || isPlatformLinux() || isPlatformWindows()) {
+    await WindowManager.instance.ensureInitialized();
     if (isPlatformWindows()) {
-      await WindowManager.instance.ensureInitialized();
       windowManager.waitUntilReadyToShow().then((_) async {
         await windowManager.setTitleBarStyle(
           TitleBarStyle.hidden,
@@ -89,9 +91,14 @@ class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     try {
-      final LocalAuthentication auth = LocalAuthentication();
+      if (isPlatformWindows() || isPlatformAndroid() || isPlatformIOS()) {
+        final LocalAuthentication auth = LocalAuthentication();
         auth.isDeviceSupported().then((value) {
-          authenticationSupported = value;});} catch (e) {}
+          authenticationSupported = value;
+        });
+      }
+    // ignore: empty_catches
+    } catch (e) {}
     if (!appAuthenticationFailed.value && authentication == 2) {
       try {
         final LocalAuthentication auth = LocalAuthentication();

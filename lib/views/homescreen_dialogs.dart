@@ -116,7 +116,7 @@ void editDialog(KeyStruct keyToEdit, int index, BuildContext context) {
                         builder: (context, value, child) {
                           return value == ""
                               ? Icon(Icons.key,
-                                  size: 64.0, color: editedKey.color)
+                                  size: 64.0, color: StructTools().getTextColor(editedKey.color))
                               : SizedBox(
                                   height: 64.0,
                                   width: 64.0,
