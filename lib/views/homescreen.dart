@@ -219,7 +219,7 @@ class _HomePageState extends State<HomePage> {
               child: IconButton(
                 padding: const EdgeInsets.all(0.0),
                 iconSize: 15.0,
-                icon: Icon(Icons.edit, size: 32.0, color: color),
+                icon: Icon(Icons.edit, size: 32.0, color: isCard ? color : null),
                 onPressed: () {
                   editDialog(key, index, context);
                 },
