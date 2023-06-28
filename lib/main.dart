@@ -31,6 +31,8 @@ void loadSettings() {
     bigCards = prefs.getBool('bigcards') ?? false;
     forceAppbar.value = prefs.getBool('forceAppbar') ?? false;
     gradientBackground = prefs.getBool('gradientBackground') ?? true;
+    displayStyle = AppStyle.values[prefs.getInt('displayStyle') ?? 0];
+    exitToTray = prefs.getBool('exitToTray') ?? false;
   });
 }
 
@@ -79,6 +81,11 @@ Future<void> main() async {
     await windowManager.setTitle("Sekurity");
     await windowManager.setMinimumSize(const Size(400, 450));
     await windowManager.setMaximumSize(const Size(650, 900));
+    await windowManager.setMaximizable(false);
+
+    if (exitToTray) {
+      await windowManager.setPreventClose(true);
+    }
   }
 }
 
@@ -91,17 +98,27 @@ class SekurityApp extends StatefulWidget {
   }
 }
 
-class SekurityState extends State<SekurityApp> with WidgetsBindingObserver {
+class SekurityState extends State<SekurityApp> with WidgetsBindingObserver, WindowListener {
   @override
   void initState() {
     super.initState();
+    windowManager.addListener(this);
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
+    windowManager.removeListener(this);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void onWindowClose() async {
+    bool isPreventClose = await windowManager.isPreventClose();
+    if (isPreventClose) {
+      AppWindow().hide();
+    }
   }
 
   @override
@@ -212,6 +229,13 @@ var gradientBackground = true;
 var biometricCount = 0;
 var appAuthenticationFailed = ValueNotifier(false);
 var bigCards = false;
+
+// style enums
+enum AppStyle { minimalistic, cards, habbit }
+
+var displayStyle = AppStyle.minimalistic;
+
+var exitToTray = false;
 
 var authenticationSupported = false;
 

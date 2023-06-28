@@ -152,7 +152,36 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Widget? otpIcon(bool isHabbit, KeyStruct key, Color color, bool isCard) {
+    if (isHabbit) {
+      return null;
+    }
+    var icon = (key.iconBase64 == "")
+        ? Icon(
+            Icons.key,
+            size: isCard? 32.0 : 24.0,
+            color: isCard ? color : null,
+          )
+        : SizedBox(
+            height: isCard? 32.0 : 24.0,
+            width: isCard? 32.0 : 24.0,
+            child: Image.memory(
+              base64Decode(key.iconBase64),
+              gaplessPlayback: true,
+            ));
+
+    if (!isCard) {
+      return Card(color: key.color, child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: icon,
+      ));
+    }
+    return icon;
+  }
+
   Widget otpListTile(KeyStruct key, Color color, int index, bool editMode) {
+    bool isCard = displayStyle == AppStyle.cards;
+    bool isHabbit = displayStyle == AppStyle.habbit;
     return ListTile(
       mouseCursor: SystemMouseCursors.click,
       leading: editMode
@@ -162,34 +191,24 @@ class _HomePageState extends State<HomePage> {
               child: IconButton(
                 padding: const EdgeInsets.all(0.0),
                 iconSize: 15.0,
-                icon: Icon(Icons.delete, size: 32.0, color: color),
+                icon: Icon(Icons.delete,
+                    size: 32.0, color: isCard ? color : null),
                 onPressed: () {
                   deleteDialog(key, index, context);
                 },
               ),
             )
-          : (key.iconBase64 == "")
-              ? Icon(
-                  Icons.key,
-                  size: 32.0,
-                  color: color,
-                )
-              : SizedBox(
-                  height: 32.0,
-                  width: 32.0,
-                  child: Image.memory(
-                    base64Decode(key.iconBase64),
-                    gaplessPlayback: true,
-                  )),
+          : otpIcon(isHabbit, key, color, isCard),
       title: Text(key.service,
-      maxLines: 1,
+          maxLines: 1,
           style: TextStyle(
-              color: color, fontWeight: bold ? FontWeight.bold : null)),
+              color: isCard ? color : null,
+              fontWeight: bold ? FontWeight.bold : null)),
       subtitle: (key.description != "")
           ? Text(key.description,
               maxLines: 1,
               style: TextStyle(
-                  color: color,
+                  color: isCard ? color : null,
                   fontSize: 10.0,
                   fontWeight: bold ? FontWeight.bold : null))
           : null,
@@ -223,27 +242,31 @@ class _HomePageState extends State<HomePage> {
                                 progress: (adjustedTimeMillis %
                                         (key.interval * 1000)) /
                                     (key.interval * 1000),
-                                color: color)
+                                color: isCard
+                                    ? color
+                                    : Theme.of(context).colorScheme.secondary)
                             : ProgressbarText(
                                 text:
                                     "${authCode.substring(0, 3)} ${authCode.substring(3)}",
                                 progress: (adjustedTimeMillis %
                                         (key.interval * 1000)) /
                                     (key.interval * 1000),
-                                color: color);
+                                color: isCard
+                                    ? color
+                                    : Theme.of(context).colorScheme.secondary);
                       } else {
                         return key.eightDigits
                             ? Text(
                                 "${authCode.substring(0, 4)} ${authCode.substring(4)}",
                                 style: TextStyle(
                                     fontSize: 20,
-                                    color: color,
+                                    color: isCard ? color : null,
                                     fontWeight: FontWeight.bold))
                             : Text(
                                 "${authCode.substring(0, 3)} ${authCode.substring(3)}",
                                 style: TextStyle(
                                     fontSize: 20,
-                                    color: color,
+                                    color: isCard ? color : null,
                                     fontWeight: FontWeight.bold));
                       }
                     }),
@@ -268,7 +291,9 @@ class _HomePageState extends State<HomePage> {
                                 (adjustedTimeMillis % (key.interval * 1000)) /
                                     (key.interval * 1000),
                             strokeWidth: 5,
-                            color: color,
+                            color: isCard
+                                ? color
+                                : Theme.of(context).textTheme.bodyMedium!.color,
                           );
                         },
                       ),
@@ -322,22 +347,24 @@ class _HomePageState extends State<HomePage> {
     ScrollController controller = ScrollController();
     bool fabVisible = true;
 
-    controller.addListener((){
-      if(controller.position.userScrollDirection == ScrollDirection.reverse){
-        if(fabVisible == true) {
-            setState((){
-              fabVisible = false;
-            });
+    controller.addListener(() {
+      if (controller.position.userScrollDirection == ScrollDirection.reverse) {
+        if (fabVisible == true) {
+          setState(() {
+            fabVisible = false;
+          });
         }
       } else {
-        if(controller.position.userScrollDirection == ScrollDirection.forward){
-          if(fabVisible == false) {
-               setState((){
-                 fabVisible = true;
-               });
-           }
+        if (controller.position.userScrollDirection ==
+            ScrollDirection.forward) {
+          if (fabVisible == false) {
+            setState(() {
+              fabVisible = true;
+            });
+          }
         }
-    }});
+      }
+    });
 
     //updateProgress();
     loopRefresh();
@@ -353,167 +380,149 @@ class _HomePageState extends State<HomePage> {
           }
         },
         child: PlatformScaffold(
-          appBar: PlatformAppBar(
-              title: editMode ? context.loc.editing : widget.title,
-              actions: [
-                PlatformPopupMenuButton(items: [
-                  PlatformButton(
-                      text: context.loc.edit,
-                      onPressed: () {
-                        setState(() {
-                          editMode = !editMode;
-                        });
-                      }),
-                  PlatformButton(
-                      text: context.loc.home_import_export,
-                      onPressed: () {
-                        currentScreen = 3;
-                        Navigator.pushNamed(context, "/importExport");
-                      }),
-                  PlatformButton(
-                      text: context.loc.home_about,
-                      onPressed: () => aboutDialog(context)),
-                  PlatformButton(
-                      text: context.loc.home_settings,
-                      onPressed: () {
-                        currentScreen = 2;
-                        Navigator.pushNamed(context, "/settings");
-                      }),
-                ]),
-              ],
-              menuItems: [
-                SubMenuItem(title: "File", items: [
-                  MenuItem(
-                      title: context.loc.home_about,
-                      onPressed: () {
-                        aboutDialog(context);
-                      }),
-                  MenuItem(
-                      title: context.loc.home_import_export,
-                      onPressed: () {
-                        currentScreen = 3;
-                        Navigator.pushNamed(context, "/importExport");
-                      }),
-                  MenuItem(
-                      title: context.loc.quit,
-                      keybind: getShortcut(LogicalKeyboardKey.keyQ, true),
-                      onPressed: () {
-                        exitApp();
-                      })
-                ]),
-                SubMenuItem(title: "Edit", items: [
-                  MenuItem(
-                      title: context.loc.add_service_name,
-                      keybind: getShortcut(LogicalKeyboardKey.keyA, true),
-                      onPressed: () {
-                        if (currentScreen == 0) {
-                          currentScreen = 1;
-                          Navigator.pushNamed(context, "/addService");
-                        }
-                      }),
-                  MenuItem(
-                      title: context.loc.edit,
-                      keybind: getShortcut(LogicalKeyboardKey.keyE, true),
-                      onPressed: () {
-                        setState(() {
-                          editMode = !editMode;
-                        });
-                      }),
-                  MenuItem(
-                      title: context.loc.home_settings,
-                      keybind: isPlatformMacos()
-                          ? getShortcut(LogicalKeyboardKey.comma, true)
-                          : getShortcut(LogicalKeyboardKey.keyS, true),
-                      onPressed: () {
-                        if (currentScreen == 0) {
-                          currentScreen = 2;
-                          Navigator.pushNamed(context, "/settings");
-                        }
-                      }),
-                ])
-              ]),
-          body: Consumer<Keys>(builder: (context, itemModel, _) {
-            initSystemTray();
-            return SizedBox(
-              width: double.infinity,
-              height: double.infinity,
-              child: gridViewBuilder(
-                  count, widthCard, heightCard, itemModel.items, controller),
-            );
-          }),
-          floatingActionButton: Visibility(
-            visible: fabVisible,
-            child: isPlatformMobile()
-              ? fab
-              : ctx.ContextMenuRegion(
-                  onItemSelected: (item) {
-                    item.onSelected?.call();
-                  },
-                  menuItems: [
-                    if (!editMode)
-                      ctx.MenuItem(
-                          title: context.loc.add_service_name,
-                          onSelected: () {
-                            currentScreen = 1;
-                            Navigator.pushNamed(context, "/addService");
-                          }),
-                    if (!editMode)
-                      ctx.MenuItem(
-                          title: context.loc.home_import_export,
-                          onSelected: () {
-                            currentScreen = 3;
-                            Navigator.pushNamed(context, "/importExport");
-                          }),
-                    ctx.MenuItem(
-                        title: context.loc.edit,
-                        onSelected: () {
+            appBar: PlatformAppBar(
+                title: editMode ? context.loc.editing : widget.title,
+                actions: [
+                  PlatformPopupMenuButton(items: [
+                    PlatformButton(
+                        text: context.loc.edit,
+                        onPressed: () {
                           setState(() {
                             editMode = !editMode;
                           });
                         }),
-                  ],
-                  child: fab),
-          )
-        ));
+                    PlatformButton(
+                        text: context.loc.home_import_export,
+                        onPressed: () {
+                          currentScreen = 3;
+                          Navigator.pushNamed(context, "/importExport");
+                        }),
+                    PlatformButton(
+                        text: context.loc.home_about,
+                        onPressed: () => aboutDialog(context)),
+                    PlatformButton(
+                        text: context.loc.home_settings,
+                        onPressed: () {
+                          currentScreen = 2;
+                          Navigator.pushNamed(context, "/settings");
+                        }),
+                  ]),
+                ],
+                menuItems: [
+                  SubMenuItem(title: "File", items: [
+                    MenuItem(
+                        title: context.loc.home_about,
+                        onPressed: () {
+                          aboutDialog(context);
+                        }),
+                    MenuItem(
+                        title: context.loc.home_import_export,
+                        onPressed: () {
+                          currentScreen = 3;
+                          Navigator.pushNamed(context, "/importExport");
+                        }),
+                    MenuItem(
+                        title: context.loc.quit,
+                        keybind: getShortcut(LogicalKeyboardKey.keyQ, true),
+                        onPressed: () {
+                          exitApp();
+                        })
+                  ]),
+                  SubMenuItem(title: "Edit", items: [
+                    MenuItem(
+                        title: context.loc.add_service_name,
+                        keybind: getShortcut(LogicalKeyboardKey.keyA, true),
+                        onPressed: () {
+                          if (currentScreen == 0) {
+                            currentScreen = 1;
+                            Navigator.pushNamed(context, "/addService");
+                          }
+                        }),
+                    MenuItem(
+                        title: context.loc.edit,
+                        keybind: getShortcut(LogicalKeyboardKey.keyE, true),
+                        onPressed: () {
+                          setState(() {
+                            editMode = !editMode;
+                          });
+                        }),
+                    MenuItem(
+                        title: context.loc.home_settings,
+                        keybind: isPlatformMacos()
+                            ? getShortcut(LogicalKeyboardKey.comma, true)
+                            : getShortcut(LogicalKeyboardKey.keyS, true),
+                        onPressed: () {
+                          if (currentScreen == 0) {
+                            currentScreen = 2;
+                            Navigator.pushNamed(context, "/settings");
+                          }
+                        }),
+                  ])
+                ]),
+            body: Consumer<Keys>(builder: (context, itemModel, _) {
+              initSystemTray();
+              return SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: gridViewBuilder(
+                    count, widthCard, heightCard, itemModel.items, controller),
+              );
+            }),
+            floatingActionButton: Visibility(
+              visible: fabVisible,
+              child: isPlatformMobile()
+                  ? fab
+                  : ctx.ContextMenuRegion(
+                      onItemSelected: (item) {
+                        item.onSelected?.call();
+                      },
+                      menuItems: [
+                        if (!editMode)
+                          ctx.MenuItem(
+                              title: context.loc.add_service_name,
+                              onSelected: () {
+                                currentScreen = 1;
+                                Navigator.pushNamed(context, "/addService");
+                              }),
+                        if (!editMode)
+                          ctx.MenuItem(
+                              title: context.loc.home_import_export,
+                              onSelected: () {
+                                currentScreen = 3;
+                                Navigator.pushNamed(context, "/importExport");
+                              }),
+                        ctx.MenuItem(
+                            title: context.loc.edit,
+                            onSelected: () {
+                              setState(() {
+                                editMode = !editMode;
+                              });
+                            }),
+                      ],
+                      child: fab),
+            )));
   }
 
-  Widget gridViewBuilder(
-      int count, int widthCard, int heightCard, List<KeyStruct> snapshot, ScrollController controller) {
+  Widget gridViewBuilder(int count, int widthCard, int heightCard,
+      List<KeyStruct> snapshot, ScrollController controller) {
     return ReorderableGridView.builder(
       controller: controller,
       //scrollDirection: Axis.vertical,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: count,
         //crossAxisSpacing: 8,
-        childAspectRatio: (widthCard / (heightCard * (bigCards? 1.3 : 1))),
+        childAspectRatio: (widthCard / (heightCard * (bigCards ? 1.3 : 1))),
       ),
       itemCount: snapshot.length,
       itemBuilder: (BuildContext context, int index) {
         var color = StructTools().getTextColor(snapshot[index].color);
         Widget card = MouseRegion(
-          cursor: SystemMouseCursors.basic,
-          child: Card(
-            clipBehavior: Clip.antiAlias,
-            shadowColor: snapshot[index].color.withOpacity(0.5),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular((heightCard * (bigCards? 1.3 : 1)) / 2),
-            ),
-            color: Colors.white,
-            child: Container(
-              decoration: gradientBackground
-                  ? BoxDecoration(
-                      gradient: LinearGradient(colors: [
-                      snapshot[index].color,
-                      StructTools()
-                          .getComplimentaryColor(snapshot[index].color),
-                    ], begin: Alignment.topLeft, end: Alignment.bottomRight))
-                  : BoxDecoration(color: snapshot[index].color),
-              child: Center(
-                  child: otpListTile(snapshot[index], color, index, editMode)),
-            ),
-          ),
-        );
+            cursor: SystemMouseCursors.basic,
+            child: displayStyle == AppStyle.cards
+                ? cardStyle(snapshot, index, heightCard, color)
+                : displayStyle == AppStyle.minimalistic
+                    ? otpListTile(snapshot[index], color, index, editMode)
+                    : otpListTile(snapshot[index], color, index, editMode));
         return GestureDetector(
             key: ValueKey(snapshot[index].key),
             onDoubleTap: editMode ? () async {} : null,
@@ -544,27 +553,27 @@ class _HomePageState extends State<HomePage> {
                         },
                         child: card)
                 : ctx.ContextMenuRegion(
-                  onItemSelected: (item) {
-                    item.onSelected?.call();
-                  },
+                    onItemSelected: (item) {
+                      item.onSelected?.call();
+                    },
                     menuItems: [
-                        ctx.MenuItem(
-                            title: context.loc.copy,
-                            onSelected: () {
-                              Clipboard.setData(ClipboardData(
-                                  text: generateTOTP(snapshot[index])));
-                            }),
-                        ctx.MenuItem(
-                            title: context.loc.home_context_menu_delete,
-                            onSelected: () {
-                              deleteDialog(snapshot[index], index, context);
-                            }),
-                        ctx.MenuItem(
-                            title: context.loc.home_context_menu_edit,
-                            onSelected: () {
-                              editDialog(snapshot[index], index, context);
-                            }),
-                      ],
+                      ctx.MenuItem(
+                          title: context.loc.copy,
+                          onSelected: () {
+                            Clipboard.setData(ClipboardData(
+                                text: generateTOTP(snapshot[index])));
+                          }),
+                      ctx.MenuItem(
+                          title: context.loc.home_context_menu_delete,
+                          onSelected: () {
+                            deleteDialog(snapshot[index], index, context);
+                          }),
+                      ctx.MenuItem(
+                          title: context.loc.home_context_menu_edit,
+                          onSelected: () {
+                            editDialog(snapshot[index], index, context);
+                          }),
+                    ],
                     child: editMode
                         ? card
                         : AnimationPush(
@@ -595,6 +604,31 @@ class _HomePageState extends State<HomePage> {
         });
         KeyManagement().saveKeys(snapshot);
       },
+    );
+  }
+
+  Card cardStyle(
+      List<KeyStruct> snapshot, int index, int heightCard, Color color) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      shadowColor: snapshot[index].color.withOpacity(0.5),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.circular((heightCard * (bigCards ? 1.3 : 1)) / 2),
+      ),
+      color: Colors.white,
+      child: Container(
+        decoration: gradientBackground
+            ? BoxDecoration(
+                gradient: LinearGradient(colors: [
+                snapshot[index].color,
+                StructTools().getComplimentaryColor(snapshot[index].color),
+              ], begin: Alignment.topLeft, end: Alignment.bottomRight))
+            : BoxDecoration(color: snapshot[index].color),
+        child:
+            Center(child: otpListTile(snapshot[index], color, index, editMode)),
+      ),
     );
   }
 }

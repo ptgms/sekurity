@@ -42,7 +42,9 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
             forceAppbar.value ||
             widget.appBar.menuItems == null) {
           return CupertinoPageScaffold(
-            backgroundColor: (isPlatformMacos()&&!widget.nonTransparent)? Colors.transparent : null,
+            backgroundColor: (isPlatformMacos() && !widget.nonTransparent)
+                ? Colors.transparent
+                : null,
             navigationBar: CupertinoNavigationBar(
               leading: widget.appBar.leading,
               middle: Text(widget.appBar.title),
@@ -55,7 +57,9 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
             ),
             child: SafeArea(
                 child: Scaffold(
-            backgroundColor: (isPlatformMacos()&&!widget.nonTransparent)? Colors.transparent : null,
+              backgroundColor: (isPlatformMacos() && !widget.nonTransparent)
+                  ? Colors.transparent
+                  : null,
               body: widget.body,
               floatingActionButton: widget.floatingActionButton,
             )),
@@ -75,7 +79,7 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
           dark: Theme.of(context).brightness == Brightness.dark,
         );
         return Scaffold(
-          backgroundColor: widget.nonTransparent? null : Colors.transparent,
+          backgroundColor: widget.nonTransparent ? null : Colors.transparent,
           appBar: PreferredSize(
             preferredSize: const Size.fromHeight(50.0),
             child: Column(
@@ -86,7 +90,7 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
                     children: [
                       if (widget.appBar.leading != null) widget.appBar.leading!,
                       if (widget.appBar.menuItems != null ||
-                          (widget.appBar.menuItems??[]).isNotEmpty)
+                          (widget.appBar.menuItems ?? []).isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
                           child: PopupMenuButton(
@@ -94,16 +98,20 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
                             child: const Icon(Icons.menu_rounded),
                             itemBuilder: (_) {
                               return [
-                                for (SubMenuItem item in widget.appBar.menuItems ?? [])
-                                PopupSubMenuItem(title: item.title, items: [
-                                  for (MenuItem subitem in item.items)
-                                    PopupMenuItem(
-                                      value: subitem,
-                                      child: Text(subitem.title),
-                                    )
-                                ], onSelected: (value) {
-                                  value.onPressed.call();
-                                })
+                                for (SubMenuItem item
+                                    in widget.appBar.menuItems ?? [])
+                                  PopupSubMenuItem(
+                                      title: item.title,
+                                      items: [
+                                        for (MenuItem subitem in item.items)
+                                          PopupMenuItem(
+                                            value: subitem,
+                                            child: Text(subitem.title),
+                                          )
+                                      ],
+                                      onSelected: (value) {
+                                        value.onPressed.call();
+                                      })
                               ];
                             },
                           ),
@@ -111,14 +119,19 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
 
                       // weight
                       Expanded(
-                        child: DragToMoveArea(
+                        child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onPanStart: (details) {
+                              windowManager.startDragging();
+                            },
                             child: Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 0, 20, 3),
-                            child: Text(widget.appBar.title),
-                          ),
-                        )),
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(10, 0, 20, 3),
+                                child: Text(widget.appBar.title),
+                              ),
+                            )),
                       ),
                       const WindowButtons()
                     ],
@@ -156,11 +169,28 @@ class WindowButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 138,
+      width: 92,
       height: 50,
-      child: WindowCaption(
-        brightness: Theme.of(context).brightness,
-        backgroundColor: Colors.transparent,
+      child: Row(
+        children: [
+          WindowCaptionButton.minimize(
+            brightness: Theme.of(context).brightness,
+            onPressed: () async {
+              bool isMinimized = await windowManager.isMinimized();
+              if (isMinimized) {
+                windowManager.restore();
+              } else {
+                windowManager.minimize();
+              }
+            },
+          ),
+          WindowCaptionButton.close(
+            brightness: Theme.of(context).brightness,
+            onPressed: () {
+              windowManager.close();
+            },
+          ),
+        ],
       ),
     );
   }

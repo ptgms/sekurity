@@ -12,6 +12,7 @@ import 'package:sekurity/tools/platformtools.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:ntp/ntp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'homescreen.dart';
 import '../main.dart';
@@ -34,6 +35,12 @@ class _SettingsState extends State<Settings> {
     prefs.setBool("gradientBackground", gradientBackground);
     prefs.setInt("authentication", authentication);
     prefs.setBool("bigcards", bigCards);
+    prefs.setInt("displayStyle", displayStyle.index);
+    prefs.setBool("exitToTray", exitToTray);
+
+    if (exitToTray) {
+      await windowManager.setPreventClose(true);
+    }
     return;
   }
 
@@ -226,9 +233,8 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
-    var themes = ["System", "Light", "Dark"];
-
     GlobalKey dropdownTheme = GlobalKey();
+    GlobalKey dropdownStyle = GlobalKey();
     GlobalKey dropdownAuth = GlobalKey();
 
     var appBar = PlatformAppBar(
@@ -415,59 +421,100 @@ class _SettingsState extends State<Settings> {
                     openDropdown(dropdownAuth);
                   },
                 ),
+              if (!isPlatformMobile())
+                SettingsTile.switchTile(
+                  leading: const Icon(Icons.visibility_off_rounded),
+                  initialValue: exitToTray,
+                  onToggle: (value) {
+                    setState(() {
+                      exitToTray = value;
+                    });
+                    saveSettings();
+                  },
+                  title: Text(context.loc.settings_exit_to_tray),
+                  description:
+                      Text(context.loc.settings_exit_to_tray_description),
+                )
             ]),
             SettingsSection(
               title: Text(context.loc.settings_appearance),
               tiles: [
                 SettingsTile.navigation(
                   leading: const Icon(Icons.color_lens_outlined),
-                  trailing: DropdownButton<String>(
+                  trailing: DropdownButton<int>(
                       alignment: AlignmentDirectional.centerEnd,
                       key: dropdownTheme,
                       icon: const Icon(Icons.chevron_right_outlined),
                       underline: Container(),
                       //iconSize: 0.0,
-                      value: themes[appTheme.value],
+                      value: appTheme.value,
                       onChanged: (value) {
-                        switch (value) {
-                          case "System":
-                            setState(() {
-                              appTheme.value = 0;
-                            });
-                            break;
-                          case "Light":
-                            setState(() {
-                              appTheme.value = 1;
-                            });
-                            break;
-                          case "Dark":
-                            setState(() {
-                              appTheme.value = 2;
-                            });
-                            break;
-                          default:
-                        }
+                        setState(() {
+                          appTheme.value = value ?? 0;
+                        });
                         saveSettings();
                       },
                       items: [
                         DropdownMenuItem(
-                          value: "System",
+                          value: 0,
                           child: Text(context.loc.settings_theme_system,
                               textAlign: TextAlign.center),
                         ),
                         DropdownMenuItem(
-                          value: "Light",
+                          value: 1,
                           child: Text(context.loc.settings_theme_light,
                               textAlign: TextAlign.center),
                         ),
                         DropdownMenuItem(
-                          value: "Dark",
+                          value: 2,
                           child: Text(context.loc.settings_theme_dark),
                         )
                       ]),
                   title: Text(context.loc.settings_theme),
                   onPressed: (context) {
                     openDropdown(dropdownTheme);
+                  },
+                ),
+                SettingsTile.navigation(
+                  leading: const Icon(Icons.list_alt_rounded),
+                  trailing: DropdownButton<AppStyle>(
+                      alignment: AlignmentDirectional.centerEnd,
+                      key: dropdownStyle,
+                      icon: const Icon(Icons.chevron_right_outlined),
+                      underline: Container(),
+                      //iconSize: 0.0,
+                      value: displayStyle,
+                      onChanged: (value) {
+                        setState(() {
+                          displayStyle = value ?? AppStyle.minimalistic;
+                        });
+                        final itemModel =
+                            Provider.of<Keys>(context, listen: false);
+                        itemModel.uiUpdate();
+                        saveSettings();
+                      },
+                      items: [
+                        DropdownMenuItem(
+                          value: AppStyle.minimalistic,
+                          child: Text(
+                              context.loc.settings_view_style_minimalistic,
+                              textAlign: TextAlign.center),
+                        ),
+                        DropdownMenuItem(
+                          value: AppStyle.cards,
+                          child: Text(context.loc.settings_view_style_cards,
+                              textAlign: TextAlign.center),
+                        ),
+                        DropdownMenuItem(
+                          value: AppStyle.habbit,
+                          child: Text(context.loc.settings_view_style_habbit),
+                        )
+                      ]),
+                  title: Text(context.loc.settings_view_style),
+                  description:
+                      Text(context.loc.settings_view_style_description),
+                  onPressed: (context) {
+                    openDropdown(dropdownStyle);
                   },
                 ),
                 SettingsTile.switchTile(

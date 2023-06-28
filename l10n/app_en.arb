@@ -96,6 +96,15 @@
     "settings_gradient": "Gradient Background",
     "settings_gradient_description": "Use a gradient background instead of a solid color.",
 
+    "settings_view_style": "View Style",
+    "settings_view_style_description": "Choose how you want to view your keys. The recommended option is \"Minimalistic\".",
+    "settings_view_style_minimalistic": "Minimalistic",
+    "settings_view_style_cards": "Cards",
+    "settings_view_style_habbit": "Habbit",
+
+    "settings_exit_to_tray": "Exit to Tray",
+    "settings_exit_to_tray_description": "Exit to tray instead of quitting the app.",
+
     "settings_accessibility": "Accessibility",
     "settings_accessibility_font_style": "Font Style",
     "settings_accessibility_font_style_normal": "Normal",
