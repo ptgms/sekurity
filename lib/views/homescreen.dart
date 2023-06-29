@@ -526,7 +526,7 @@ class _HomePageState extends State<HomePage> {
                 ? null
                 : () async {
                     // Vibrate
-                    vibrate(25);
+                    HapticFeedback.heavyImpact();
                     setState(() {
                       editMode = true;
                     });

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sekurity/tools/platformtools.dart';
+import 'package:flutter/services.dart';
 
 // animation controller for a push in effect on click
 class AnimationPush extends StatefulWidget {
@@ -43,7 +43,7 @@ class _AnimationPushState extends State<AnimationPush>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && !isPressed) {
         _controller.reverse();
-        vibrate(10);
+        HapticFeedback.mediumImpact();
       }
     });
     return GestureDetector(
@@ -52,7 +52,7 @@ class _AnimationPushState extends State<AnimationPush>
         _controller.forward(from: 0.0); // Start the animation on tap
         // widget.onPressed();
         // vibrate
-        vibrate(5);
+        HapticFeedback.lightImpact();
       },
       // when the tap is released, reverse the animation
       onTapUp: ((details) {
@@ -60,7 +60,7 @@ class _AnimationPushState extends State<AnimationPush>
         widget.onPressed();
         if (!_controller.isAnimating) {
           _controller.reverse();
-          vibrate(10);
+          HapticFeedback.mediumImpact();
           }
           isPressed = false;
       }),
@@ -69,7 +69,7 @@ class _AnimationPushState extends State<AnimationPush>
         isPressed = false;
         if (!_controller.isAnimating) {
           _controller.reverse();
-          vibrate(10);
+          HapticFeedback.mediumImpact();
           }
           isPressed = false;
       },
