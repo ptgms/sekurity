@@ -274,10 +274,10 @@ class _HomePageState extends State<HomePage> {
               // Progress bar of time left before code changes and update it automatically
               if (!altProgress)
                 SizedBox(
-                  width: 40,
+                  width: 32,
                   height: 40,
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0, 8.0),
                     child: AspectRatio(
                       aspectRatio: 1,
                       child: ValueListenableBuilder(
@@ -313,6 +313,8 @@ class _HomePageState extends State<HomePage> {
     initSystemTray();
   }
 
+  bool showFab = true;
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -343,28 +345,6 @@ class _HomePageState extends State<HomePage> {
       tooltip: editMode ? context.loc.edit : context.loc.add_service_name,
       icon: editMode ? const Icon(Icons.done) : const Icon(Icons.add),
     );
-
-    ScrollController controller = ScrollController();
-    bool fabVisible = true;
-
-    controller.addListener(() {
-      if (controller.position.userScrollDirection == ScrollDirection.reverse) {
-        if (fabVisible == true) {
-          setState(() {
-            fabVisible = false;
-          });
-        }
-      } else {
-        if (controller.position.userScrollDirection ==
-            ScrollDirection.forward) {
-          if (fabVisible == false) {
-            setState(() {
-              fabVisible = true;
-            });
-          }
-        }
-      }
-    });
 
     //updateProgress();
     loopRefresh();
@@ -459,18 +439,35 @@ class _HomePageState extends State<HomePage> {
                         }),
                   ])
                 ]),
-            body: Consumer<Keys>(builder: (context, itemModel, _) {
-              initSystemTray();
-              return SizedBox(
-                width: double.infinity,
-                height: double.infinity,
-                child: gridViewBuilder(
-                    count, widthCard, heightCard, itemModel.items, controller),
-              );
-            }),
-            floatingActionButton: Visibility(
-              visible: fabVisible,
-              child: isPlatformMobile()
+            body: NotificationListener<UserScrollNotification>(
+              onNotification: (notification) {
+                final ScrollDirection direction = notification.direction;
+                setState(() {
+                  if (direction == ScrollDirection.reverse) {
+                    showFab = false;
+                  } else if (direction == ScrollDirection.forward) {
+                    showFab = true;
+                  }
+                });
+                return true;
+              },
+              child: Consumer<Keys>(builder: (context, itemModel, _) {
+                initSystemTray();
+                return SizedBox(
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: gridViewBuilder(
+                      count, widthCard, heightCard, itemModel.items),
+                );
+              }),
+            ),
+            floatingActionButton: AnimatedSlide(
+              duration: const Duration(milliseconds: 300),
+              offset: showFab ? Offset.zero : const Offset(0, 2),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 300),
+                opacity: showFab ? 1 : 0,
+                child: isPlatformMobile()
                   ? fab
                   : ctx.ContextMenuRegion(
                       onItemSelected: (item) {
@@ -500,13 +497,12 @@ class _HomePageState extends State<HomePage> {
                             }),
                       ],
                       child: fab),
-            )));
+            ))));
   }
 
   Widget gridViewBuilder(int count, int widthCard, int heightCard,
-      List<KeyStruct> snapshot, ScrollController controller) {
+      List<KeyStruct> snapshot) {
     return ReorderableGridView.builder(
-      controller: controller,
       //scrollDirection: Axis.vertical,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: count,
