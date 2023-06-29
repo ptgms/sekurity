@@ -557,7 +557,7 @@ class _SettingsState extends State<Settings> {
                     description: Text(
                         context.loc.settings_menubar_replacement_description),
                   ),
-                SettingsTile.switchTile(
+                if (displayStyle == AppStyle.cards) SettingsTile.switchTile(
                     initialValue: gradientBackground,
                     onToggle: (value) {
                       final itemModel =
@@ -594,7 +594,7 @@ class _SettingsState extends State<Settings> {
                     },
                     initialValue: bold,
                   ),
-                  SettingsTile.switchTile(
+                  if (displayStyle == AppStyle.cards) SettingsTile.switchTile(
                     initialValue: bigCards,
                     leading: const Icon(Icons.crop_square_rounded),
                     onToggle: (value) {
