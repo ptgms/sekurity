@@ -1,0 +1,29 @@
+image: appleboy/git:latest
+
+stages:
+  - build
+
+before_script:
+  - git clone https://github.com/flutter/flutter.git -b stable
+  - export PATH="$PATH:`pwd`/flutter/bin"
+  - flutter doctor
+
+build_android:
+  stage: build
+  tags:
+    - macos
+  script:
+    - flutter clean
+    - flutter build appbundle --release
+  artifacts:
+      name: Android Release
+      paths:
+          - build/app/outputs/bundle/release/app-release.aab
+
+#build_ios:
+#  stage: build
+#  tags:
+#    - macos
+#  script:
+#    - flutter clean
+#    - flutter build ios --release --no-codesign

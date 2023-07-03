@@ -117,21 +117,23 @@ class _PlatformScaffoldState extends State<PlatformScaffold> {
                           ),
                         ),
 
-                      // weight
                       Expanded(
-                        child: GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onPanStart: (details) {
-                              windowManager.startDragging();
-                            },
-                            child: Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(10, 0, 20, 3),
-                                child: Text(widget.appBar.title),
-                              ),
-                            )),
+                        child: SizedBox(
+                          height: 50,
+                          child: GestureDetector(
+                              behavior: HitTestBehavior.translucent,
+                              onPanStart: (details) {
+                                windowManager.startDragging();
+                              },
+                              child: Align(
+                                alignment: AlignmentDirectional.centerStart,
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(10, 0, 20, 3),
+                                  child: Text(widget.appBar.title),
+                                ),
+                              )),
+                        ),
                       ),
                       const WindowButtons()
                     ],
