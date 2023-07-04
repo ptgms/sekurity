@@ -5,23 +5,6 @@ stages:
 before_script:
   - git clone https://github.com/flutter/flutter.git -b stable
 
-prepare_macos:
-  stage: prepare
-  tags:
-    - macos
-  script:
-    - export PATH="$PATH:`pwd`/flutter/bin"
-    - sudo gem install cocoapods
-    - flutter doctor
-
-prepare_windows:
-  stage: prepare
-  tags:
-    - windows
-  script:
-    - set PATH=%PATH%;%cd%\flutter\bin
-    - flutter doctor
-
 #prepare_linux:
 #  stage: prepare
 #  tags:
@@ -33,6 +16,10 @@ build_android:
   stage: build
   tags:
     - macos
+  before_script:
+    - export PATH="$PATH:`pwd`/flutter/bin"
+    - sudo gem install cocoapods
+    - flutter doctor
   script:
     - flutter clean
     - echo "$KEY_PROPERTIES" > android/key.properties
@@ -46,6 +33,10 @@ build_ios:
   stage: build
   tags:
     - macos
+  before_script:
+    - export PATH="$PATH:`pwd`/flutter/bin"
+    - sudo gem install cocoapods
+    - flutter doctor
   script:
     - flutter clean
     - flutter build ios --release --no-codesign
@@ -62,6 +53,13 @@ build_windows:
   stage: build
   tags:
     - windows
+  before_script:
+    # Install flutter (using Chocolatey and confirming all prompts)
+    - choco install flutter --confirm --no-progress
+    - Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+    - refreshenv
+    # Disable Google Analytics report for Flutter
+    - flutter config --no-analytics
   script:
     - flutter clean
     - flutter build windows --release
