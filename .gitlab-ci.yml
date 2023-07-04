@@ -11,15 +11,16 @@ prepare_macos:
     - macos
   script:
     - export PATH="$PATH:`pwd`/flutter/bin"
+    - sudo gem install cocoapods
     - flutter doctor
 
-#prepare_windows:
-#  stage: prepare
-#  tags:
-#    - windows
-#  script:
-#    - flutter doctor
-#
+prepare_windows:
+  stage: prepare
+  tags:
+    - windows
+  script:
+    - flutter doctor
+
 #prepare_linux:
 #  stage: prepare
 #  tags:
@@ -55,3 +56,15 @@ build_ios:
       name: iOS Release
       paths:
           - build/ios/iphoneos/build.ipa
+
+build_windows:
+  stage: build
+  tags:
+    - windows
+  script:
+    - flutter clean
+    - flutter build windows --release
+  artifacts:
+      name: Windows Release
+      paths:
+          - build/windows/runner/Release
