@@ -2,9 +2,6 @@ stages:
   - prepare
   - build
 
-before_script:
-  - git clone https://github.com/flutter/flutter.git -b stable
-
 #prepare_linux:
 #  stage: prepare
 #  tags:
@@ -17,37 +14,38 @@ build_android:
   tags:
     - macos
   before_script:
+    - git clone https://github.com/flutter/flutter.git -b stable
     - export PATH="$PATH:`pwd`/flutter/bin"
-    - sudo gem install cocoapods
     - flutter doctor
   script:
     - flutter clean
     - echo "$KEY_PROPERTIES" > android/key.properties
-    - flutter build appbundle --release
+    - flutter build apk --release --split-debug-info=debug --obfuscate
   artifacts:
       name: Android Release
       paths:
-          - build/app/outputs/bundle/release/app-release.aab
+          - build/app/outputs/flutter-apk/app-release.apk
 
-build_ios:
-  stage: build
-  tags:
-    - macos
-  before_script:
-    - export PATH="$PATH:`pwd`/flutter/bin"
-    - sudo gem install cocoapods
-    - flutter doctor
-  script:
-    - flutter clean
-    - flutter build ios --release --no-codesign
-    - cd build/ios/iphoneos
-    - mkdir Payload
-    - mv Runner.app Payload/Runner.app
-    - zip -r build.ipa Payload
-  artifacts:
-      name: iOS Release
-      paths:
-          - build/ios/iphoneos/build.ipa
+#build_ios:
+#  stage: build
+#  tags:
+#    - macos
+#  before_script:
+#    - git clone https://github.com/flutter/flutter.git -b stable
+#    - export PATH="$PATH:`pwd`/flutter/bin"
+#    - sudo gem uninstall cocoapods && sudo gem install cocoapods
+#    - flutter doctor
+#  script:
+#    - flutter clean
+#    - flutter build ios --release --no-codesign
+#    - cd build/ios/iphoneos
+#    - mkdir Payload
+#    - mv Runner.app Payload/Runner.app
+#    - zip -r build.ipa Payload
+#  artifacts:
+#      name: iOS Release
+#      paths:
+#          - build/ios/iphoneos/build.ipa
 
 build_windows:
   stage: build
@@ -55,7 +53,8 @@ build_windows:
     - windows
   before_script:
     # Install flutter (using Chocolatey and confirming all prompts)
-    - choco install flutter --confirm --no-progress
+    - Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    - choco install flutter --confirm --no-progress --force
     - Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
     - refreshenv
     # Disable Google Analytics report for Flutter
