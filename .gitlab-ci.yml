@@ -19,7 +19,7 @@ prepare_windows:
   tags:
     - windows
   script:
-    - export PATH="$PATH:`pwd`/flutter/bin"
+    - set PATH=%PATH%;%cd%\flutter\bin
     - flutter doctor
 
 #prepare_linux:
