@@ -6,30 +6,28 @@ on:
       - master
 
 jobs:
-  #build-linux:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - name: Checkout code
-  #      uses: actions/checkout@v2
-
-  #    - name: Set up Flutter
-  #      run: flutter upgrade
-
-  #    - name: Build Linux
-  #      run: flutter build linux
-
-  build-macos-ios:
-    runs-on: macos-ventura
+  build-linux:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
       - name: Set up Flutter
         run: flutter upgrade
+      - name: Build Linux
+        run: flutter build linux
 
-      - name: Build macOS and iOS
-        run: flutter build macos && flutter build ios
-
+  #build-macos-ios:
+  #  runs-on: macos-ventura
+  #  steps:
+  #    - name: Checkout code
+  #      uses: actions/checkout@v2
+#
+  #    - name: Set up Flutter
+  #      run: flutter upgrade
+#
+  #    - name: Build macOS and iOS
+  #      run: flutter build macos && flutter build ios
+#
   #build-android:
   #  runs-on: macos-ventura
   #  steps:
@@ -53,4 +51,3 @@ jobs:
 #
   #    - name: Build Windows
   #      run: flutter build windows
-#
