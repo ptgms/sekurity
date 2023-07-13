@@ -11,8 +11,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Who am I?
-        run: whoami
+      - name: Set PATH
+        run: export PATH="$PATH":"$HOME/development/flutter/bin"
       - name: Set up Flutter
         run: flutter upgrade
       - name: Build Linux
