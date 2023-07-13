@@ -30,26 +30,27 @@ jobs:
       - name: Build macOS and iOS
         run: flutter build macos && flutter build ios
 
-  build-android:
-    runs-on: macos-ventura
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Flutter
-        run: flutter upgrade
-
-      - name: Build Android
-        run: flutter build apk
-
-  build-windows:
-    runs-on: windows
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Flutter
-        run: flutter upgrade
-
-      - name: Build Windows
-        run: flutter build windows
+  #build-android:
+  #  runs-on: macos-ventura
+  #  steps:
+  #    - name: Checkout code
+  #      uses: actions/checkout@v2
+#
+  #    - name: Set up Flutter
+  #      run: flutter upgrade
+#
+  #    - name: Build Android
+  #      run: flutter build apk
+#
+  #build-windows:
+  #  runs-on: windows
+  #  steps:
+  #    - name: Checkout code
+  #      uses: actions/checkout@v2
+#
+  #    - name: Set up Flutter
+  #      run: flutter upgrade
+#
+  #    - name: Build Windows
+  #      run: flutter build windows
+#
