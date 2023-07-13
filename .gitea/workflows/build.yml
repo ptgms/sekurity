@@ -14,7 +14,12 @@ jobs:
       - name: Set up Flutter
         run: flutter upgrade
       - name: Build Linux
-        run: flutter build linux
+        run: flutter build linux --release
+      - name: Upload Linux
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux
+          path: build/linux/x64/release/bundle/
 
   #build-macos-ios:
   #  runs-on: macos-ventura
