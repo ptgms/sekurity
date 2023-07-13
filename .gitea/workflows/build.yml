@@ -6,19 +6,17 @@ on:
       - master
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  #build-linux:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: Checkout code
+  #      uses: actions/checkout@v2
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: stable
+  #    - name: Set up Flutter
+  #      run: flutter upgrade
 
-      - name: Build Linux
-        run: flutter build linux
+  #    - name: Build Linux
+  #      run: flutter build linux
 
   build-macos-ios:
     runs-on: macos-ventura
@@ -27,9 +25,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: stable
+        run: flutter upgrade
 
       - name: Build macOS and iOS
         run: flutter build macos && flutter build ios
@@ -41,9 +37,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: stable
+        run: flutter upgrade
 
       - name: Build Android
         run: flutter build apk
@@ -55,9 +49,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: stable
+        run: flutter upgrade
 
       - name: Build Windows
         run: flutter build windows
