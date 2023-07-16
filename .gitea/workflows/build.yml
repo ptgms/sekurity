@@ -11,17 +11,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Set PATH
-        run: export PATH="$PATH":"$HOME/development/flutter/bin"
+
       - name: Set up Flutter
-        run: flutter upgrade
+        uses: subosito/flutter-action@v1
+
       - name: Build Linux
-        run: flutter build linux --release
-      - name: Upload Linux
-        uses: actions/upload-artifact@v2
-        with:
-          name: linux
-          path: build/linux/x64/release/bundle/
+        run: flutter build linux
 
   #build-macos-ios:
   #  runs-on: macos-ventura
